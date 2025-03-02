@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" style="font-size: 12px !important">
+    {% load static %}
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/x-icon" href="{% static 'img/icon.png' %}" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>TotalSheets - {% block title %}{% endblock title %}</title>
+        <link rel="stylesheet" href="{% static 'css/main.css' %}">
+        <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..300,0..1,-50..200" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+EMqz4lQ2h8FOA1pP/WeIl1v0YjG2" crossorigin="anonymous">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.3/font/bootstrap-icons.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.9.1/font/bootstrap-icons.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
+    </head>
+    <div class="container-fluid px-5 fixed-top shadow-sm d-flex justify-content-between align-items-center py-3 bg-black">
+        <div class="d-flex align-items-center column-gap-3">
+            <img src="{% static 'img/icon.png' %}" width="35" alt="" srcset="" />
+            <span class="fs-4 text-white fw-medium">TotalSheets</span>
+        </div>
+        <div class="d-flex align-items-center column-gap-3">
+            <a href="{% url 'project:project_information' pk=pk %}" class="text-decoration-none text-white fs-5 fw-medium">Back to Project</a>
+            <a href="{% url "code:code" %}" class="text-decoration-none text-white fs-5 fw-medium">Code</a>
+            <a href="{% url "code:specification" %}" class="text-decoration-none text-white fs-5 fw-medium">Spec</a>
+            <a href="{% url 'profile:calculator' %}" class="text-decoration-none text-white fs-5 fw-medium">Calculator</a>
+            <a href="{% url 'project:clients' %}" class="text-decoration-none text-white fs-5 fw-medium">Clients</a>
+        </div>
+        <div class="d-flex align-items-center column-gap-3">
+            <div class="dropdown">
+                <a class="btn text-white fs-5 fw-medium" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"> Help </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Action</a></li>
+                    <li><a class="dropdown-item" href="#">Another action</a></li>
+                    <li><a class="dropdown-item" href="#">Something else here</a></li>
+                </ul>
+            </div>
+            <a href="{% url 'accounts:logout' %}" class="text-decoration-none text-white fs-5 fw-medium">Logout</a>
+        </div>
+    </div>
+    <div class="content container-fluid px-5 d-flex flex-column mt-5 pt-5 flex-column p-3 vh-100">{% block body %} {% endblock body %}</div>
+</html>

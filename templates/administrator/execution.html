@@ -1,0 +1,629 @@
+
+{% extends "partials/admin_base.html" %}
+{% block title %} execution{% endblock %}
+
+{% block content %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <div class="container p-5">
+        <div class="row justify-content-between fs-5 align-items-center  ">
+            <div class="row">
+                <div class="col">
+                    <span class="fs-4 mx-1 fw-semibold">Execution</span><br>
+                    <span class="fs-6 mx-1 text-body-tertiary">Manage your Execution here</span>
+                </div>
+                {% include 'administrator/search.html' with model_name='execution' %}
+            </div>
+        </div>
+<!-- Add Button -->
+<!--<button type="button" class="btn btn-primary mt-3 mb-3" data-bs-toggle="modal" data-bs-target="#addexecutionModal">Add Execution</button>-->
+
+<!-- {{ model_name|capfirst }} Table -->
+<!--<table class="table table-striped">-->
+<!--    <thead>-->
+<!--        <tr>-->
+<!--            <th>ID</th>-->
+<!--            <th>Name</th>-->
+<!--            <th>Group</th>-->
+<!--            <th>GST</th>-->
+<!--            <th>Unit</th>-->
+<!--            <th>Price</th>-->
+<!--            <th>Actions</th>-->
+<!--        </tr>-->
+<!--    </thead>-->
+<!--    <tbody id="{{ model_name }}TableBody">-->
+<!--        {% for item in items %}-->
+<!--        <tr id="row-{{ item.id }}">-->
+<!--            <td>{{ forloop.counter|add:start_index }}</td>-->
+<!--            <td>{{ item.name }}</td>-->
+<!--            <td>{{ item.group.name }}</td>-->
+<!--            <td>{{ item.gst.rate }}</td>-->
+<!--            <td>{{ item.unit.name }}</td>-->
+<!--            <td>{{ item.price }}</td>-->
+<!--            <td>-->
+<!--                &lt;!&ndash; Edit Button &ndash;&gt;-->
+<!--                <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editexecutionModal-{{ item.id }}">Edit</button>-->
+
+<!--                &lt;!&ndash; Delete Form &ndash;&gt;-->
+<!--                <form action="{% url 'administrator:dynamic-delete' model_name='execution' pk=item.pk %}" method="post" style="display:inline;">-->
+<!--                    {% csrf_token %}-->
+<!--                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>-->
+<!--                </form>-->
+<!--            </td>-->
+<!--        </tr>-->
+<!--        {% endfor %}-->
+<!--    </tbody>-->
+<!--</table>-->
+
+<!--&lt;!&ndash; Pagination Controls &ndash;&gt;-->
+<!--<div class="pagination">-->
+<!--    <span class="step-links">-->
+<!--        {% if page_obj.has_previous %}-->
+<!--            <a href="?page=1">&laquo; first</a>-->
+<!--            <a href="?page={{ page_obj.previous_page_number }}">previous</a>-->
+<!--        {% endif %}-->
+<!--        <span class="current">-->
+<!--            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.-->
+<!--        </span>-->
+<!--        {% if page_obj.has_next %}-->
+<!--            <a href="?page={{ page_obj.next_page_number }}">next</a>-->
+<!--            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>-->
+<!--        {% endif %}-->
+<!--    </span>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Add {{ model_name|capfirst }} Modal &ndash;&gt;-->
+<!--&lt;!&ndash; Add execution Modal &ndash;&gt;-->
+<!--<div class="modal fade" id="addexecutionModal" tabindex="-1" role="dialog" aria-labelledby="addexecutionModalLabel" aria-hidden="true">-->
+<!--    <div class="modal-dialog" role="document">-->
+<!--        <div class="modal-content">-->
+<!--            <div class="modal-header">-->
+<!--                <h5 class="modal-title" id="addexecutionModalLabel">Add execution</h5>-->
+<!--                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>-->
+<!--            </div>-->
+<!--            <form action="{% url 'administrator:dynamic-create' model_name='execution' %}" method="post">-->
+<!--                {% csrf_token %}-->
+<!--                <div class="modal-body">-->
+<!--                    &lt;!&ndash; Include your form fields here dynamically &ndash;&gt;-->
+<!--                    <label>Name</label>-->
+<!--                    <input type="text" name="name" class="form-control" required>-->
+<!--                    <label>Group</label>-->
+<!--                    <select name="group" class="form-control" required>-->
+<!--                        {% for group in ex_groups %}-->
+<!--                        <option value="{{ group.id }}">{{ group.name }}</option>-->
+<!--                        {% endfor %}-->
+<!--                    </select>-->
+<!--                    <label>GST</label>-->
+<!--                    <select name="gst" class="form-control" required>-->
+<!--                        {% for gst in gsts %}-->
+<!--                        <option value="{{ gst.id }}">{{ gst.rate }}</option>-->
+<!--                        {% endfor %}-->
+<!--                    </select>-->
+<!--                    <label>Unit</label>-->
+<!--                    <select name="unit" class="form-control" required>-->
+<!--                        {% for unit in units %}-->
+<!--                        <option value="{{ unit.id }}">{{ unit.name }}</option>-->
+<!--                        {% endfor %}-->
+<!--                    </select>-->
+<!--&lt;!&ndash;                    <label>Brand</label>&ndash;&gt;-->
+<!--&lt;!&ndash;                    <select name="brand" class="form-control" required>&ndash;&gt;-->
+<!--&lt;!&ndash;                        {% for brand in brands %}&ndash;&gt;-->
+<!--&lt;!&ndash;                        <option value="{{ brand.id }}">{{ brand.name }}</option>&ndash;&gt;-->
+<!--&lt;!&ndash;                        {% endfor %}&ndash;&gt;-->
+<!--&lt;!&ndash;                    </select>&ndash;&gt;-->
+<!--                    <label>Price</label>-->
+<!--                    <input type="number" name="price" step="0.01" class="form-control" required>-->
+<!--                </div>-->
+<!--                <div class="modal-footer">-->
+<!--                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>-->
+<!--                    <button type="submit" class="btn btn-primary">Save</button>-->
+<!--                </div>-->
+<!--            </form>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
+        <table class="table table-striped mt-2">
+            <thead>
+                <tr style="background-color:black; color:white;">
+            <!-- Form with fields in the table header -->
+                    <form action="{% url 'administrator:dynamic-create' model_name='execution' %}" method="post" class="w-100">
+                        {% csrf_token %}
+                        <tr>
+                            <th></th>
+                            <th>
+                                <input type="text" name="name" class="form-control form-control-sm" placeholder="Name" required>
+                            </th>
+                            <th>
+                                <select name="group" id="group-select" class="form-control form-control-sm" required>
+                                    <option value="">Select Group</option>
+                                    {% for group in ex_groups %}
+                                        <option value="{{ group.id }}">{{ group.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                     <th>
+                        <select name="subgroup" class="form-control" id="sub-group-select" required>
+                            <option value="">Select Sub Group</option>
+                        </select>
+                    </th>
+                            <th>
+                                <select name="gst"  id='gst' class="form-control form-control-sm" required>
+                                    <option value="">Select GST</option>
+                                    {% for gst in gsts %}
+                                        <option value="{{ gst.id }}" data-rate="{{ gst.rate }}">{{ gst.rate }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th>
+                                <select name="unit" class="form-control form-control-sm" required>
+                                    <option value="">Select Unit</option>
+                                    {% for unit in units %}
+                                        <option value="{{ unit.id }}">{{ unit.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th>
+                                <input type="float" id="price" name="price" class="form-control form-control-sm" placeholder="Price" required>
+                            </th>
+                            <th><input type="float" id="gst_value" name="gst_value"  class="form-control" placeholder="Gst Value" required></th>
+                            <th><input type="float" id="sale_price" name="sale_price" class="form-control" placeholder="Sale Price" required></th>
+                            <th>
+                                <button type="submit" class="btn btn-success btn-sm">Save</button>
+                            </th>
+                        </tr>
+                    </form>
+                </tr>
+                <tr>
+                    <th>ID</th>
+                    <th style="text-align:left;">
+                        <a href="?sort=name&order={% if current_sort_order == 'asc' and current_sort_field == 'name' %}desc{% else %}asc{% endif %}&group={{ selected_group }}"
+                           class="sort-link" style="text-decorator:none;color:white;">
+                            Name
+                            {% if current_sort_field == 'name' %}
+                                {% if current_sort_order == 'asc' %}
+                                    <i class="fas fa-arrow-up"></i>
+                                {% else %}
+                                    <i class="fas fa-arrow-down"></i>
+                                {% endif %}
+                            {% else %}
+                                <i class="fas fa-arrows-v"></i>  <!-- Default indicator for no sorting -->
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th style="text-align:left;">
+                        Group
+                <!-- Group filtering dropdown -->
+                        <select id="groupFilter" class="form-select" onchange="applyGroupFilter()">
+                            <option value="">All</option>
+                            {% for group in ex_groups %}
+                                <option value="{{ group.id }}" {% if group.id|stringformat:"s" == selected_group %}selected{% endif %}>
+                                    {{ group.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </th>
+                    <th style="text-align:left;">
+                        Sub Group
+                        <select id="subgroupFilter" class="form-select" onchange="applysubGroupFilter()">
+                            <option value="">All</option>
+                            {% for group in Execution_SubGroup %}
+                                <option value="{{ group.id }}" {% if group.id|stringformat:"s" == selected_group %}selected{% endif %}>
+                                    {{ group.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </th>
+                    <th style="text-align:left;">GST</th>
+                    <th style="text-align:left;">Unit</th>
+                    <th style="text-align:left;">Price</th>
+                    <th style="text-align:left;">Gst Value</th>
+                    <th style="text-align:left;">Total price</th>
+                    <th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="{{ model_name }}TableBody">
+                {% if items %}
+                    {% for item in items %}
+                        <tr id="row-{{ item.id }}" data-group-id="{{ item.group.id }}">
+                            <td style="text-align:left;">{{ forloop.counter|add:start_index }}</td>
+                            <td style="text-align: left;">{{ item.name }}</td>
+                            <td style="text-align:left;">{{ item.group.name }}</td>
+                            <td style="text-align:left;">{{ item.subgroup.name }}</td>
+                            <td style="text-align:left;">{{ item.gst.rate|floatformat:2 }} %</td>
+                            <td style="text-align:left;">{{ item.unit.name }}</td>
+                            <td style="text-align:left;">{{ item.price }}</td>
+                            <td style="text-align:left;">{{ item.gst_value }}</td>
+                            <td style="text-align:left;">{{ item.sale_price }}</td>
+                            <td style="text-align:center;">
+                                <div class="dropdown">
+                                    <!-- Button with 3 dots -->
+                                    <button class="btn btn-secondary btn-sm three-dots-btn" type="button" id="dropdownMenuButton-{{ item.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        ...
+                                    </button>
+                            
+                                    <!-- Dropdown Menu for Add/Edit Subgroup, Edit, and Delete -->
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{ item.id }}">
+                                        
+                            
+                                        <!-- Edit Button -->
+                                        <li>
+                                            <button type="button" class="dropdown-item btn btn-sm" data-bs-toggle="modal" data-bs-target="#editexecutionModal-{{ item.id }}">
+                                                Edit
+                                            </button>
+                                        </li>
+                            
+                                        <!-- Delete Form -->
+                                        <li>
+                                            {% if item.is_referenced %}
+                                                <form action="" method="post" style="display:inline;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="dropdown-item btn btn-sm" disabled>Delete</button>
+                                                </form>
+                                            {% else %}
+                                                <form id="deleteForm" action="{% url 'administrator:dynamic-delete' model_name='execution' pk=item.pk %}" method="post" style="display:inline;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="dropdown-item btn btn-sm delete-btn" data-url="{% url 'administrator:dynamic-delete' model_name='execution' pk=item.pk %}">Delete</button>
+                                                </form>
+                                            {% endif %}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                            
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="10" style="text-align: center; color: gray;">No records found</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+<!-- Pagination Controls -->
+        {% include 'administrator/pagination.html' %}
+<!-- Edit {{ model_name|capfirst }} Modals -->
+<!-- Edit execution Modals -->
+        {% for item in items %}
+            <div class="modal fade" id="editexecutionModal-{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="editexecutionModalLabel-{{ item.id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editexecutionModalLabel-{{ item.id }}">Edit Execution</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{% url 'administrator:dynamic-update' model_name='execution' pk=item.id %}" method="post">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                    <!-- Include your form fields here dynamically -->
+                                <label>Name</label>
+                                <input type="text" name="name" value="{{ item.name }}" class="form-control" required>
+                                
+                                <label>Group</label>
+                                <select name="group" id="parentGroupSelect" class="form-control group-select" required>
+                                    {% for group in ex_groups %}
+                                        <option value="{{ group.id }}" {% if item.group.id == group.id %}selected{% endif %}>{{ group.name }}</option>
+                                    {% endfor %}
+                                </select>
+
+                                <label>Sub Group</label>
+                                <select name="subgroup" id="childSubgroupSelect" class="form-control group-select" required>
+                                    {% for subgroup in edit_sub %}
+                                        <option value="{{ subgroup.id }}" data-parent-group-id="{{ subgroup.execution_subgroup.first.id }}" {% if item.subgroup.id == subgroup.id %}selected{% endif %}>{{ subgroup.name }}</option>
+                                    {% endfor %}
+                                </select>    
+
+
+                                <label>GST</label>
+                                <select name="gst" class="form-control" id="gst-{{ item.id }}" required>
+                                    {% for gst in gsts %}
+                                        <option value="{{ gst.id }}"   {% if item.gst.id == gst.id %}selected{% endif %}>{{ gst.rate }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label>Unit</label>
+                                <select name="unit" class="form-control" required>
+                                    {% for unit in units %}
+                                        <option value="{{ unit.id }}" {% if item.unit.id == unit.id %}selected{% endif %}>{{ unit.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label>Brand</label>
+<!--                    <select name="brand" class="form-control" required>-->
+<!--                        {% for brand in brands %}-->
+<!--                        <option value="{{ brand.id }}" {% if item.brand.id == brand.id %}selected{% endif %}>{{ brand.name }}</option>-->
+<!--                        {% endfor %}-->
+<!--                    </select>-->
+                                <label>Price</label>
+                                <input type="number" name="price" step="0.01"  id="price-{{ item.id }}" value="{{ item.price }}" class="form-control" required>
+                                <label>GST Value</label>
+                                <input type="float" name="gst_value" id="gst_value-{{ item.id }}"  value="{{ item.gst_value }}" class="form-control" readonly>
+                                <label>Total Price</label>
+                                <input type="float" name="sale_price" id="total_price-{{ item.id }}"  value="{{ item.sale_price }}" class="form-control" readonly>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Save changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+ <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to handle modal and subgroup fetching
+    const setupModalListeners = function(modal) {
+        const groupSelect = modal.querySelector('.group-select');  // Select the specific group's dropdown inside the modal
+        const subGroupSelect = modal.querySelector('.sub-group-select'); // Select the specific subgroup dropdown inside the modal
+
+        if (groupSelect && subGroupSelect) {
+            // Reset the subgroup options initially
+            subGroupSelect.innerHTML = '<option value="">Select Sub Group</option>';
+
+            // Fetch subgroups if a group is already selected
+            const groupId = groupSelect.value;
+            if (groupId) {
+                fetchSubgroups(groupId, subGroupSelect);
+            }
+
+            // Ensure we only add the event listener once
+            const existingChangeListener = groupSelect.getAttribute('data-change-listener');
+            if (!existingChangeListener) {
+                groupSelect.addEventListener('change', function() {
+                    // Clear the subgroup options
+                    subGroupSelect.innerHTML = '<option value="">Select Sub Group</option>';
+
+                    const newGroupId = this.value;
+                    if (newGroupId) {
+                        fetchSubgroups(newGroupId, subGroupSelect);  // Fetch and populate new subgroups
+                    }
+                });
+
+                // Mark that the listener has been added
+                groupSelect.setAttribute('data-change-listener', 'true');
+            }
+        } else {
+            console.error("Group select or sub-group select element not found in the modal.");
+        }
+    };
+
+    // Event listener for when the modal is shown
+    document.addEventListener('show.bs.modal', function(event) {
+        const modal = event.target;  // Get the modal being opened
+        setupModalListeners(modal);  // Set up listeners for that specific modal
+    });
+});
+
+// Function to fetch subgroups based on the selected group
+function fetchSubgroups(groupId, subGroupSelect) {
+    fetch("{% url 'execution:fetch_subgroups' %}?group_id=" + groupId)
+        .then(response => response.json())
+        .then(data => {
+            // Reset and populate subgroup options
+            subGroupSelect.innerHTML = '<option value="">Select Sub Group</option>'; // Reset options
+
+            // Add new options
+            data.forEach(subGroup => {
+                const option = document.createElement('option');
+                option.value = subGroup.id;
+                option.textContent = subGroup.name;
+                subGroupSelect.appendChild(option);  // Append new subgroup option
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching subgroups:', error);
+        });
+}
+</script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const groupSelect = document.getElementById('group-select');
+    console.log(groupSelect)
+    const subGroupSelect = document.getElementById('sub-group-select');
+
+    // Check if elements exist before adding listeners
+    if (groupSelect && subGroupSelect) {
+        const handleGroupChange = function() {
+            console.log('Group select changed');  // Debugging log
+            const groupId = this.value;
+            subGroupSelect.innerHTML = '<option value="">Select Sub Group</option>'; // Clear previous options
+
+            if (groupId) {
+                fetch("{% url 'execution:fetch_subgroups' %}?group_id=" + groupId)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Fetched subgroups:", data);
+
+                        // Clear existing options to avoid duplication
+                        subGroupSelect.innerHTML = '<option value="">Select Sub Group</option>';
+
+                        data.forEach(subGroup => {
+                            const option = document.createElement('option');
+                            option.value = subGroup.id;
+                            option.textContent = subGroup.name;
+                            subGroupSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching subgroups:', error);
+                    });
+            }
+        };
+
+        // Remove any existing listeners before adding a new one
+        groupSelect.removeEventListener('change', handleGroupChange);
+        groupSelect.addEventListener('change', handleGroupChange);
+    }
+});
+
+</script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const gstSelect = document.getElementById('gst');
+                const priceInput = document.getElementById('price');
+                const gstValueInput = document.getElementById('gst_value');
+                console.log( gstValueInput,'val')
+                const salePriceInput = document.getElementById('sale_price');
+
+                function calculateGST() {
+                    const selectedGSTOption = gstSelect.options[gstSelect.selectedIndex];
+                    const gstRate = parseFloat(selectedGSTOption.getAttribute('data-rate')) || 0;
+                    const price = parseFloat(priceInput.value) || 0;
+                    console.log(price,'price');
+
+        // Calculate GST value and sale price
+                    const gstValue = (price * gstRate) / 100;
+                    console.log(gstValue,'huu');
+                    const salePrice = price + gstValue;
+
+        // Update the input fields
+                    gstValueInput.value = gstValue.toFixed(2);
+                    salePriceInput.value = salePrice.toFixed(2);
+                }
+
+    // Add event listeners to update values when price or GST changes
+                priceInput.addEventListener('input', calculateGST);
+                gstSelect.addEventListener('change', calculateGST);
+            });
+        </script>
+
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                {% for item in items %}
+                    {
+                        let price_edit = document.getElementById('price-{{ item.id }}');
+                        let gst_edit = document.getElementById('gst-{{ item.id }}');
+                        let gst_value_edit = document.getElementById('gst_value-{{ item.id }}');
+                        let total_price_edit = document.getElementById('total_price-{{ item.id }}');
+
+                        function calculateGSTAndTotalPrice_edit() {
+                            let priceValue_edit = parseFloat(price_edit.value) || 0;
+                            let gstRate_edit = parseFloat(gst_edit.options[gst_edit.selectedIndex].text) || 0;
+                            let gstValue_edit = (priceValue_edit * gstRate_edit) / 100;
+                            let totalPrice_edit = priceValue_edit + gstValue_edit;
+
+                            gst_value_edit.value = gstValue_edit.toFixed(2);
+                            total_price_edit.value = totalPrice_edit.toFixed(2);
+                        }
+
+                        price_edit.addEventListener('input', calculateGSTAndTotalPrice_edit);
+                        gst_edit.addEventListener('change', calculateGSTAndTotalPrice_edit);
+
+            // Initial calculation on modal load
+                        calculateGSTAndTotalPrice_edit();
+                    }
+                {% endfor %}
+            });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const table = document.querySelector('table');
+                const nameHeader = document.getElementById('nameHeader');
+
+                nameHeader.addEventListener('click', function() {
+                    sortTableByName();
+                });
+
+                function sortTableByName() {
+                    const rows = Array.from(table.querySelectorAll('tbody tr'));
+                    const sortedRows = rows.sort((a, b) => {
+                        const nameA = a.querySelector('td:nth-child(2)').textContent.trim().toLowerCase();
+                        const nameB = b.querySelector('td:nth-child(2)').textContent.trim().toLowerCase();
+                        return nameA.localeCompare(nameB);
+                    });
+
+                    const tbody = table.querySelector('tbody');
+                    tbody.innerHTML = '';
+                    sortedRows.forEach(row => tbody.appendChild(row));
+                }
+            });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const groupFilter = document.getElementById('groupFilter');
+                const tableBody = document.getElementById('{{ model_name }}TableBody');
+                const rows = tableBody.querySelectorAll('tr');
+
+                groupFilter.addEventListener('change', function() {
+                    const selectedGroupId = groupFilter.value;
+
+        // Debugging: Log selectedGroupId and row content
+                    console.log("Selected Group ID:", selectedGroupId);
+
+                    rows.forEach(row => {
+            // Extract the group ID from the data attribute
+                        const groupCell = row.getAttribute('data-group-id');
+                        console.log("Group Cell ID:", groupCell);
+
+                        if (selectedGroupId === "" || groupCell === selectedGroupId) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        </script>
+        <script>
+    function applyGroupFilter() {
+        const groupFilter = document.getElementById('groupFilter');
+        const selectedGroup = groupFilter.value;
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.delete('exsubgroup');
+        urlParams.set('exgroup', selectedGroup);
+        urlParams.set('page', '1'); // Reset to first page after filtering
+        window.location.search = urlParams.toString();
+    }
+</script>
+    <script>
+    function applysubGroupFilter() {
+        const groupFilter = document.getElementById('subgroupFilter');
+        const selectedGroup = groupFilter.value;
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.delete('exgroup');
+        urlParams.set('exsubgroup', selectedGroup);
+        urlParams.set('page', '1'); // Reset to first page after filtering
+        window.location.search = urlParams.toString();
+    }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const parentGroupSelect = document.getElementById("parentGroupSelect");
+        const childSubgroupSelect = document.getElementById("childSubgroupSelect");
+
+        parentGroupSelect.addEventListener("change", function () {
+            const selectedGroupId = this.value;
+
+            // Log the selected group ID and current subgroup options
+            console.log("Selected Group ID:", selectedGroupId);
+            console.log("Subgroup Options:", Array.from(childSubgroupSelect.options).map(option => ({
+                id: option.value,
+                groupId: option.dataset.parentGroupId,
+                text: option.text
+            })));
+
+            // Show or hide subgroup options based on selected group
+            Array.from(childSubgroupSelect.options).forEach(option => {
+                console.log("option.dataset.parentGroupId",option.dataset.parentGroupId, selectedGroupId)
+                if (option.dataset.parentGroupId === selectedGroupId || selectedGroupId === "") {
+                    option.style.display = "block"; // Show option
+                } else {
+                    option.style.display = "none"; // Hide option
+                }
+            });
+
+            // Reset the selected subgroup if no options are visible
+            if (!Array.from(childSubgroupSelect.options).some(option => option.style.display !== "none")) {
+                childSubgroupSelect.value = ""; // Clear selection
+            }
+        });
+
+        // Trigger change event on page load to ensure correct options are shown
+        parentGroupSelect.dispatchEvent(new Event("change"));
+    });
+</script>
+
+{% endblock %}
+</div>

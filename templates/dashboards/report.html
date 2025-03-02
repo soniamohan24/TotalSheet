@@ -1,0 +1,1122 @@
+{% extends "partials/project_topbar.html" %} {% load static %}
+{% block title %}Report{% endblock title %}
+{% block body %}
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+/* Hide arrows for input type number */
+        .no-arrow::-webkit-inner-spin-button,
+        .no-arrow::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .no-arrow {
+            -moz-appearance: textfield; /* For Firefox */
+        }
+
+        .table > :not(caption) > * > * {
+            background-color: transparent;
+            text-align: center;
+            font-size: 12px;
+        }
+        thead tr {
+            background-color: #fff !important;
+        }
+        tr th {
+            color: #4a657e !important;
+        }
+        tbody tr {
+            background-color: #ffffff; /* This can be omitted if the default is white */
+        }
+        .table td {
+            padding: 0.75rem;
+        }
+        .table td:has(input.form-control, select.form-select, textarea.form-control) {
+            padding: 0;
+        }
+        .table td input.form-control,
+        .table td textarea.form-control,
+        .table td select.form-select {
+            border: 0 !important;
+        }
+
+        .table-bordered > thead > tr > th,
+        .table-bordered > tbody > tr > th,
+        .table-bordered > tfoot > tr > th,
+        .table-bordered > thead > tr > td,
+        .table-bordered > tbody > tr > td,
+        .table-bordered > tfoot > tr > td {
+            border: 1px solid #dddddd;
+            border-right-width: 0px;
+            border-left-width: 0px;
+        }
+    </style>
+    <style>
+
+    /* Optional: Align text centrally for a neat appearance */
+        .table th, .table td .table thead tr{
+            text-align: center;
+        }
+
+
+    /* Add a thicker right border to the 10th column */
+        .table th:nth-child(10),
+        .table td:nth-child(10) {
+            border-right: 20px solid white; /* Adjust thickness and color as needed */
+        }
+    </style>
+    <style>
+        /* Table container styling */
+        .table-container {
+            overflow-x: auto; /* Allows horizontal scrolling if needed */
+            max-width: 100%; /* Ensures the table container does not exceed the viewport width */
+        }
+
+        /* Table styling */
+        .table {
+            width: 100%;
+            table-layout: fixed; /* Ensures columns adhere to defined widths */
+            overflow:scroll;
+
+        }
+
+        /* Define widths for the columns */
+        .table th,
+        .table td {
+            text-align: center;
+            padding: 8px; /* Adjust padding as needed */
+        }
+
+        /* Columns 1 to 10 (75% of table width) */
+        .table th:nth-child(-n+10),
+        .table td:nth-child(-n+10) {
+            width: calc(75% / 10); /* Each of the first 10 columns takes 7.5% */
+            white-space: wrap; /* Prevent text wrapping */
+            overflow-x:auto;
+            padding: 0.5rem; /* Add some padding for better readability */
+            box-sizing: border-box;
+        }
+
+        /* Last 4 columns (25% of table width) */
+        .table th:nth-child(n+11),
+        .table td:nth-child(n+11) {
+            width: calc(25% / 4); /* Each of the last 4 columns takes 6.25% */
+            white-space: wrap; /* Prevent text wrapping */
+
+        }
+    </style>
+
+
+    <div class="container-fluid d-flex flex-column row-gap-3">
+        <div class="d-flex flex-column">
+            <span class="fw-semibold fs-3"> Code Report </span>
+            <span class="fs-6 fw-medium text-body-secondary">Manage your code breakup report here.</span>
+        </div>
+
+        <div class="d-flex flex-column row-gap-2 bg-white rounded-4 p-4 shadow-sm">
+            <div class="row align-items-center">
+                <div class="col-9 text-center">
+                    <h5 class="fw-bold">Code Breakup Report</h5>
+                </div>
+                <div class="col-3 text-center">
+                    <h5 class="fw-bold">Cost Saving Table</h5>
+                </div>
+            </div>
+
+
+            <div class="d-flex column-gap-2 overflow-auto">
+                <table class="table " id="table">
+                    <thead>
+                        <tr class="fw-medium text-center">
+                            <th style="min-width:40px;">Pick Box</th>
+                            <th style="min-width:40px;">A&B</th>
+                            <th style="min-width:80px;">Total Used Code</th>
+                            <th>Quantity</th>
+                            <th style="min-width:100px;">Description</th>
+                            <th>Unit</th>
+                            <th>Item Rate</th>
+                            <th>Basic Value</th>
+                            <th>Gst Value</th>
+                            <th >Material Value</th>
+                            <th></th>
+                            <th style="width:80px;" >Basic Amount</th>
+                            <th style="width:80px;" >Profit/loss</th>
+                            <th style="width:80px;" >Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        {% for boq in boq %}
+
+                            <tr>
+                                <th><input type="checkbox" checked></th>
+                                <td >{{ forloop.counter}}</td>
+                                <td>{{boq.code.code_preview}}</td>
+                                <td>{{boq.quantity}}</td>
+                                <td>{{boq.code.description}}</td>
+                                <td>{{boq.unit}}</td>
+                                <td>{{boq.rate_per_unit|floatformat:2}}</td>
+                                <td class="basic-amount"></td>
+                                <td class="gstCell">{{ boq.gst_amount|floatformat:2 }}</td>
+                                <td class="total-value"></td>
+                                <td></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                        {% endfor %}
+
+                    </tbody>
+                    <tbody>
+                        <tr class="table-row1 bg-primary-subtle" id="totalcolum">
+                            <td class="disabled" colspan="7">Total</td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-basic-value" value="" readonly />
+                            </td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-gst-value" value="" readonly />
+                            </td>
+                            <td style=" border-right: 20px solid white;">
+                                <input type="text" class="form-control bg-primary-subtle total-fullamount"  value="" readonly  />
+                            </td>
+                            <td class="disabled" colspan="1" >Total</td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle m-total-basic-amount" value="" readonly />
+                            </td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle m-total-profit" value="" readonly />
+                            </td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle m-total-per" value="" readonly />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column row-gap-2 bg-white rounded-4 p-4 shadow-sm">
+            <div class="d-flex column-gap-2 overflow-auto">
+                <table class="table  col-9"  id="materialTable">
+                    <thead>
+                        <tr class="fw-medium text-center">
+                            <th>-</th>
+                            <th>Materials</th>
+                            <th>-</th>
+                            <th> Quantity</th>
+                            <th>Unit</th>
+                            <th>Gst</th>
+                            <th>Item Rate</th>
+                            <th>Basic Value</th>
+                            <th>Gst Value</th>
+                            <th>Total Value</th>
+                            <th style="width:80px;">Item Rate</th>
+                            <th style="width:80px;">Basic Amount</th>
+                            <th style="width:80px;">Profit/loss</th>
+                            <th style="width:80px;">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for material_name, details in material_aggregation.items %}
+                            <tr data-material="{{ material_name }}" data-rate="{{ details.rate }}" data-gst="{{ details.gst }}" data-quantity="{{ details.quantity }}">
+
+                                <td>{{ forloop.counter}}</td>
+                                <td>{{ material_name }}</td>
+                                <td>-</td>
+                                <td>{{ details.quantity }}</td>
+                                <td>{{ details.unit }}</td>
+                                <td>{{ details.gst }}</td>
+                                <td>{{ details.rate }}</td>
+
+                                <td class="basicvalue"></td>
+                                <td class="gstvalue"></td>
+                                <td class="totlvalue"></td>
+                                <td class="item-rate"  style="width:80px;"><input type="number" class="item-rate-input no-arrow" style="width:60px;" ></td>
+                                <td class="basic-amount"  style="width:80px;"></td>
+                                <td class="profit "  style="width:80px;"></td>
+                                <td class="per"  style="width:80px;"></td>
+                            </tr>
+                        {% endfor%}
+                    </tbody>
+
+                    <tbody>
+                        <tr class="table-row1 bg-primary-subtle" id="material">
+                            <td class="disabled" colspan="7">Total</td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-basic-value" value="" readonly />
+                            </td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-gst-value" value="" readonly />
+                            </td>
+                            <td style=" border-right: 20px solid white;">
+                                <input type="text" class="form-control bg-primary-subtle total-fullamount"  value="" readonly  />
+                            </td>
+                            <td class="disabled" colspan="1" >Total</td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-basic-amount"  readonly />
+                            </td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-profit" value="" readonly />
+                            </td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-per" value="" readonly />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+        <div class="d-flex flex-column row-gap-2 bg-white rounded-4 p-4 shadow-sm">
+            <div class="d-flex column-gap-2 overflow-auto">
+                <table class="table " id="executionTable" >
+                    <thead>
+                        <tr class="fw-medium text-center">
+                            <th>-</th>
+                            <th>Execution</th>
+                            <th>-</th>
+                            <th>Quantity</th>
+                            <th>Unit</th>
+                            <th>Gst</th>
+                            <th>Item Rate</th>
+                            <th>Basic Value</th>
+                            <th>Gst Value</th>
+                            <th>Total Value</th>
+                            <th>Item Rate</th>
+                            <th>Basic Amount</th>
+                            <th>Profit/loss</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        {% for execution_name, details in execution_aggregation.items %}
+                            <tr data-material="{{ execution_name }}" data-rate="{{ details.rate }}" data-gst="{{ details.gst }}" data-quantity="{{ details.quantity }}">
+
+                                <td>{{ forloop.counter}}</td>
+                                <td>{{ execution_name }}</td>
+                                <td></td>
+                                <td>{{ details.quantity }}</td>
+                                <td>{{ details.unit }}</td>
+                                <td>{{ details.gst }}</td>
+                                <td>{{ details.rate }}</td>
+
+                                <td class="basicvalue"></td>
+                                <td class="gstvalue"></td>
+                                <td class="totlvalue"></td>
+
+                                <td  class="item-rate"><input type="number" class="item-rate-input no-arrow"  style="width:60px;"></td>
+                                <td class="basic-amount"></td>
+                                <td class="profit "></td>
+                                <td class="per"></td>
+                            </tr>
+                        {% endfor%}
+                    </tbody>
+
+                    <tbody>
+                        <tr class="table-row1 bg-primary-subtle" id="totalcolum">
+                            <td class="disabled" colspan="7">Total</td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-basic-value" value="" readonly />
+                            </td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-gst-value" value="" readonly />
+                            </td>
+                            <td style=" border-right: 20px solid white;">
+                                <input type="text" class="form-control bg-primary-subtle total-fullamount" value="" readonly />
+                            </td>
+                            <td class="disabled" colspan="1">Total</td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-basic-amount" value="" readonly />
+                            </td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-profit" value="" readonly />
+                            </td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-per" value="" readonly />
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column row-gap-2 bg-white rounded-4 p-4 shadow-sm">
+            <div class="d-flex column-gap-2 overflow-auto">
+                <table class="table  operational-cost" >
+                    <thead>
+                        <tr class="fw-medium text-center" >
+                            <th>-</th>
+                            <th>MANAGEMENT EXPENCE</th>
+                            <th>-</th>
+                            <th>TAKE OFF VALUE</th>
+                            <th></th>
+                            <th>Gst</th>
+                            <th>YOU ALLOW ME </th>
+                            <th>Basic Value</th>
+                            <th>Gst Value</th>
+                            <th>Total Value</th>
+<!--                        <th></th>-->
+                            <th>Allow Me</th>
+                            <th>Basic Amount</th>
+                            <th>Profit/loss</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in operational_cost %}
+                            <tr class="fw-medium text-center" data-rate="{{ i.rate }}" data-gst="{{ i.gst }}" data-allow-me-percentage="{{ i.allow_me }}">
+                                <th>-</th>
+                                <th>{{i.expense_name}}</th>
+                                <th>-</th>
+                                <th class="takeoff_value"></th>
+                                <th></th>
+                                <th>{{i.gst}}</th>
+                                <th class="allow_me">{{i.allow_me}}</th>
+                                <th class="basicvalue"></th>
+                                <th class="gstvalue"></th>
+                                <th class="operationalcost-total-value"></th>
+<!--                        <th></th>-->
+                                <th class="change-allowme"><input type="number" class="change_allow_me no-arrow" value="" step="0.01" min="0" max="100" style="width:60px;"></th>
+                                <th class="basic-amount" ></th>
+                                <th class="profit"></th>
+                                <th class="percentage"></th>
+                            </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column row-gap-2 bg-white rounded-4 p-4 shadow-sm">
+            <div class="d-flex column-gap-2 overflow-auto">
+                <table class="table  col-9 managementexpenseTable"  id="managementexpenseTable" >
+                    <thead>
+                        <tr class="fw-medium text-center">
+                            <th>-</th>
+                            <th>CONTRACT MARGIN</th>
+                            <th>-</th>
+                            <th>TAKE OFF VALUE</th>
+                            <th></th>
+                            <th>Gst</th>
+                            <th>YOU ALLOW ME </th>
+                            <th>Basic Value</th>
+                            <th>Gst Value</th>
+                            <th>Total Value</th>
+<!--                        <th></th>-->
+                            <th>I Need</th>
+                            <th>Basic Amount</th>
+                            <th>Profit/loss</th>
+                            <th>Percentage</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense_name, details in management_aggregation.items   %}
+                            <tr class="fw-medium text-center" data-formula="{{details.formula}}" data-gst="{{ details.gst }}" data-allow-me="{{details.allow_me}}">
+                                <th>-</th>
+                                <th>{{expense_name}}</th>
+                                <th>-</th>
+                                <th class="expense-take-off-value"></th>
+                                <th></th>
+                                <th>{{details.gst}}</th>
+                                <th>{{details.allow_me}}</th>
+                                <th class="basicvalue">Basic Value</th>
+                                <th class="gstvalue"></th>
+                                <th class="totlvalue">Total Value</th>
+<!--                        <th></th>-->
+                                <th class="expense-allowme"><input type="number" class="expense_allow_me no-arrow" value="" step="0.01" min="0" max="100"></th>
+                                <th class="basic-amount"></th>
+                                <th class="profit"></th>
+                                <th class="percentage"></th>
+
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tbody>
+                        <tr class="table-row1 bg-primary-subtle" id="totalcolums">
+                            <td class="disabled" colspan="7">Total</td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-basic-value" value="" readonly />
+                            </td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-gst-value" value="" readonly />
+                            </td>
+                            <td style=" border-right: 20px solid white;">
+                                <input type="text" class="form-control bg-primary-subtle total-fullamount" value="" readonly />
+                            </td>
+                            <td class="disabled" colspan="1" >Total</td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-basic-amount" value="" readonly />
+                            </td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-profit" value="" readonly />
+                            </td>
+                            <td>
+                                <input type="text" class="form-control bg-primary-subtle total-per" value="" readonly />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <h4>Code Charts</h4>
+            <canvas id="myChart" width="100" height="20"></canvas>
+        </div>
+
+    </div>
+
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const rows = document.querySelectorAll("#table tbody tr");
+
+            rows.forEach(row => {
+                const quantityCell = row.cells[3];
+                const rateCell = row.cells[6];
+                const basicAmountCell = row.cells[7];
+                const gstCell = row.querySelector('.gstCell');
+                const totalValueCell = row.cells[9];
+
+                const quantity = parseFloat(quantityCell.textContent) || 0;
+                const ratePerUnit = parseFloat(rateCell.textContent) || 0;
+
+            // Calculate Basic Amount
+                const basicAmount = quantity * ratePerUnit;
+                basicAmountCell.textContent = basicAmount.toFixed(2);
+
+            // Calculate Total Value (Basic Amount + Gst Amount)
+                const gstAmount = parseFloat(gstCell.textContent) || 0;
+                const totalValue = basicAmount + gstAmount;
+                totalValueCell.textContent = totalValue.toFixed(2);
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const rows = document.querySelectorAll('#materialTable tbody tr');
+
+            rows.forEach(row => {
+                console.log('Processing row:', row);
+
+                const rate = parseFloat(row.getAttribute('data-rate')) || 0;
+                const gstRate = parseFloat(row.getAttribute('data-gst')) || 0;
+                const quantity = parseFloat(row.getAttribute('data-quantity')) || 0;
+
+            // Debug output
+                console.log('Rate:', rate);
+                console.log('GST Rate:', gstRate);
+                console.log('Quantity:', quantity);
+
+            // Calculate basic value, GST value, and total value
+                const basicValue = rate * quantity;
+                const gstValue = basicValue * (gstRate / 100);
+                const totalValue = basicValue + gstValue;
+
+            // Debug output
+                console.log('Basic Value:', basicValue);
+                console.log('GST Value:', gstValue);
+                console.log('Total Value:', totalValue);
+
+            // Update the table cells
+                const basicCell = row.querySelector('.basicvalue');
+                const gstCell = row.querySelector('.gstvalue');
+                const totalCell = row.querySelector('.totlvalue');
+
+                if (basicCell) {
+                    basicCell.textContent = basicValue.toFixed(2);
+                } else {
+                    console.warn('Basic value cell not found');
+                }
+
+                if (gstCell) {
+                    gstCell.textContent = gstValue.toFixed(2);
+                } else {
+                    console.warn('GST value cell not found');
+                }
+
+                if (totalCell) {
+                    totalCell.textContent = totalValue.toFixed(2);
+                } else {
+                    console.warn('Total value cell not found');
+                }
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // Function to calculate totals for a specific table
+            function calculateTotals(tableId) {
+                const table = document.querySelector(tableId);
+                const rows = table.querySelectorAll('tbody tr');
+
+        // Select total elements within the specific table
+                const totalBasicValueInput = table.querySelector('.total-basic-value');
+                const totalGstValueInput = table.querySelector('.total-gst-value');
+                const totalFullAmountInput = table.querySelector('.total-fullamount');
+                const totalBasicAmountInput = table.querySelector('.total-basic-amount');
+                const totalProfitInput = table.querySelector('.total-profit');
+                const totalPerInput = table.querySelector('.total-per');
+
+                let totalBasicValue = 0;
+                let totalGstValue = 0;
+                let totalFullAmount = 0;
+                let totalBasicAmount = 0;
+                let totalProfit = 0;
+
+                rows.forEach(row => {
+                    const rate = parseFloat(row.getAttribute('data-rate')) || 0;
+                    const gstRate = parseFloat(row.getAttribute('data-gst')) || 0;
+                    const quantity = parseFloat(row.getAttribute('data-quantity')) || 0;
+
+                    const basicValue = rate * quantity;
+                    const gstValue = basicValue * (gstRate / 100);
+                    const totalValue = basicValue + gstValue;
+
+                    const itemRateInput = row.querySelector('.item-rate-input');
+                    if (itemRateInput) {
+                        const itemRate = parseFloat(itemRateInput.value) || 0;
+                        const basicAmount = itemRate * quantity;
+
+                        const profit = basicValue - basicAmount;
+                        const percentage = basicValue > 0 ? (profit / basicValue) * 100 : 0;
+
+                // Update the table with calculated values
+                        row.querySelector('.basicvalue').textContent = basicValue.toFixed(2);
+                        row.querySelector('.gstvalue').textContent = gstValue.toFixed(2);
+                        row.querySelector('.totlvalue').textContent = totalValue.toFixed(2);
+                        row.querySelector('.basic-amount').textContent = basicAmount.toFixed(2);
+
+                        row.querySelector('.profit').textContent = profit.toFixed(2);
+                        row.querySelector('.per').textContent = percentage.toFixed(2) + '%';
+
+                        totalBasicValue += basicValue;
+                        totalGstValue += gstValue;
+                        totalFullAmount += totalValue;
+                        totalBasicAmount += basicAmount;
+                        totalProfit += profit;
+                    }
+                });
+
+                const totalPercentage = totalBasicValue > 0 ? (totalProfit / totalBasicValue) * 100 : 0;
+
+        // Update the "Total" row inputs
+                totalBasicValueInput.value = totalBasicValue.toFixed(2);
+                totalGstValueInput.value = totalGstValue.toFixed(2);
+                totalFullAmountInput.value = totalFullAmount.toFixed(2);
+                totalBasicAmountInput.value = totalBasicAmount.toFixed(2);
+                totalProfitInput.value = totalProfit.toFixed(2);
+                totalPerInput.value = totalPercentage.toFixed(2) + '%';
+            }
+
+
+
+    // Function to calculate code totals and update the respective fields
+            function updateCodeTotals() {
+                const basicAmountElements = document.querySelectorAll('.total-basic-amount');
+                let codeTotalBasicAmount = 0;
+                console.log(basicAmountElements.value)
+                basicAmountElements.forEach(element => {
+                    const value = parseFloat(element.value) || 0;
+                    console.log(value)
+                    codeTotalBasicAmount += value;
+                });
+                const operationalCostTable = document.querySelector('.operational-cost tbody');
+                const basicAmountElements_op = operationalCostTable.querySelectorAll('.basic-amount');
+
+
+                basicAmountElements_op.forEach(element => {
+                    const value = parseFloat(element.textContent) || 0; // Assuming it's text
+                    console.log('Current Basic Amount Value:', value, 'from element:', element);
+                    codeTotalBasicAmount += value;
+                });
+
+                const gstValueElements = document.querySelectorAll('.total-profit');
+                let codeTotalGst = 0;
+                gstValueElements.forEach(element => {
+                    const value = parseFloat(element.value) || 0;
+                    codeTotalGst += value;
+                });
+
+                const materialValueElements = document.querySelectorAll('.total-per');
+                let codeTotalMaterial = 0;
+                materialValueElements.forEach(element => {
+                    const value = parseFloat(element.value) || 0;
+                    codeTotalMaterial += value;
+                });
+
+                const codeProfit = codeTotalMaterial - codeTotalBasicAmount;
+                const codePercentage = codeTotalBasicAmount ? (codeProfit / codeTotalBasicAmount) * 100 : 0;
+
+                document.querySelector('.m-total-basic-amount').value = codeTotalBasicAmount.toFixed(2)
+                document.querySelector('.m-total-profit').value = codeProfit.toFixed(2);
+       // document.querySelector('.m-total-per').value = codePercentage.toFixed(2);
+            }
+
+
+ // Function to initialize event listeners for a specific table
+            function initializeTableListeners(tableId) {
+                const table = document.querySelector(tableId);
+                const rows = table.querySelectorAll('tbody tr');
+
+                rows.forEach(row => {
+                    const itemRateInput = row.querySelector('.item-rate-input');
+                    const allowme = document.querySelector('.change_allow_me');
+                    if (itemRateInput) {
+                        itemRateInput.addEventListener('input', function() {
+                            calculateTotals(tableId);
+                            updateCodeTotals();
+                        });
+                    }
+                    if (allowme) {
+                        allowme.addEventListener('input', function() {
+                            console.log('Allow me input changed');
+                            updateCodeTotals();
+                        });
+                    }
+                });
+
+        // Initial calculation on page load
+                calculateTotals(tableId);
+                updateCodeTotals();
+            }
+    // Initial call to update totals on page load
+            updateCodeTotals();
+
+            document.body.addEventListener('input', function(event) {
+                if (event.target.matches('.total-basic-amount')) {
+                    updateCodeTotals();
+                }
+            });
+
+    // Initialize both tables
+            initializeTableListeners('#materialTable');
+            initializeTableListeners('#executionTable');
+        });
+
+    </script>
+
+
+    <script>
+        function calculateValues() {
+            console.log('helo1')
+            let totalBasicValue = 0;
+            let totalGstValue = 0;
+
+    // Calculate from Material Table
+            const materialRows = document.querySelectorAll('#materialTable tbody tr');
+            materialRows.forEach(row => {
+                const rate = parseFloat(row.dataset.rate) || 0;
+                const quantity = parseFloat(row.dataset.quantity) || 0;
+                const gst = parseFloat(row.dataset.gst) || 0;
+
+                const basicValue = rate * quantity;
+                const gstValue = (basicValue * gst) / 100;
+                const totalValue = basicValue + gstValue;
+
+
+
+        // Ensure the required elements exist before setting innerText
+
+                totalBasicValue += basicValue;
+                totalGstValue += gstValue;
+            });
+
+    // Calculate from Execution Table
+            const executionRows = document.querySelectorAll('#executionTable tbody tr');
+            executionRows.forEach(row => {
+                const rate = parseFloat(row.dataset.rate) || 0;
+                const quantity = parseFloat(row.dataset.quantity) || 0;
+                const gst = parseFloat(row.dataset.gst) || 0;
+
+                const basicValue = rate * quantity;
+                const gstValue = (basicValue * gst) / 100;
+                const totalValue = basicValue + gstValue;
+
+
+
+
+                totalBasicValue += basicValue;
+                totalGstValue += gstValue;
+            });
+
+
+    // Operational Cost Table Calculation
+            const operationalCostRows = document.querySelectorAll('.operational-cost tbody tr');
+            operationalCostRows.forEach(row => {
+                const takeoffValue = totalBasicValue;  // Assume takeoff is based on total basic value
+                console.log(takeoffValue,'hello')
+                const gst = parseFloat(row.dataset.gst) || 0;
+                const gstValue = (takeoffValue * gst) / 100;
+                const totalValue = takeoffValue + gstValue;
+
+                const takeoffCell = row.querySelector('.takeoff_value');
+                const allowMePercentage = parseFloat(row.dataset.allowMePercentage) || 0;
+
+    // Calculate Allow Me value based on the takeoffValue and allowMePercentage
+                const allowMeValue = (takeoffValue * allowMePercentage) / 100;
+                console.log(takeoffCell,'hello')
+                const basicCell = row.querySelector('.basicvalue');
+                const gstCell = row.querySelector('.gstvalue');
+                const totalCell = row.querySelector('.operationalcost-total-value');
+
+        // Ensure the required elements exist before setting innerText
+                if (takeoffCell && basicCell && gstCell && totalCell) {
+                    takeoffCell.innerText = takeoffValue.toFixed(2);
+                    basicCell.innerText = allowMeValue
+                    gstCell.innerText = gstValue.toFixed(2);
+                    totalCell.innerText = totalValue.toFixed(2);
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', calculateValues);
+
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    // Function to recalculate and update values
+            function updateValuesOnAllowMeChange() {
+                const operationalCostRows = document.querySelectorAll('.operational-cost tbody tr');
+
+                operationalCostRows.forEach(row => {
+                    const takeoffValue = parseFloat(row.querySelector('.takeoff_value').innerText) || 0;
+                    const allowMePercentage = parseFloat(row.querySelector('.change_allow_me').value) || 0;
+
+            // Recalculate Basic Amount, Profit/Loss, and Percentage based on the updated Allow Me value
+                    const basicAmount = (takeoffValue * allowMePercentage) / 100;
+                    const profitLoss = takeoffValue - basicAmount;
+                    const percentage = takeoffValue ? (profitLoss / takeoffValue) * 100 : 0;
+
+                    const basicAmountCell = row.querySelector('.basic-amount');
+                    const profitLossCell = row.querySelector('.profit');
+                    const percentageCell = row.querySelector('.percentage');
+
+            // Ensure the required elements exist before setting innerText
+                    if (basicAmountCell && profitLossCell && percentageCell) {
+                        basicAmountCell.innerText = basicAmount.toFixed(2);
+                        profitLossCell.innerText = profitLoss.toFixed(2);
+                        percentageCell.innerText = percentage.toFixed(2) + '%';
+                    }
+                });
+            }
+
+    // Add event listener to update values when "Allow Me" is changed
+            document.querySelectorAll('.change_allow_me').forEach(allowMeInput => {
+                allowMeInput.addEventListener('input', function() {
+                    updateValuesOnAllowMeChange();
+                });
+            });
+
+    // Initial calculation on page load
+            updateValuesOnAllowMeChange();
+        });
+
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const materialBasicValues = [...document.querySelectorAll('#materialTable .basicvalue')];
+            const executionBasicValues = [...document.querySelectorAll('#executionTable .basicvalue')];
+            const operationalBasicValues = [...document.querySelectorAll('.operational-cost .basicvalue')];
+
+            const managementRows = document.querySelectorAll('[data-formula]');
+
+            managementRows.forEach(row => {
+                const formula = row.getAttribute('data-formula');
+                const gst = parseFloat(row.getAttribute('data-gst'));
+                const allow_me = parseFloat(row.getAttribute('data-allow-me'))|| 0;;
+
+                let takeoffValue = 0;
+
+
+                if (formula.includes('A')) {
+                    takeoffValue += calculateTotal(materialBasicValues);
+                }
+                if (formula.includes('B')) {
+                    takeoffValue += calculateTotal(executionBasicValues);
+                }
+                if (formula.includes('C')) {
+                    takeoffValue += calculateTotal(operationalBasicValues);
+                }
+
+                const gstValue = (takeoffValue * gst) / 100;
+                takeoff_value_float= parseFloat(takeoffValue) || 0;
+                const basicvalue=  (takeoff_value_float * allow_me) / 100;
+                const totalValue = basicvalue + gstValue;
+
+        // Append values to the table row
+                row.querySelector('.expense-take-off-value').innerText = takeoffValue.toFixed(2);
+                row.querySelector('.gstvalue').innerText = gstValue.toFixed(2);
+                row.querySelector('.basicvalue').innerText = basicvalue.toFixed(2);
+                row.querySelector('.totlvalue').innerText = totalValue.toFixed(2);
+            });
+
+    // Helper function to calculate total from table cells
+            function calculateTotal(elements) {
+                let total = 0;
+                elements.forEach(element => {
+                    const value = parseFloat(element.innerText);
+                    if (!isNaN(value)) {
+                        total += value;
+                    }
+                });
+                return total;
+            }
+        });
+
+    </script>
+    <script>
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const table = document.getElementById('managementexpenseTable');
+
+    // Update totals on initial load
+            updateTotals1(table);
+
+            table.addEventListener('input', function(event) {
+                if (event.target.classList.contains('expense_allow_me')) {
+                    const row = event.target.closest('tr');
+
+            // Get values from the row
+                    const takeOffValue = parseFloat(row.querySelector('.expense-take-off-value').textContent.trim()) || 0;
+                    const basicValue = parseFloat(row.querySelector('.basicvalue').textContent.trim()) || 0;
+                    const expenseAllowMe = parseFloat(event.target.value.trim()) || 0;
+
+            // Calculate Basic Amount, Profit, and Percentage
+                    const basicAmount = (takeOffValue * expenseAllowMe) / 100;
+                    const profit = basicValue - basicAmount;
+                    const percentage = basicValue > 0 ? (profit / basicValue) * 100 : 0;
+
+            // Update the row values
+                    row.querySelector('.basic-amount').textContent = basicAmount.toFixed(2);
+                    row.querySelector('.profit').textContent = profit.toFixed(2);
+                    row.querySelector('.percentage').textContent = percentage.toFixed(2);
+
+            // Update totals after input
+                    updateTotals1(table);
+                }
+            });
+
+    // Initial update on page load
+            updateTotals1(table);
+        });
+
+// Function to update totals
+        function updateTotals1(table) {
+    // Get all rows except the total row within the specific table
+            const tableRows = table.querySelectorAll("tbody tr:not(#totalcolums)");
+
+            let totalBasicValue = 0;
+            let totalGstValue = 0;
+            let totalFullAmount = 0;
+            let totalBasicAmount = 0;
+            let totalProfit = 0;
+            let totalPercentage = 0;
+
+            tableRows.forEach(row => {
+        // Get values from the row
+                const basicValueElement = row.querySelector(".basicvalue");
+                const gstValueElement = row.querySelector(".gstvalue");
+                const totalValueElement = row.querySelector(".totlvalue");
+                const basicAmountElement = row.querySelector(".basic-amount");
+                const profitElement = row.querySelector(".profit");
+                const percentageElement = row.querySelector(".percentage");
+
+        // Extract and parse values
+                const basicValue = basicValueElement ? parseFloat(basicValueElement.textContent.trim()) || 0 : 0;
+                const gstValue = gstValueElement ? parseFloat(gstValueElement.textContent.trim()) || 0 : 0;
+                const totalValue = totalValueElement ? parseFloat(totalValueElement.textContent.trim()) || 0 : 0;
+                const basicAmount = basicAmountElement ? parseFloat(basicAmountElement.textContent.trim()) || 0 : 0;
+                const profit = profitElement ? parseFloat(profitElement.textContent.trim()) || 0 : 0;
+                const percentage = percentageElement ? parseFloat(percentageElement.textContent.trim()) || 0 : 0;
+
+        // Sum the values
+                totalBasicValue += basicValue;
+                totalGstValue += gstValue;
+                totalFullAmount += totalValue;
+                totalBasicAmount += basicAmount;
+                totalProfit += profit;
+                totalPercentage += percentage;
+            });
+
+    // Update total row values within the specific table
+            table.querySelector(".total-basic-value").value = totalBasicValue.toFixed(2);
+            table.querySelector(".total-gst-value").value = totalGstValue.toFixed(2);
+            table.querySelector(".total-fullamount").value = totalFullAmount.toFixed(2);
+            table.querySelector(".total-basic-amount").value = totalBasicAmount.toFixed(2);
+            table.querySelector(".total-profit").value = totalProfit.toFixed(2);
+            table.querySelector(".total-per").value = totalPercentage.toFixed(2);
+        }
+
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const table = document.getElementById('table');
+
+    // Ensure the function runs after the data is fully loaded
+            setTimeout(() => {
+                updateTotalsofCodeTable(table);
+            }, 500); // Adjust timing if necessary
+        });
+
+// Function to update totals of the code table
+        function updateTotalsofCodeTable(table) {
+    // Select all rows except the total row
+            const rows = table.querySelectorAll("tbody tr:not(#totalcolum)");
+
+            let totalBasicValue = 0;
+            let totalGstValue = 0;
+            let totalFullAmount = 0;
+
+            rows.forEach(row => {
+        // Fetch the respective cell values from each row
+                const basicValueElement = row.querySelector(".basic-amount");
+                const gstCellElement = row.querySelector(".gstCell");
+                const totalValueElement = row.querySelector(".total-value");
+
+
+
+        // Extract and parse values
+                const basicValue = basicValueElement ? parseFloat(basicValueElement.innerText.trim()) || 0 : 0;
+                const gstValue = gstCellElement ? parseFloat(gstCellElement.innerText.trim()) || 0 : 0;
+                const totalValue = totalValueElement ? parseFloat(totalValueElement.innerText.trim()) || 0 : 0;
+
+        // Sum the values
+                totalBasicValue += basicValue;
+                totalGstValue += gstValue;
+                totalFullAmount += totalValue;
+            });
+
+
+
+    // Update total row values within the specific table
+            const totalBasicValueElement = table.querySelector(".total-basic-value");
+            const totalGstValueElement = table.querySelector(".total-gst-value");
+            const totalFullAmountElement = table.querySelector(".total-fullamount");
+
+    // Check if the total elements exist before updating their values
+            if (totalBasicValueElement) totalBasicValueElement.value = totalBasicValue.toFixed(2);
+            if (totalGstValueElement) totalGstValueElement.value = totalGstValue.toFixed(2);
+            if (totalFullAmountElement) totalFullAmountElement.value = totalFullAmount.toFixed(2);
+        }
+
+    </script>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const table = document.getElementById('table');
+
+    // Function to extract data from the table
+            function extractDataFromTable() {
+                const rows = table.querySelectorAll("tbody tr:not(#totalcolum)");
+                const codePreviews = [];
+                const totalValues = [];
+                const gstValues = [];
+
+                rows.forEach(row => {
+                    const codePreview = row.querySelector("td:nth-child(3)")?.textContent.trim(); // Code Preview
+                    const totalValue = row.querySelector(".total-value")?.textContent.trim(); // Total Value (assumed to be filled dynamically)
+                    const gstValue = row.querySelector(".gstCell")?.textContent.trim(); // GST Value
+
+            // Parse values to floats, default to 0 if not a number
+                    const totalValueParsed = parseFloat(totalValue) || 0;
+                    const gstValueParsed = parseFloat(gstValue) || 0;
+
+                    if (codePreview) {
+                // Push values to arrays
+                        codePreviews.push(codePreview);
+                        totalValues.push(totalValueParsed);
+                        gstValues.push(gstValueParsed);
+                    }
+                });
+
+        // Log extracted data for debugging
+                console.log("Extracted Code Previews:", codePreviews);
+                console.log("Extracted Total Values:", totalValues);
+                console.log("Extracted GST Values:", gstValues);
+
+                return { codePreviews, totalValues, gstValues };
+            }
+
+    // Function to create a Chart.js bar chart
+            function createChart(codePreviews, totalValues, gstValues) {
+                const ctx = document.getElementById('myChart').getContext('2d');
+
+                if (!ctx) {
+                    console.error('Canvas context not found for "myChart".');
+                    return;
+                }
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: codePreviews, // X-axis labels
+                        datasets: [
+                            {
+                                label: 'Total Value',
+                                data: totalValues,
+                                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'GST Value',
+                                data: gstValues,
+                                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Code Preview'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Values'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        }
+                    }
+                });
+            }
+
+    // Extract data from the table and create the chart
+            const { codePreviews, totalValues, gstValues } = extractDataFromTable();
+
+    // Check if data is correctly extracted before creating the chart
+            if (codePreviews.length > 0) {
+                createChart(codePreviews, totalValues, gstValues);
+            } else {
+                console.warn('No data extracted from the table. Check the table structure and class selectors.');
+            }
+        });
+    </script>
+
+
+
+{% endblock %}

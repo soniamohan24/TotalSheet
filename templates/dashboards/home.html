@@ -1,0 +1,741 @@
+{% extends "partials/base.html" %} {% load static %} {% block title %}Home{% endblock title %} {% block body %}
+    <style>
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+    <style>
+        .project_table thead tr th {
+            background-color: #f0e9e9 !important;
+            color: #5f5a5a !important;
+            font-weight: 500 !important;
+        }
+        .project_table > :not(caption) > * > * {
+            padding: 0.5rem 0.5rem;
+            color: var(--bs-table-color-state, var(--bs-table-color-type, var(--bs-table-color)));
+            background-color: #fff;
+            border-bottom-width: 0px;
+            box-shadow: inset 0 0 0 9999px var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg)));
+        }
+    </style>
+    <div class="d-flex flex-column mb-3 pt-5">
+        <span class="fs-5 text-body-tertiary">{% now "jS F Y H:i" %}</span>
+        <span class="fs-3 fw-medium">Welcome, {% if request.user %}{{request.user.profile.first_name}} {{request.user.profile.last_name}}{% endif %}</span>
+    </div>
+    <div class="d-flex flex-column rounded-4 w-100 shadow-sm bg-white p-4">
+        <span class="fs-5 mt-2 fw-medium text-body-secondary">Quick Links</span>
+        <div class="d-flex column-gap-3 mt-3">
+            <a href="" class="d-flex justify-content-center column-gap-3 quick-link rounded-pill shadow-sm border align-items-center p-2 px-3">
+                <i class="ph ph-play fs-4"></i>
+                <span class="fw-medium">Resume Your Previous BOQ</span>
+            </a>
+            <a href="" class="d-flex justify-content-center column-gap-3 quick-link rounded-pill shadow-sm border align-items-center p-2 px-3">
+                <i class="ph ph-gear fs-4"></i>
+                <span class="fw-medium">Work Sheet Settings</span>
+            </a>
+            <!-- Trash Button -->
+            <a href="#" class="d-flex justify-content-center column-gap-3 quick-link rounded-pill shadow-sm border align-items-center p-2 px-3" data-bs-toggle="modal" data-bs-target="#trashModal">
+                <i class="ph ph-trash fs-4"></i>  <!-- Using a trash icon -->
+                <span class="fw-medium">Trash</span>
+            </a>
+        </div>
+        <hr />
+        <div class="d-flex row-gap-3 flex-column">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fs-2 fw-semibold">Project List</span>
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="exampleModalLabel">New Project</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form action="{% url 'project:create_project' %}" method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="id_name" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Project Name</label>
+                                        <input type="text" class="form-control" id="id_name" name="name" placeholder="Project Name" maxlength="50" required />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="id_project_type" class="form-label text-body-secondary mb-0 fs-6 fw-medium">Project Type</label>
+                                        <input type="text" maxlength="50" class="form-control" id="id_project_type" list="project-type-list" name="project_type" placeholder="Enter project type (e.g., Residential, Commercial)" required />
+                                        <datalist id="project-type-list">
+                                            <option value="Residential">Residential</option>
+                                            <option value="Commercial">Commercial</option>
+                                            <option value="Industrial">Industrial</option>
+                                            <option value="Educational">Educational</option>
+                                        </datalist>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                    <div class="mb-3">
+                                        <label for="id_place" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Place</label>
+                                        <input type="text" class="form-control" id="id_place" name="place" placeholder="Place" required />
+                                    </div></div>
+                                         <div class="col">
+                                     <div class="mb-3">
+                                        <label for="id_pincode" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Pin Code</label>
+                                        <input type="text" class="form-control" pattern="^\d{6}$" name="pincode" id="id_pincode" />
+                                    </div></div></div>
+                                    <div class="mb-3">
+                                        <label for="id_location_link" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Location Link</label>
+                                        <input type="url" class="form-control" id="id_location_link" name="location_link" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="id_place" class="form-label text-body-secondary fs-6 mb-0 fw-medium"> Client Name</label>
+                                        <select name="client" class="form-control" id="clientSelect" required>
+                                            {% for client in clients %}
+                                                <option value="{{ client.pk }}" data-website="{{ client.website }}" data-socialink="{{ client.social_link }}">{{client.full_name}}({{client.user.email}})</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="id_webside" class="form-label text-body-secondary mb-0 fs-6 fw-medium">Website Link</label>
+                                        <input type="url" class="form-control" id="id_webside" pattern="^(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}(\/[^\s]*)?$" name="webside" />
+                                    </div>
+                                     <div class="mb-3">
+                                        <label for="id_social_link" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Social Link</label>
+                                        <input type="url" class="form-control" id="id_social_link" pattern="^(https?:\/\/)?(www\.)?(facebook\.com|twitter\.com|instagram\.com|linkedin\.com)\/[A-z0-9._%+-]+\/?$" name="social_link" placeholder="Social Link" />
+                                    </div>
+
+                                   <div class="mb-3 d-flex flex-column">
+                                            <label for="id_start_date" class="form-label text-body-secondary mb-0 fs-6 fw-medium">Start Date</label>
+                                            <input type="date" class="form-control start-date" name="start_date" id="id_start_date" required />
+                                        </div>
+                                        <div class="mb-3 d-flex flex-column">
+                                            <label for="id_end_date" class="form-label text-body-secondary fs-6 mb-0 fw-medium">End Date</label>
+                                            <input type="date" class="form-control end-date" name="end_date" id="id_end_date" required />
+                                        </div>
+                                    <div class="mb-3 d-flex flex-column">
+                                        <label for="id_project_interior_photo" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Interior  Photos</label>
+                                        <label class="btn btn-primary file-upload-label" for="id_project_interior_photo">Interior  Photos</label>
+                                        <input type="file" name="interior_project_photo" accept="image/png, image/jpeg" class="d-none file-input" id="id_project_interior_photo" accept=".jpg,.png" />
+                                    </div>
+                                    <div class="mb-3 d-flex flex-column">
+                                        <label for="id_project_photo_ex" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Exterior Project Photo</label>
+                                        <label class="btn btn-primary file-upload-label" for="id_project_photo_ex">Exterior Photos</label>
+                                        <input type="file" name="exterior_project_photo" accept="image/png, image/jpeg" class="d-none file-input" id="id_project_photo_ex" accept=".jpg,.png" />
+                                    </div>
+
+                                    <div class="mb-3 d-flex flex-column">
+                                        <label for="id_project_brocher" class="form-label text-body-secondary mb-0 fs-6 fw-medium"> Brochures</label>
+                                        <label class="btn btn-primary file-upload-label" for="id_project_brocher">Upload Brochures</label>
+                                        <input type="file" name="project_brocher" accept="application/pdf" class="d-none file-input" id="id_project_brocher" />
+                                    </div>
+                                          <div class="mb-3 d-flex flex-column">
+                                        <label for="id_construction_area" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Licences</label>
+                                        <label class="btn btn-primary file-upload-label" for="id_construction_area">Upload Licences</label>
+                                        <input type="file" name="construction_area" accept="application/pdf" class="d-none file-input" id="id_construction_area" />
+                                    </div>
+                                    <div class="mb-3 d-flex flex-column">
+                                        <label for="id_building_license_no" class="form-label text-body-secondary mb-0 fs-6 fw-medium">Drawings</label>
+                                        <label class="btn btn-primary file-upload-label" for="id_building_license_no">Upload Drawings</label>
+                                        <input type="file" name="drawings" accept="application/pdf" class="d-none file-input" id="id_building_license_no" />
+                                    </div>
+                                    <div class="mb-3 d-flex flex-column">
+                                        <label for="id_Building_rera_license" class="form-label text-body-secondary mb-0 fs-6 fw-medium">Documents</label>
+                                        <label class="btn btn-primary file-upload-label" for="id_Building_rera_license">Upload Documents</label>
+                                        <input type="file" name="documents" accept="application/pdf" class="d-none file-input" id="id_Building_rera_license" />
+                                    </div>
+                                    <label for="import_type" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Select for Import Project Products</label>
+                                    <select id="import_type" class="form-select" onchange="showRelevantDropdown()" name="import_type">
+                                        <option value="">-- Select Import Type --</option>
+                                        <option value="master">Import from Master Table</option>
+                                        <option value="previous_project">Import from Previous Project</option>
+                                        <option value="code">Import by Selecting Codes</option>
+                                    </select>
+
+                                <!-- Codes Dropdown -->
+                                    <div id="code_dropdown" class="hidden">
+                                        <label for="code_select" class="form-label">Select Code</label>
+                                        <select id="code_select" class="form-select" name="select_code">
+                                            {% for code in codes %}
+                                                <option value="{{code.pk}}">{{code.code_preview}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                <!-- Projects Dropdown -->
+                                    <div id="project_dropdown" class="hidden">
+                                        <label for="project_select" class="form-label">Select Project</label>
+                                        <select id="project_select" class="form-select" name="select_project">
+                                            {% for obj in projects %}
+                                                <option value="{{obj.pk}}">{{obj.name}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary">Add</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Add New Project</button>
+                <div class="col-2">
+                    <form id="searchForm" method="get" action="{% url 'project:project_search' %}">
+                        <input type="text" id="searchInput" class="form-control rounded-pill" placeholder="Search for Projects" value="{{ query }}" />
+                    <!--            <button type="submit" class="btn btn-primary">Search</button>-->
+                    </form>
+                </div>
+            </div>
+            <table class="table table-responsive project_table">
+                <thead>
+                    <tr class="align-baseline">
+                        <th class="rounded-start-3 py-3" colspan="2">Project Name</th>
+                        <th>Project Photo</th>
+                        <th>Client Name</th>
+                        <th>Project Type</th>
+                        <th>Place</th>
+                        <th>Pincode</th>
+<!--                        <th>Country</th>-->
+                        <th>BOQ value</th>
+                        <th>No of BOQ </th>
+                        <!-- <th>Start Date</th>
+                        <th>End Date</th> -->
+                        <th class="rounded-end-3" style="text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for obj in projects %}
+                    <tr class="align-baseline border-bottom">
+                            <td class="py-3" colspan="2">
+                                <a href="{% url 'project:project_information' obj.pk %}" style="text-decoration: none; color: rgb(24, 0, 243);">
+                                    <strong>{{ obj.name|capfirst }}</strong>
+                                </a>
+                            </td>
+                            <td style="text-align:left;">
+                                <img src=" {% if obj.interior_project_photo %}{{ obj.interior_project_photo.url }} {% endif %}" alt="{{ obj.interior_project_photo }}" style="max-width: 100px;cursor: pointer;">
+                            </td>
+                            <td>{{obj.client.full_name}}</td>
+                            
+                            <td>{{obj.project_type}}</td>
+                            
+                            <td>{{obj.place}}</td>
+                            <td>{{obj.pincode}}</td>
+<!--                            <td></td>-->
+                            <td></td>
+                            <td></td>
+                            <!-- <td>{{ obj.start_date|date:"F j, Y" }}</td>
+                            <td>{{ obj.end_date|date:"F j, Y" }}</td> -->
+
+                <td style="text-align:center; margin: 10px;" >
+                <div class="dropdown ;">
+                <!-- Button with 3 dots -->
+                <button class="btn btn-secondary btn-sm three-dots-btn" type="button" id="dropdownMenuButton-{{ obj.pk  }}" data-bs-toggle="dropdown" aria-expanded="false">
+                        ...
+                    </button>
+                     <!-- Dropdown Menu for Add/Edit Subgroup, Edit, and Delete -->
+                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{ obj.pk  }}">
+                      
+                             <!-- Edit Button -->
+                             <li>
+                                <a href="{% url 'project:project_information' obj.pk %}" class="dropdown-item btn btn-sm">
+                                    View
+                                </a>
+                            </li>
+                            
+            
+                        <!-- Edit Button -->
+                        <li>
+                            <button type="button" class="dropdown-item btn btn-sm" data-bs-toggle="modal" data-bs-target="#editProjectModal-{{ obj.pk }}">
+                                Edit
+                            </button>
+                         
+                        </li>
+            
+                        <!-- Delete Form -->
+                        <li>
+                            <form id="deleteForm_{{ obj.pk }}" action="{% url 'project:project_delete' obj.pk %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="button" class="dropdown-item btn btn-sm delete-btn" data-bs-toggle="modal" data-bs-target="#deleteModal_{{ obj.pk }}">
+                                    Move to Trash
+                                </button>
+                            </form>
+                        </li>
+                        
+                    </ul>
+                        </div>
+                        </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="pagination-container">
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-left">
+            {% if projects.has_previous %}
+<!--                <li class="page-item">-->
+<!--                    <a class="page-link" href="?page=1&query={{ query }}" aria-label="First">-->
+<!--                        <span aria-hidden="true">&laquo;&laquo;</span> First-->
+<!--                    </a>-->
+<!--                </li>-->
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ projects.previous_page_number }}&query={{ query }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span> Previous
+                    </a>
+                </li>
+            {% endif %}
+
+            <li class="page-item disabled">
+                <span class="page-link">
+                    Page {{ projects.number }} of {{ projects.paginator.num_pages }}
+                </span>
+            </li>
+
+            {% if projects.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ projects.next_page_number }}&query={{ query }}" aria-label="Next">
+                        Next <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+<!--                <li class="page-item">-->
+<!--                    <a class="page-link" href="?page={{ projects.paginator.num_pages }}&query={{ query }}" aria-label="Last">-->
+<!--                        Last <span aria-hidden="true">&raquo;&raquo;</span>-->
+<!--                    </a>-->
+<!--                </li>-->
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+        </div>
+    </div>
+    <!-- Modal for each project -->
+<!-- Modal for each project -->
+{% for obj in projects %}
+<div class="modal fade" id="deleteModal_{{ obj.pk }}" tabindex="-1" aria-labelledby="deleteModalLabel_{{ obj.pk }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content shadow-lg border-0">
+<!--            <div class="modal-header bg-danger text-white">-->
+<!--                <h5 class="modal-title fw-bold" id="deleteModalLabel_{{ obj.pk }}">Confirm Move to Trash</h5>-->
+<!--            </div>-->
+            <div class="modal-body text-center">
+                <i class="bi bi-exclamation-circle display-1 text-danger"></i>
+                <p class="mt-4 fs-5">Are you sure you want to move this project to trash?</p>
+            </div>
+            <div class="modal-footer justify-content-center border-0">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <!-- Submit the form -->
+                <button type="submit" class="btn btn-danger rounded-pill px-4" form="deleteForm_{{ obj.pk }}">Yes, Move to Trash</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+<!-- Modal for displaying inactive projects -->
+<div class="modal fade" id="trashModal" tabindex="-1" aria-labelledby="trashModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title fw-bold" id="trashModalLabel">Trash</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                        {% if in_active_projects %}
+                           <ul class="list-group">
+            {% for project in in_active_projects %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="project-details">
+                        <h6 class="mb-0">{{ project.name }}</h6> <!-- Adjust according to your model -->
+                    </div>
+
+                    <div class="project-actions d-flex">
+                        <form class="me-2" method="post" action="{% url 'project:addproject_list' project.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-primary">Add to Project List</button>
+                        </form>
+                        <span class="badge bg-danger align-self-center">Inactive</span>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+                {% else %}
+                    <p class="text-center">No items in the trash.</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- edit MODAL -->
+    {% for obj in projects %}
+        <div class="modal fade" id="editProjectModal-{{ obj.pk }}" tabindex="-1" aria-labelledby="editProjectModalLabel-{{ obj.pk }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable"role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editProjectModalLabel-{{ obj.pk }}">Edit Project</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post" action="{% url 'project:project_edit' obj.pk %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="id_name" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Project Name</label>
+                                <input type="text" class="form-control"  maxlength="50" id="id_name" name="name" value="{{ obj.name }}" placeholder="Project Name" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_project_type" class="form-label text-body-secondary mb-0 fs-6 fw-medium">Project Type</label>
+                                <input type="text" class="form-control"  maxlength="50" id="id_project_type" name="project_type" value="{{ obj.project_type }}" required />
+                            </div>
+                            <div class="mb-3 d-flex flex-column">
+                                <label class="file-upload-label" for="id_interior_project_photo"> Interior Photos</label>
+                                <input type="file" name="interior_project_photo" class="form-control file-input" id="id_interior_project_photo" accept=".jpg,.png" />
+                                <a href="{% if obj.interior_project_photo %}{{ obj.interior_project_photo.url }}{% else %}{{ default_url }}{% endif %}" target="_blank">View uploaded file</a>
+                                <p id="file-error" style="color: red; display: none">Please select a valid image file (JPG, JPEG, PNG).</p>
+                            </div>
+
+                            <div class="mb-3 d-flex flex-column">
+                                <label class="file-upload-label" for="id_exterior_project_photo"> Exterior Photos</label>
+                                <input type="file" name="exterior_project_photo" class="form-control file-input" id="id_exterior_project_photo" accept=".jpg,.png" />
+                                <a href="{% if obj.exterior_project_photo %}{{ obj.exterior_project_photo.url }}{% else %}{{ default_url }}{% endif %}" target="_blank">View uploaded file</a>
+                                <p id="file-error8" style="color: red; display: none">Please select a valid image file (JPG, JPEG, PNG).</p>
+                            </div>
+
+                            <div class="mb-3 d-flex flex-column">
+                        <!--                        <label for="id_project_brocher" class="form-label text-body-secondary mb-0 fs-6 fw-medium">Project Brochure</label>-->
+
+                                <label class="file-upload-label" for="id_project_brocher">Brochures</label>
+                                <input type="file" name="project_brocher" class="form-control" value="{% if obj.project_brocher %}{{ obj.project_brocher.url }}{% else %}{{ default_url }}{% endif %}" id="id_project_brocher" />
+                                <a href="{% if obj.project_brocher %}{{ obj.project_brocher.url }}{% else %}{{ default_url }}{% endif %}" target="_blank">View uploaded file</a>
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_place" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Place</label>
+                                <input type="text" class="form-control" id="id_place" name="place" value="{{ obj.place }}" placeholder="Place" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_place" class="form-label text-body-secondary fs-6 mb-0 fw-medium"> Client Name</label>
+                                <select name="client" class="form-control" value="{{ obj.client }}" required>
+                                    {% for client in clients %} <option value="{{ client.pk }}" {% if client.pk == obj.client.pk %}selected{% endif %}>{{client.full_name}}({{client.user.email}})</option> {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_webside" class="form-label text-body-secondary mb-0 fs-6 fw-medium">Website Link</label>
+                                <input type="url" class="form-control" id="id_webside" name="webside" value="{{ obj.webside }}" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_location_link" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Location Link</label>
+                                <input type="url" class="form-control" id="id_location_link" name="location_link" value="{{ obj.location_link }}" required />
+                            </div>
+                            <div class="mb-3 d-flex flex-column">
+                                <label for="id_construction_area" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Licences</label>
+                        <!--                        <label class="btn btn-primary" for="id_construction_area">Upload Construction PDF</label>-->
+                                <input type="file" name="construction_area" class="form-control" id="id_construction_area" />
+                                <a href="{% if obj.construction_area %}{{ obj.construction_area.url }}{% else %}{{ default_url }}{% endif %}" target="_blank">View uploaded file</a>
+                            </div>
+                            <div class="mb-3 d-flex flex-column">
+                                <label for="id_building_license_no" class="form-label text-body-secondary mb-0 fs-6 fw-medium">Drawings</label>
+                        <!--                        <label class="btn btn-primary" for="id_building_license_no">Upload License PDF</label>-->
+                                <input type="file" name="drawings" class="form-control" id="id_building_license_no" />
+                                <a href="{% if obj.drawings %}{{ obj.drawings.url }}{% else %}{{ default_url }}{% endif %}" target="_blank">View uploaded file</a>
+                            </div>
+                            <div class="mb-3 d-flex flex-column">
+                                <label for="id_Building_rera_license" class="form-label text-body-secondary mb-0 fs-6 fw-medium">Documents</label>
+                        <!--                        <label class="btn btn-primary" for="id_Building_rera_license">Upload RERA License PDF</label>-->
+                                <input type="file" name="documents" class="form-control ml-5" id="id_Building_rera_license" />
+                                <a href="{% if obj.documents %}{{ obj.documents.url }}{% else %}{{ default_url }}{% endif %}" target="_blank">View uploaded file</a>
+                            </div>
+                            <div class="mb-3 d-flex flex-column">
+                                <label for="id_start_date" class="form-label text-body-secondary mb-0 fs-6 fw-medium">Start Date</label>
+                                <input type="date" class="form-control start-date " name="start_date" id="id_start_date" value="{{ obj.start_date|date:'Y-m-d'  }}" required />
+                            </div>
+                            <div class="mb-3 d-flex flex-column">
+                                <label for="id_end_date" class="form-label text-body-secondary fs-6 mb-0 fw-medium">End Date</label>
+                                <input type="date" class="form-control end-date" name="end_date" id="id_end_date" value="{{ obj.end_date|date:'Y-m-d'  }}" required />
+                            </div>
+                            <div class="mb-3 d-flex flex-column">
+                                <label for="id_pincode" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Pin Code</label>
+                                <input type="text" class="form-control" name="pincode" id="id_pincode" value="{{ obj.pincode }}" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_social_link" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Social Link</label>
+                                <input type="url" class="form-control" id="id_social_link" name="social_link" value="{{ obj.social_link }}" placeholder="Social Link" />
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    <div class="d-flex flex-column mt-5 shadow-sm rounded-4 p-4 bg-white">
+        <span class="fs-2 fw-semibold">Files</span>
+        <div class="d-flex flex-column mt-1">
+            <div class="d-flex justify-content-between">
+                <span class="d-flex column-gap-2 align-items-center">
+                    <span class="fs-5 fw-medium"> Shared to others </span>
+                    <span class="p-1 px-3 fs-5 rounded-circle bg-primary-subtle">0</span>
+                </span>
+                <div class="col-2">
+                    <input type="text" class="form-control rounded-pill" placeholder="Search for Projects" />
+                </div>
+            </div>
+            <table class="table table-responsive project_table mt-3">
+                <thead>
+                    <tr class="align-baseline">
+                        <th class="rounded-start-3 py-3">Name</th>
+                        <th>Date Shared</th>
+                        <th>Shared To</th>
+                        <th>Creator</th>
+                        <th>Last Updated</th>
+                        <th class="rounded-end-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="align-baseline border-bottom">
+                    <!--                    <td>-->
+                    <!--                        <span class="material-symbols-rounded fill align-bottom rounded-3 rounded-circle text-primary">description</span>-->
+                    <!--                        <span class="fs-5 fw-medium">-->
+
+                    <!--                        </span>-->
+                    <!--                    </td>-->
+                    <!--                    <td></td>-->
+                    <!--                    <td></td>-->
+                    <!--                    <td></td>-->
+                    <!--                    <td></td>-->
+                    <!--                    <td>-->
+                    <!--                        <button class="btn btn-primary">Change Settings</button>-->
+                    <!--                    </td>-->
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex flex-column mt-5">
+            <div class="d-flex justify-content-between">
+                <span class="d-flex column-gap-2 align-items-center">
+                    <span class="fs-5 fw-medium"> Shared to You </span>
+                    <span class="p-1 px-3 fs-5 rounded-circle bg-primary-subtle">0</span>
+                </span>
+                <div class="col-2">
+                    <input type="text" class="form-control rounded-pill" placeholder="Search for Projects" />
+                </div>
+            </div>
+            <table class="table table-responsive project_table mt-3">
+                <thead>
+                    <tr class="align-baseline">
+                        <th class="rounded-start-3 py-3">Name</th>
+                        <th>Date Shared</th>
+                        <th>Shared By</th>
+                        <th>Creator</th>
+                        <th>Last Updated</th>
+                        <th class="rounded-end-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="align-baseline border-bottom">
+                    <!--                    <td>-->
+                    <!--                        <span class="material-symbols-rounded fill align-bottom rounded-3 rounded-circle text-primary">description</span>-->
+                    <!--                        <span class="fs-5 fw-medium">-->
+
+                    <!--                        </span>-->
+                    <!--                    </td>-->
+                    <!--                    <td></td>-->
+                    <!--                    <td></td>-->
+                    <!--                    <td></td>-->
+                    <!--                    <td></td>-->
+                    <!--                    <td>-->
+                    <!--                        <button class="btn btn-primary">Change Settings</button>-->
+                    <!--                    </td>-->
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        // Function to handle file input change
+            function handleFileInputChange(fileInput, fileUploadLabel) {
+                if (fileInput && fileUploadLabel) {
+                    fileInput.addEventListener("change", function () {
+                        if (fileInput.files.length > 0) {
+                        // If a file is selected, update the label text and color
+                            fileUploadLabel.innerText = "File Selected: " + fileInput.files[0].name;
+                            fileUploadLabel.style.backgroundColor = "#4CAF50"; // Green background
+                            fileUploadLabel.style.color = "#fff"; // White text
+                        } else {
+                        // Reset the label text and color if no file is selected
+                            fileUploadLabel.innerText = "Upload File";
+                            fileUploadLabel.style.backgroundColor = ""; // Default background
+                            fileUploadLabel.style.color = ""; // Default text color
+                        }
+                    });
+                }
+            }
+
+        // Handle file input changes for both inputs
+            const fileInputs = document.querySelectorAll(".file-input");
+            const fileUploadLabels = document.querySelectorAll(".file-upload-label");
+
+            fileInputs.forEach((fileInput, index) => {
+                if (fileUploadLabels[index]) {
+                    handleFileInputChange(fileInput, fileUploadLabels[index]);
+                }
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var deleteModal = document.getElementById("deleteModal");
+            deleteModal.addEventListener("show.bs.modal", function (event) {
+                var button = event.relatedTarget;
+                var projectId = button.getAttribute("data-project-id");
+                console.log(projectId); // For debugging purposes
+                var deleteForm = document.getElementById("delete-form");
+                var actionUrl = "{% url 'project:project_delete' pk=0 %}".replace("0", projectId);
+                deleteForm.action = actionUrl;
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", (event) => {
+            const searchInput = document.getElementById("searchInput");
+            const searchForm = document.getElementById("searchForm");
+
+            let timeoutId;
+
+            searchInput.addEventListener("input", function () {
+            // Clear the previous timeout
+                clearTimeout(timeoutId);
+
+            // Set a new timeout to delay the search
+                timeoutId = setTimeout(() => {
+                // Get the current value of the input field
+                    const query = searchInput.value;
+
+                // Create a URL with the query parameter
+                    const url = new URL(searchForm.action, window.location.origin);
+                    url.searchParams.set("query", query);
+
+                // Redirect to the new URL
+                    window.location.href = url;
+                }, 500); // Delay in milliseconds (e.g., 500ms)
+            });
+        });
+    </script>
+    <script>
+        document.getElementById("clientSelect").addEventListener("change", function () {
+            var selectedOption = this.options[this.selectedIndex];
+            var website = selectedOption.getAttribute("data-website");
+            var socialink = selectedOption.getAttribute("data-socialink");
+
+        // Set the value of the website input field
+            document.getElementById("id_webside").value = website ? website : "";
+            document.getElementById("id_social_link").value = socialink ? socialink : "";
+        });
+    </script>
+    <script>
+    // Function to show the relevant dropdown based on user selection
+        function showRelevantDropdown() {
+            const importType = document.getElementById("import_type").value;
+            const codeDropdown = document.getElementById("code_dropdown");
+            const projectDropdown = document.getElementById("project_dropdown");
+
+        // Hide both dropdowns by default
+            codeDropdown.classList.add("hidden");
+            projectDropdown.classList.add("hidden");
+
+        // Show the relevant dropdown based on selection
+            if (importType === "code") {
+                codeDropdown.classList.remove("hidden");
+            } else if (importType === "previous_project") {
+                projectDropdown.classList.remove("hidden");
+            }
+        }
+    </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const startDateInputs = document.querySelectorAll('.start-date');
+    const endDateInputs = document.querySelectorAll('.end-date');
+
+    startDateInputs.forEach(function(startDateInput, index) {
+        const endDateInput = endDateInputs[index];
+
+        // When the start date changes, adjust the minimum value for the corresponding end date
+        startDateInput.addEventListener('change', function() {
+            const startDate = startDateInput.value;
+            if (startDate) {
+                // Set the minimum date for the end date to be the same as the start date
+                endDateInput.min = startDate;
+            }
+        });
+
+        // Optional: If the user selects an invalid end date, show an alert and clear the field
+        endDateInput.addEventListener('change', function() {
+            const endDate = endDateInput.value;
+            const startDate = startDateInput.value;
+            if (endDate < startDate) {
+                alert('End date cannot be before the start date.');
+                endDateInput.value = ''; // Clear the invalid input
+            }
+        });
+        
+        
+    });
+});
+
+
+ // adding https://www. if user did not specify
+ document.getElementById(['id_webside','id_location_link']).addEventListener('blur', function () {
+    let inputValue = this.value.trim();
+
+    // Check if the URL starts with 'http' or 'https', if not prepend 'https://www.'
+    if (inputValue && !/^https?:\/\//i.test(inputValue)) {
+        this.value = 'https://www.' + inputValue;
+    } else if (inputValue && inputValue.startsWith('http://')) {
+        // Replace http:// with https://www.
+        this.value = inputValue.replace(/^http:\/\//i, 'https://www.');
+    } else if (inputValue && inputValue.startsWith('https://') && !inputValue.includes('www.')) {
+        // Add 'www.' if it's missing
+        const splitUrl = inputValue.split('https://');
+        this.value = 'https://www.' + splitUrl[1];
+    }
+});
+
+</script>
+
+<script>
+    const startDateInput = document.getElementById('id_start_date');
+    const endDateInput = document.getElementById('id_end_date');
+
+    function addOneMonth(date) {
+        const result = new Date(date);
+        result.setMonth(result.getMonth() + 1);
+        return result.toISOString().split('T')[0];
+    }
+
+    // Set default dates on page load if fields are empty
+    const today = new Date().toISOString().split('T')[0];
+    startDateInput.value = startDateInput.value || today;
+    endDateInput.value = endDateInput.value || addOneMonth(today);
+    endDateInput.min = addOneMonth(startDateInput.value);
+
+    // Update end date minimum when start date changes
+    startDateInput.addEventListener('change', function() {
+        const selectedDate = startDateInput.value;
+        endDateInput.min = addOneMonth(selectedDate);
+
+        // If end date is earlier than the new min, update it
+        if (endDateInput.value < endDateInput.min) {
+            endDateInput.value = endDateInput.min;
+        }
+    });
+</script>
+{% endblock body %}

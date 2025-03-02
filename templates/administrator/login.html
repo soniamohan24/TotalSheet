@@ -1,0 +1,40 @@
+{% extends "partials/signup_base.html" %}
+{% load static %}
+{% block title %} Administrator Login{% endblock title %}
+{% block body %}
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="d-flex flex-column row-gap-2 p-5 col-10 col-md-6 col-lg-4 col-xl-3 bg-white border border-3 border-white rounded-4 shadow-sm" style="background:url({% static 'img/login_wrapper_bg.png' %}); background-position:center;">
+            <div class="text-center">
+                <img src="{% static 'img/Icon.png' %}" alt="" width=45>
+            </div>
+            <span class="fs-4 text-center fw-medium">Administrator Login</span>
+            <span class="fs-6 text-center text-body-secondary">Please login with admin details.</span>
+            {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endif %}
+            <form action="" class="mt-2" method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="username" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Username</label>
+                    <input type="username" class="form-control" id="username" placeholder="Enter your username..." value="{{username}}" name="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label text-body-secondary mb-0 fs-6 fw-medium">Password</label>
+                    <input type="password" class="form-control" id="password" autocomplete placeholder="*******" name="password" required>
+                </div>
+                <div class="d-flex justify-content-between align-items-center my-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" name="rememberme" id="remember">
+                        <label class="form-check-label" for="flexCheckDefault">
+                            Remember Me
+                        </label>
+                    </div>
+                    <a href="" class="text-black">Forgot password?</a>
+                </div>
+                <button type="submit" class="btn w-100 shadow-sm btn-primary py-2 justify-content-center d-flex align-items-center column-gap-1">Login<span class="material-symbols-outlined">arrow_forward</span></button>
+            </form>
+        </div>
+    </div>
+{% endblock body %}

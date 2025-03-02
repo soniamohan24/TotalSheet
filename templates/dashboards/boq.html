@@ -1,0 +1,309 @@
+{% extends "partials/project_topbar.html" %} {% load static %} {% block title %}BOQ{% endblock title %} {% block body %} {{pk|json_script:"pk"}} {% url "boq:boq-total" pk as boq_total %} {{boq_total|json_script:"boq-total"}}
+<script src="{% static 'js/table.js' %}"></script>
+<script src="{% static 'js/boq_tables.js' %}"></script>
+<!-- Bootstrap JS (ensure it's included) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<script id="selectCodeValues">
+    var codeValues = { {% for obj in code %}"{{ obj.pk }}": "{{ obj.code_preview }}"{% if not forloop.last %},{% endif %}{% endfor %} };
+</script>
+<script id="selectUnitValues">
+    var unitValues = { {% for obj in units %}"{{ obj.pk }}": "{{ obj.name }}"{% if not forloop.last %},{% endif %}{% endfor %} };
+</script>
+<script id="selectGSTValues">
+    var gstValues = { {% for obj in gsts %}"{{ obj.pk }}": "{{ obj.rate }}"{% if not forloop.last %},{% endif %}{% endfor %} }
+</script>
+
+<style>
+    .table > :not(caption) > * > * {
+        background-color: transparent;
+        text-align: center;
+        font-size: 12px;
+    }
+    thead tr {
+        background-color: #fff !important;
+    }
+    tr th {
+        color: #4a657e !important;
+    }
+    tbody tr {
+        background-color: #ffffff; /* This can be omitted if the default is white */
+    }
+    .table td {
+        padding: 0.75rem;
+    }
+    .table td:has(input.form-control, select.form-select, textarea.form-control) {
+        padding: 0;
+    }
+    .table td input.form-control,
+    .table td textarea.form-control,
+    .table td select.form-select {
+        border: 0 !important;
+    }
+
+    .table-bordered > thead > tr > th,
+    .table-bordered > tbody > tr > th,
+    .table-bordered > tfoot > tr > th,
+    .table-bordered > thead > tr > td,
+    .table-bordered > tbody > tr > td,
+    .table-bordered > tfoot > tr > td {
+        border: 1px solid #dddddd;
+        border-right-width: 0px;
+        border-left-width: 0px;
+    }
+    table {
+        border-collapse: collapse;
+        counter-reset: Serial;
+    }
+
+    tr:not(.disabled) td:first-child:before {
+        counter-increment: Serial; /* Increment the Serial counter */
+        content: counter(Serial); /* Display the counter */
+    }
+    .table-row1:not(.disabled) {
+        position: relative;
+        height: 45px !important;
+    }
+    .table-row1:not(.disabled):hover {
+        border-bottom: 3px solid #9bdff1; /* Prevents border on individual cells */
+    }
+    .table-row:not(.disabled):hover .table-row-buttons1 {
+        display: flex !important;
+        position: absolute;
+        top: 27px;
+        left: 50%;
+        z-index: 3;
+    }
+
+    .add-row-btn {
+        color: #0a58ca !important;
+        font-size: 0.9rem !important;
+    }
+    .add-row-btn:active {
+        border-color: transparent !important;
+    }
+
+    .del-row-btn {
+        color: #ec0e0e !important;
+        font-size: 0.9rem !important;
+    }
+    .del-row-btn:active {
+        border-color: transparent !important;
+    }
+</style>
+
+<div class="container-fluid d-flex flex-column row-gap-3">
+    <div class="d-flex flex-column">
+        <span class="fw-semibold fs-3"> BOQ </span>
+        <span class="fs-6 fw-medium text-body-secondary">Manage your bills of quantity below.</span>
+    </div>
+    {% include 'dashboards/boq_tables/heading.html' %}
+    <script>
+    // Define a JavaScript variable to hold the URL for delete_row
+    const deleteRowUrl = "{% url 'boq:delete_row' %}";
+</script>
+    {% for table in tables|dictsort:"order" %}
+        {% for key,obj in table.items %}
+            {% if obj.type == "floor" %}
+                {% include 'dashboards/boq_tables/floor.html' %}
+            {% elif obj.type == "wallmasonry" %}
+                {% include 'dashboards/boq_tables/wall.html' %}
+            {% elif obj.type == "finishing" %}
+                {% include 'dashboards/boq_tables/finishing.html' %}
+            {% elif obj.type == "contractwork" %}
+                {% include 'dashboards/boq_tables/other.html' %}
+            {% elif obj.type == "abstractform" %}
+                {% include 'dashboards/boq_tables/abstract.html' %}
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+<div class="row row-gap-3 bg-white rounded-4 p-4 shadow-sm mb-3">
+    <span class="fs-3 fw-bold text-center">Report Form</span>
+    <div class="col-6 ">
+
+        <div class="d-flex justify-content-between column-gap-3">
+            <label for="totalWorkAmount" class="fs-5 fw-medium col-6">Total Work Amount</label>
+            <input type="text" id="totalWorkAmount" class="form-control mt-2" name="total_work_amount" value="" readonly />
+        </div>
+
+        <div class="d-flex justify-content-between column-gap-3">
+            <label for="gstToBePaid" class="fs-5 fw-medium col-6">GST to be Paid</label>
+            <input type="text" id="gstPercentageToBePaid" class="form-control mt-2" name="gst_to_be_paid_percentage" value="18" readonly />
+            <input type="text" id="gstToBePaid" class="form-control mt-2" name="gst_to_be_paid" value="" readonly />
+        </div>
+
+        <div class="d-flex justify-content-between column-gap-3">
+            <label for="gstRefundBenefit" class="fs-5 fw-medium col-6">GST Refund Benefit</label>
+            <input type="text" id="gstRefundPercentage" class="form-control mt-2" name="gst_refund_percentage" value="" readonly />
+            <input type="text" id="gstRefundBenefit" class="form-control mt-2" name="gst_refund" value="" readonly />
+        </div>
+
+        <div class="d-flex justify-content-between column-gap-3">
+            <label for="gstToBeCollected" class="fs-5 fw-medium col-6">GST to be Collected</label>
+            <input type="text" id="gstToBeCollectedPercentage" class="form-control mt-2" name="gst_to_be_collected_percentage" value="" readonly />
+            <input type="text" id="gstToBeCollected" class="form-control mt-2" name="gst_to_be_collected" value="" readonly />
+        </div>
+
+        <div class="d-flex mt-3 justify-content-between column-gap-3 pt-3 border-3 border-top">
+            <label for="totalAmount" class="fs-5 fw-semibold">Total Amount</label>
+            <input type="text" id="totalAmount" class="form-control" name="total_amount" value="" readonly />
+        </div>
+</div>
+
+
+     <div class="col-6 ">
+        <canvas id="gstChart" width="400" height="200"></canvas>
+</div></div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    // Get the values from input fields by ID
+    const totalWorkAmount = parseFloat(document.getElementById('totalWorkAmount').value) || 0;
+    const gstToBePaid = parseFloat(document.getElementById('gstToBePaid').value) || 0;
+    const gstRefundBenefit = parseFloat(document.getElementById('gstRefundBenefit').value) || 0;
+    const gstToBeCollected = parseFloat(document.getElementById('gstToBeCollected').value) || 0;
+
+    // Chart.js setup
+    const ctx = document.getElementById('gstChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Total Work Amount', 'GST to be Paid', 'GST Refund Benefit', 'GST to be Collected'],
+            datasets: [{
+                label: 'GST Summary',
+                data: [totalWorkAmount, gstToBePaid, gstRefundBenefit, gstToBeCollected],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.6)', // Blue
+                    'rgba(255, 99, 132, 0.6)', // Red
+                    'rgba(75, 192, 192, 0.6)', // Green
+                    'rgba(255, 206, 86, 0.6)'  // Yellow
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 206, 86, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'GST Summary Overview',
+                    padding: { top: 10, bottom: 30 },
+                    font: { size: 18 }
+                },
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            }
+        }
+    });
+});
+
+</script>
+         </div>
+</div>
+<div class="modal fade" id="addTable" tabindex="-1" aria-labelledby="addTableLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-4 rounded-4">
+            <div class="modal-header border-0">
+                <div class="d-flex flex-column">
+                    <span class="material-symbols-rounded fs-1 text-body-secondary">table</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex flex-column pt-0">
+                <span class="fs-5 fw-semibold">Choose the type of table</span>
+                <span class="fs-6 fw-medium text-body-secondary">You can choose between these tables to add below.</span>
+                <div class="d-flex flex-column gap-3 mt-3">
+                    <button class="btn btn-outline-primary p-3 d-flex align-items-center" onclick="addTable('Floor')">
+                        <i class="bi bi-grid-3x3-gap-fill me-3 fs-4"></i>
+                        <span class="fs-5">MultiLine Form</span>
+                    </button>
+                    <button class="btn btn-outline-primary p-3 d-flex align-items-center" onclick="addTable('WallMasonry')">
+                        <i class="bi bi-bricks me-3 fs-4"></i>
+                        <span class="fs-5">BottomLine Form</span>
+                    </button>
+                    <button class="btn btn-outline-primary p-3 d-flex align-items-center" onclick="addTable('Finishing')">
+                        <i class="bi bi-brush me-3 fs-4"></i>
+                        <span class="fs-5">Basic Form</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function saveField(event) {
+        event.preventDefault();
+        let fieldElement = event.target;
+
+        // Get the model and field from the data attributes
+        let model = fieldElement.getAttribute("data-model");
+        let field = fieldElement.getAttribute("data-field");
+        let value = fieldElement.value;
+
+        // Dynamically get the pk based on the model
+        let pkValue = getNthParent(fieldElement, 2).querySelector(".pk_row").value;
+        let tableElement = fieldElement.closest("table"); // Get the closest table element
+        let table_name = tableElement ? tableElement.id : null;
+        let projectpk = "{{ pk }}"; // Assuming `pk` is dynamically rendered in the template
+        let csrfToken = document.getElementById("csrf_token").value;
+
+        let url = `/client/boq/${projectpk}/`; // Correct the URL
+
+        let fields;
+        try {
+            let row = fieldElement.closest("tr");
+            let gstRow = getGSTRowByElement(fieldElement);
+            fields = Object.assign({}, getFieldValuesFromRow(row), getFieldValuesFromRow(gstRow));
+            data = {
+                model: model,
+                fieldValues: fields,
+                pk: pkValue,
+                table_name: table_name,
+            };
+        } catch (error) {
+            data = {
+                model: model,
+                field: field,
+                value: value,
+                pk: pkValue,
+                table_name: table_name,
+            };
+        }
+
+        $.ajax({
+            url: url,
+            type: "POST", // Always sending POST
+            contentType: "application/json",
+            headers: {
+                "X-CSRFToken": csrfToken, // Include CSRF token in headers
+            },
+            data: JSON.stringify(data),
+            success: function (response) {
+                if (response.pk && pkValue === "new") {
+                    const pkField = getNthParent(fieldElement, 2).querySelector(".pk_row");
+                    pkField.value = response.pk;
+                }
+                // Handle success
+            },
+            error: function (xhr, status, error) {
+                console.log("Error:"); // Log the error to help debug
+            },
+        });
+    }
+</script>
+{% endblock body %}

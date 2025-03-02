@@ -1,0 +1,135 @@
+
+{% extends "partials/admin_base.html" %}
+{% block title %} GST{% endblock %}
+
+{% block content %}
+    <div class="container p-5">
+
+        <div class="row justify-content-between fs-5 align-items-center  ">
+            <div class="row">
+                <span class="fs-4 mx-1 fw-semibold">Tax</span>
+                <span class="fs-6 mx-1 text-body-tertiary">Manage your Tax here</span>
+            </div>
+        </div>
+<!-- Add Button -->
+        <div class="row">
+            <div class="col">
+                <button type="button" class="btn btn-primary mt-3 mb-3" data-bs-toggle="modal" data-bs-target="#addgstModal">Add Tax</button>
+            </div>
+            {% include 'administrator/search.html' with model_name='gst' %}
+        </div>
+<!-- {{ model_name|capfirst }} Table -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th style="text-align:left;">Rate</th>
+                    <th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="{{ model_name }}TableBody">
+                {% for item in items %}
+                    <tr id="row-{{ item.id }}">
+                        <td>{{ forloop.counter|add:start_index }}</td>
+                        <td style="text-align:left;" >{{ item.rate|floatformat:2  }} %</td>
+                        <td style="text-align:center;"   >
+                            <div class="dropdown">
+                                <!-- Button with 3 dots (no dropdown arrow) -->
+                                <button class="btn btn-secondary btn-sm three-dots-btn" type="button" id="dropdownMenuButton-{{ item.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    ...
+                                </button>
+                        
+                                <!-- Dropdown Menu for Edit and Delete -->
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{ item.id }}">
+                                    <!-- Edit Button -->
+                                    <li>
+                                        <button type="button" class="dropdown-item btn btn-sm" data-bs-toggle="modal" data-bs-target="#editgstModal-{{ item.id }}">
+                                            Edit
+                                        </button>
+                                    </li>
+                        
+                                    {% if item.is_referenced %}
+                                        <!-- Delete Button (Disabled) -->
+                                        <li>
+                                            <form action="" method="post" style="display:inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="dropdown-item btn btn-sm" disabled>Delete</button>
+                                            </form>
+                                        </li>
+                                    {% else %}
+                                        <!-- Delete Button (Enabled) -->
+                                        <li>
+                                            <form id="deleteForm" action="{% url 'administrator:dynamic-delete' model_name='gst' pk=item.pk %}" method="post" style="display:inline;">
+                                                {% csrf_token %}
+                                                <button type="button" class="dropdown-item btn btn-sm delete-btn" data-url="{% url 'administrator:dynamic-delete' model_name='gst' pk=item.pk %}">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </td>
+                        
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+<!-- Pagination Controls -->
+        {% include 'administrator/pagination.html' %}
+<!-- Add {{ model_name|capfirst }} Modal -->
+        <div class="modal fade" id="addgstModal" tabindex="-1" role="dialog" aria-labelledby="add{{ model_name|capfirst }}ModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="add{{ model_name|capfirst }}ModalLabel">Add Tax</h5>
+<!--                <button type="button" class="close float-end"  data-bs-dismiss="modal" aria-label="Close">-->
+<!--                    <span aria-hidden="true">&times;</span>-->
+<!--                </button>-->
+                    </div>
+                    <form action="{% url 'administrator:dynamic-create' model_name='gst' %}" method="post">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                    <!-- Include your form fields here dynamically -->
+                            <label>Enter Rate</label>
+                            <input type="float" name="rate" class="form-control" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+<!-- Edit {{ model_name|capfirst }} Modals -->
+        {% for item in items %}
+            <div class="modal fade" id="editgstModal-{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="edit{{ model_name|capfirst }}ModalLabel-{{ item.id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="edit{{ model_name|capfirst }}ModalLabel-{{ item.id }}">Edit Tax </h5>
+<!--                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">-->
+<!--                    <span aria-hidden="true">&times;</span>-->
+<!--                </button>-->
+                        </div>
+                        <form action="{% url 'administrator:dynamic-update' model_name='gst' pk=item.id %}" method="post">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                    <!-- Include your form fields here dynamically -->
+                                <label>Enter Rate</label>
+                                <input type="float" name="rate" value="{{ item.rate }}" class="form-control">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Save changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+{% endblock %}
+</div>

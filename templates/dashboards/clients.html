@@ -1,0 +1,633 @@
+{% extends "partials/base.html" %}
+{% block title %}Clients{% endblock title %}
+{% block body %}
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+    <style>
+        .pagination .page-link {
+            color: #007bff;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+        }
+        .alert-container {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            width: 80%;
+            max-width: 600px;
+            display: none;
+        }
+        .alert {
+            transition: opacity 1s ease-out;
+        }
+        .table>:not(caption)>*>* {
+            background-color: transparent;
+            text-align: center;
+        }
+        thead tr{
+            background-color: #fff !important;
+        }
+        tr th{
+            color: #4a657e !important;
+        }
+        table tr:nth-child(odd) {
+            background-color: #D6E3BC;
+        }
+        table tr:nth-child(even) {
+            background-color: #FFFFFF; /* This can be omitted if the default is white */
+        }
+        .table-bordered > thead > tr > th,
+        .table-bordered > tbody > tr > th,
+        .table-bordered > tfoot > tr > th,
+        .table-bordered > thead > tr > td,
+        .table-bordered > tbody > tr > td,
+        .table-bordered > tfoot > tr > td {
+            border: 1px solid #dddddd;
+            border-right-width:0px;
+            border-left-width:0px;
+        }
+        .cus-btn {
+            background-color: #D6E3BC;
+            border-radius: 10px;
+            border:1px solid #D6E3BC;
+        }
+    </style>
+    <div class="container-fluid d-flex flex-column  mt-5">
+            <div class=" text-center">
+                <span class="fs-4 fw-medium">VIEW ALL CLIENTS</span>
+            </div>
+            <div class="row">
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="fw-medium fs-6 bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2 float-end" data-bs-toggle="modal" data-bs-target="#addClientModal">
+                        <span class="material-symbols-rounded fs-4">add</span>
+                        <span>Add Clients</span>
+                    </button>
+                    <div class="col-2">
+                        <form id="searchForm" method="get" action="{% url 'project:client_search' %}">
+                            <input type="text" id="searchInput" class="form-control rounded-pill" placeholder="Search" value="{{ query }}">
+                  <!--            <button type="submit" class="btn btn-primary">Search</button>-->
+                        </form>
+                    </div>
+                </div>
+                <div class="container mt-4">
+                    <div class="alert-container" id="alert-container">
+                        {% if messages %}
+                            <div class="alert alert-info">
+                                {% for message in messages %}
+                                    <p>{{ message }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+         <!-- Add buttons for Excel download and bulk upload -->
+                <div class="mt-4">
+                    <a href="{% url 'project:download-clients' %}" class="btn btn-success">Download Clients (Excel)</a>
+                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#uploadClientsModal">Upload Bulk Clients</button>
+                </div>
+         <!-- Upload Bulk Clients Modal -->
+                <div class="modal fade" id="uploadClientsModal" tabindex="-1" aria-labelledby="uploadClientsModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="uploadClientsModalLabel">Upload Bulk Clients</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form id="uploadClientsForm" action="{% url 'project:upload-clients' %}" method="POST" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="clientExcelFile" class="form-label">Upload Excel File</label>
+                                        <input type="file" class="form-control" id="clientExcelFile" name="client_file" accept=".xlsx, .xls" required>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Upload</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+         <!-- Add Client Modal -->
+                <div class="modal fade" id="addClientModal" tabindex="-1" aria-labelledby="addClientModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addClientModalLabel">Add New Client</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form id="addClientForm" action="{% url 'project:add-client' %}" method="POST">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="FirstName" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="FirstName" name="first_name" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="LastName" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="LastName" name="last_name" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="clientEmail" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="clientEmail" name="email" placeholder="name@example.com" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="clientPhone" class="form-label">Phone Number</label>
+                                        <input
+                                        <input
+                                            type="tel"
+                                            class="form-control"
+                                            id="clientPhone"
+                                            name="phone_number"
+                                            maxlength="10"
+                                            pattern="\d{10}"
+                                            title="Please enter a 10-digit phone number."
+                                            required
+                                        >
+                                        <div id="phoneError" class="text-danger d-none">Please enter a valid 10-digit phone number.</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="address" class="form-label">Address</label>
+                                        <input type="text" class="form-control" id="address" name="address" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="panNo" class="form-label">PAN Number</label>
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            id="panNo"
+                                            name="pan_no"
+                                            maxlength="10"
+                                            pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                                            title="PAN must be 10 characters long: 5 letters, 4 numbers, and 1 letter.">
+                                        <div id="panError" class="text-danger d-none">Please enter a valid PAN number (e.g., ABCDE1234F).</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="cinNo" class="form-label">CIN Number</label>
+
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            id="cinNo"
+                                            name="cin_no"
+                                            maxlength="21"
+                                            pattern="^(?=.*[A-Z])(?=.*\d)[A-Z\d]{21}$"
+                                            title="CIN number must be exactly 21 characters long, containing both letters and numbers.">
+                                        <div id="cinError" class="text-danger d-none">Please enter a valid CIN number (21 characters, must include both letters and numbers).</div>
+
+
+
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="companyName" class="form-label">Company Name</label>
+                                        <input type="text" class="form-control" id="companyName" name="company_name">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="website" class="form-label">Website</label>
+                                        <input
+                                            type="url"
+                                            class="form-control"
+                                            id="website"
+                                            name="website"
+                                            title="Please enter a valid URL starting with http:// or https://">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="id_social_link" class="form-label ">Social Link</label>
+                                        <input type="url" class="form-control" id="id_social_link" name="social_link" placeholder="Social Link">
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary" id="saveClientBtn">Save Client</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <table class="table border mt-4" id="table_floor">
+                    <thead>
+                        <tr class="fw-medium text-center">
+                            <th></th>
+                            <th>NAME</th>
+                            <th>Email</th>
+                            <th>PHONE</th>
+                            <th>ADDRESS</th>
+                            <th>COMPANY NAME</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cl in page_obj %}
+                            <tr class="table-row">
+                                <td>
+                                    <a href="{% url 'project:toggle-favorite' cl.id %}" class="favorite-btn" data-client-id="{{ cl.id }}" data-url="{% url 'project:toggle-favorite' cl.id %}" style="text-decoration: none;">
+                                        {% if cl.is_favorite %}
+                                            <span class="material-icons" style="color: gold;">star</span> <!-- Filled star for favorite -->
+                                        {% else %}
+                                            <span class="material-icons" style="color: grey;">star</span> <!-- Outlined star for non-favorite -->
+                                        {% endif %}
+                                    </a>
+                                </td>
+                                <td>{{cl.full_name}}</td>
+                                <td>
+                                {% if cl.user.email == None or cl.user.email == "nan" %}
+                                    -
+                                {% else %}
+                                    {{cl.user.email}}
+                                {% endif %}</td>
+                                <td>
+                                {% if cl.user.phone_number == None or cl.user.phone_number == "nan" %}
+                                    -
+                                {% else %}
+                                    {{cl.user.phone_number}}
+                                {% endif %}</td>
+                                <td>{% if cl.address == None or cl.address == "nan" %}
+                                    -
+                                {% else %}
+                                    {{cl.address }}
+                                {% endif %}</td>
+                                <td>{% if cl.company_name == None or cl.company_name == "nan" %}
+                                    -
+                                {% else %}
+                                    {{cl.company_name}}
+                                {% endif %}</td>
+                                <td>
+                                     <!-- Button with 3 dots -->
+                <button class="btn btn-secondary btn-sm three-dots-btn" type="button" id="dropdownMenuButton-{{ cl.pk  }}" data-bs-toggle="dropdown" aria-expanded="false">
+                        ...
+                    </button>
+                     <!-- Dropdown Menu for Add/Edit Subgroup, Edit, and Delete -->
+                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{ cl.pk  }}">
+                        <!-- Edit Button -->
+                        <li>
+        <button type="button" class="dropdown-item btn btn-sm" data-bs-toggle="modal" data-bs-target="#editClientModal-{{ cl.pk }}">
+            Edit
+        </button>
+    </li>
+
+
+                        <!-- Delete Form -->
+                        <li>
+                            <form id="deleteForm_{{ cl.pk }}" action="{% url 'project:delete-client' cl.pk %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                                {% if cl.can_delete %}
+                            <button type="button" class="dropdown-item btn btn-sm delete-btn" data-bs-toggle="modal" data-bs-target="#deleteModal_{{ cl.pk }}">
+                                Delete
+                            </button>
+                                {% else %}
+                                 <button type="button" class="dropdown-item btn btn-sm delete-btn disabled" data-bs-toggle="modal" data-bs-target="#deleteModal_{{ cl.pk }}">
+                                Delete
+                            </button>
+                                {% endif %}
+                        </form>
+
+                        </li>
+                    </ul>
+                        </div>
+                                </td>
+                            </tr>
+              <!-- Edit Client Modal -->
+            <!-- Delete Modal for each object -->
+            {% for cl in page_obj %}
+<div class="modal fade" id="deleteModal_{{ cl.pk }}" tabindex="-1" aria-labelledby="DeleteModalLabel_{{ cl.pk }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex flex-column align-items-center justify-content-center">
+<!--                <span class="bg-danger d-flex align-items-center justify-content-center rounded-circle bg-opacity-10 p-3 text-danger">-->
+<!--&lt;!&ndash;                    <i class="ph fs-1 ph-trash"></i>&ndash;&gt;-->
+<!--                </span>-->
+                <span class="fs-5 fw-medium mt-3">Are you sure you want to delete this client?</span>
+<!--                <span class="fs-6 fw-medium text-body-tertiary text-center px-5">This file will be permanently deleted from the storage</span>-->
+                <div class="w-100 d-flex column-gap-3 mt-3">
+                    <button type="button" class="btn border fs-5 py-2 flex-grow-1" data-bs-dismiss="modal">Cancel</button>
+                    <form method="post" id="delete-form_{{ cl.pk }}" action="{% url 'project:delete-client' cl.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger flex-grow-1 fs-5 py-2">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% for cl in page_obj %}
+    <div class="modal fade" id="editClientModal-{{ cl.id }}" tabindex="-1" aria-labelledby="editClientModalLabel-{{ cl.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editClientModalLabel-{{ cl.id }}">Edit Client</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{% url 'project:edit-client' cl.id %}" method="POST">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="FirstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="FirstName" name="first_name" value="{{ cl.first_name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="LastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="LastName" name="last_name" value="{{ cl.last_name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="clientEmail" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="clientEmail" name="email" value="{{ cl.user.email }}" placeholder="name@example.com" required readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="clientPhone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="clientPhone" name="phone_number" maxlength="10" pattern="\d{10}" title="Please enter a 10-digit phone number." value="{{ cl.user.phone_number }}"  readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" class="form-control" id="address" name="address" value="{{ cl.address }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="panNo" class="form-label">PAN Number</label>
+                            <input type="text" class="form-control" id="panNo" name="pan_no" maxlength="10" pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" title="PAN must be 10 characters long: 5 letters, 4 numbers, and 1 letter." value="{{ cl.pan_no }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="cinNo" class="form-label">CIN Number</label>
+                            <input type="text" class="form-control" id="cinNo" name="cin_no" maxlength="21" pattern="^(?=.*[A-Z])(?=.*\d)[A-Z\d]{21}$" title="CIN number must be exactly 21 characters long, containing both letters and numbers." value="{{ cl.cin_no }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="companyName" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="companyName" name="company_name" value="{{ cl.company_name }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="website" class="form-label">Website</label>
+                            <input type="url" class="form-control" id="website" name="website" value="{{ cl.website }}" title="Please enter a valid URL starting with http:// or https://">
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_social_link" class="form-label">Social Link</label>
+                            <input type="url" class="form-control" id="id_social_link" name="social_link" value="{{ cl.social_link }}" placeholder="Social Link">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center">No clients found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination ">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-hidden="true">&laquo;&laquo;</span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-hidden="true">&laquo;</span>
+                            </li>
+                        {% endif %}
+               <!-- Displaying page numbers -->
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-hidden="true">&raquo;</span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-hidden="true">&raquo;&raquo;</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const alertContainer = document.getElementById('alert-container');
+                if (alertContainer.children.length > 0) {
+                    alertContainer.style.display = 'block'; // Show alert
+
+                    setTimeout(() => {
+                        alertContainer.style.opacity = '0'; // Fade out
+                        setTimeout(() => {
+                            alertContainer.style.display = 'none'; // Hide after fade out
+                        }, 1000); // Match this with the CSS transition duration
+                    }, 5000); // 5 seconds
+                }
+            });
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const phoneInput = document.getElementById('clientPhone');
+                const phoneError = document.getElementById('phoneError');
+
+                phoneInput.addEventListener('input', function() {
+                    const value = phoneInput.value;
+                    const isValid = /^\d{10}$/.test(value);
+
+                    if (isValid) {
+                        phoneError.classList.add('d-none');
+                    } else {
+                        phoneError.classList.remove('d-none');
+                    }
+                });
+            });
+
+
+            document.addEventListener('DOMContentLoaded', (event) => {
+                const searchInput = document.getElementById('searchInput');
+                const searchForm = document.getElementById('searchForm');
+
+                let timeoutId;
+
+                searchInput.addEventListener('input', function () {
+              // Clear the previous timeout
+                    clearTimeout(timeoutId);
+
+              // Set a new timeout to delay the search
+                    timeoutId = setTimeout(() => {
+                  // Get the current value of the input field
+                        const query = searchInput.value;
+
+                  // Create a URL with the query parameter
+                        const url = new URL(searchForm.action, window.location.origin);
+                        url.searchParams.set('query', query);
+
+                  // Redirect to the new URL
+                        window.location.href = url;
+                    }, 500); // Delay in milliseconds (e.g., 500ms)
+                });
+            });
+
+
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.favorite-btn').forEach(function(btn) {
+                    btn.addEventListener('click', function(event) {
+                        event.preventDefault(); // Prevent default link behavior
+
+                        const url = this.getAttribute('data-url');
+                        const icon = this.querySelector('.material-icons');
+
+                        if (!url) {
+                            console.error('No URL found for toggle-favorite action.');
+                            return;
+                        }
+
+            // Get the CSRF token from the cookie
+                        const csrftoken = getCookie('csrftoken');
+
+            // Log the URL to debug
+                        console.log('Fetching URL:', url);
+
+                        fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrftoken
+                            }
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+                                return response.text(); // Return response text
+                            })
+                            .then(text => {
+                                if (!text) {
+                                    throw new Error('Received empty response from the server.');
+                                }
+
+                                const data = JSON.parse(text); // Parse the response as JSON
+
+                // Check if the JSON structure is as expected
+                                if (data && typeof data.is_favorite !== 'undefined') {
+
+                    // Toggle favorite state based on the response
+                                    if (data.is_favorite) {
+                                        icon.textContent = 'star'; // Change to filled star
+                                        icon.style.color = 'gold';
+                                    } else {
+                                        icon.textContent = 'star'; //
+                                        icon.style.color = 'grey';
+
+                                    }
+                                } else {
+                                    throw new Error('Unexpected JSON structure: ' + JSON.stringify(data));
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Fetch error:', error.message);
+                            });
+                    });
+                });
+
+    // Function to get CSRF token from the cookie
+                function getCookie(name) {
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i].trim();
+                // Check if this cookie string begins with the name we want
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+            });
+
+
+
+
+
+
+
+            document.getElementById('cinNo').addEventListener('input', function () {
+                const cinInput = this;
+                const cinError = document.getElementById('cinError');
+
+      // Check if the input is valid
+                if (cinInput.validity.patternMismatch) {
+                    cinError.classList.remove('d-none');  // Show the error message
+                } else {
+                    cinError.classList.add('d-none');  // Hide the error message
+                }
+            });
+
+            document.getElementById('panNo').addEventListener('input', function () {
+                const panInput = this;
+                const panError = document.getElementById('panError');
+
+      // Check if the input is valid
+                if (panInput.validity.patternMismatch) {
+                    panError.classList.remove('d-none');  // Show the error message
+                } else {
+                    panError.classList.add('d-none');  // Hide the error message
+                }
+            });
+
+
+            // adding https://www. if user did not specify
+            document.getElementById(['companyName','website']).addEventListener('blur', function () {
+    let inputValue = this.value.trim();
+
+    // Check if the URL starts with 'http' or 'https', if not prepend 'https://www.'
+    if (inputValue && !/^https?:\/\//i.test(inputValue)) {
+        this.value = 'https://www.' + inputValue;
+    } else if (inputValue && inputValue.startsWith('http://')) {
+        // Replace http:// with https://www.
+        this.value = inputValue.replace(/^http:\/\//i, 'https://www.');
+    } else if (inputValue && inputValue.startsWith('https://') && !inputValue.includes('www.')) {
+        // Add 'www.' if it's missing
+        const splitUrl = inputValue.split('https://');
+        this.value = 'https://www.' + splitUrl[1];
+    }
+});
+        </script>
+    </div>
+    </div>
+{% endblock body %}

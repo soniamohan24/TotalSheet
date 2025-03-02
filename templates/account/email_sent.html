@@ -1,0 +1,18 @@
+{% extends "partials/signup_base.html" %}
+{% load static %}
+{% block title %} Forgot Password{% endblock title %}
+{% block body %}
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="d-flex flex-column row-gap-2 p-5 col-10 col-md-6 col-lg-4 col-xl-3 bg-white border border-3 border-white rounded-4 shadow-sm" style="background:url({% static 'img/login_wrapper_bg.png' %}); background-position:center;">
+            <div class="text-center">
+                <img src="{% static 'img/Icon.png' %}" alt="" width=45>
+            </div>
+            <span class="fs-4 text-center fw-medium">Email Sent</span>
+            <span class="fs-6 text-center text-body-secondary">A password reset link has been sent to your email. If you don't see it in your inbox, please check your spam folder.</span>
+            <div class="d-flex justify-content-center column-gap-1">
+                <span class="fs-6">Remeber your password?</span>
+                <a href="{% url "accounts:login" %}">Login</a>
+            </div>
+        </div>
+    </div>
+{% endblock body %}

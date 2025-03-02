@@ -1,0 +1,124 @@
+<div class="d-flex flex-column row-gap-2 bg-white rounded-4 p-4 shadow-sm">
+    <div class="d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold">OTHER CONTRACT WORK</h5>
+        <div class="d-flex column-gap-3">
+            <button data-main-table="table_other" data-secondary-table="gst_other"  class="fw-medium c_btn fs-6 bg-white border border-2 rounded-3 d-flex align-items-center column-gap-2 p-2">
+                <span class="material-symbols-rounded fs-4">collapse_all</span>
+                <span>Collapse Table</span>
+            </button>
+            <button data-id="gst_other" class="fw-medium gst_btn fs-6 bg-white border border-2 rounded-3 d-flex align-items-center column-gap-2 p-2">
+                <span class="material-symbols-rounded fs-4">collapse_all</span>
+                <span>GST ON/OFF</span>
+            </button>
+        </div>
+    </div>
+        <div class="d-flex column-gap-2 overflow-auto">
+            <table class="table table-bordered col-9 table-d" id="table_other">
+                <thead>
+                    <tr class="fw-medium text-center">
+                        <th>PF-1</th>
+                        <th></th>
+                        <th>OTHER CONTRACT WORK</th>
+                        <th>EXTERNAL WORK CONTRACT</th>
+                        <th>WORK Detail</th>
+                        <th>WORK VALUE</th>
+                        <th>RATIO-OWV</th>
+                        <th>ADD GST</th>
+                        <th>FULL AMOUNT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for other in obj.rows %}
+
+                        <tr class="table-row ">
+                            <td></td>
+                            <input type="hidden" id="csrf_token" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+                            <input type="hidden" class="pk_row" name="pk_row_other" id="pk_Other_{{ other.id }}" value="{{ other.id }}" />
+                           <td>
+                                <div class="table-row-buttons d-flex column-gap-3">
+                                    <button data-table-type="other"  data-direction="above"  class="add-row-btn ar_btn d-flex  rounded-3 d-flex align-items-center column-gap-1 p-1 btn btn-primary">
+                                         <span class="fs-5" style="color:white">+</span><span class="fs-5 " style="color:white;">↑</span>
+                                    </button>
+                                     <button data-table-type="other"  data-direction="below"  class="add-row-btn ar_btn d-flex   rounded-3 d-flex align-items-center column-gap-1 p-1 btn btn-primary">
+                                         <span class="fs-5" style="color:white">+</span><span class="fs-5 " style="color:white;">&darr;</span>
+                                    </button>
+                                    <button data-pk="{{product.pk}}"    data-table-type="other" onclick="deleteRow(this, 'other','{{other.pk}}')" class="del-row-btn btn d-flex   rounded-3 d-flex align-items-center column-gap-2 p-2 btn btn-danger">
+                                        <span class="material-symbols-rounded fs-4" style="color:white;">delete</span>
+
+                                    </button>
+                                </div>
+                            </td>
+                            {% if forloop.counter == 1 %}
+                                <td class="bg-white" rowspan="{{others.row|length}}"><textarea name="percentage_form_description" class="form-control" data-model="ContractWork" data-field="description" value="{{ other.description}}"></textarea></td>
+                            {% endif %}
+                            <td><input type="text" name="percentage_form_externalwork" id="percentage_form_externalwork_{{other.pk}}" data-model="ContractWork" data-field="external_work" value="{{ other.external_work|default_if_none:''}}" class="form-control" /></td>
+                            <td><input type="text" name="percentage_form_workdetail" id="percentage_form_workdetail_{{other.pk}}" data-model="ContractWork" data-field="work_detail" value="{{ other.work_detail|default_if_none:''}}" class="form-control" /></td>
+                            {% if forloop.counter == 1 %}
+                                <td rowspan="{{others.row|length}}" class="work-value">
+                                    <input type="text" name="percentage_form_workvalue" disabled id="percentage_form_workvalue_{{other.pk}}" data-model="ContractWork" data-field="work_value" value="{{ other.work_value|default_if_none:''}}" class="form-control work-values" />
+                                </td>
+                            {% endif %}
+                            <td><input type="text" name="percentage_form_ratio" id="percentage_form_rati_{{other.pk}}" data-model="ContractWork" data-field="ratio_owv" value="{{ other.ratio_owv|default_if_none:''}}" class="form-control ratio-input" /></td>
+                            <td>
+                                <select name="percentage_form_gst" data-model="ContractWork" id="percentage_form_gst_{{other.pk}}" data-field="gst" value="{{ other.gst}}" class="form-select gst-select" required>
+                                    {% for gst in gsts %}
+                                        <option value="{{ gst.id }}">{{ gst.rate }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td><input type="text" disabled name="percentage_form_fullamount" id="percentage_form_fullamount" data-field="full_amount" data-model="ContractWork" class="form-control full-amount" /></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tbody>
+                    {% for total in obj.total %}
+                        <tr class="table-row bg-primary-subtle">
+                            <input type="hidden" name="total_pk" value="{{total.pk}}">
+                            <td colspan="8">Total</td>
+                            <td><input type="text" class="form-control bg-primary-subtle wall total-other-amount" value="{{total.full_amount}}" readonly /></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <table class="table table-bordered" id="gst_other">
+                <thead>
+                    <tr style="height:20px !important;">
+                        <th>BASIC AMOUNT</th>
+                        <th>GST APPLIED</th>
+                        <th>GST AMOUNT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for other in obj.rows %}
+                        <tr class="disabled">
+                            <td><input type="text" name="bf_totalbasicamount" id="bf_totalbasicamount_{{other.pk}}" data-model="ContractWork" data-field="basic_amount" value="{{ other.basic_amount|default_if_none:'0'}}" class="form-control" /></td>
+                            <td>
+                                <input name="bf_gst" id="bf_gst_{{other.pk}}" data-model="ContractWork" class="form-control" data-field="gst_applied" value="{{ other.gst_applied|default_if_none:'0'}}" />
+                            </td>
+                            <td><input type="text" name="bf_gstamount" id="bf_gstamount_{{other.pk}}" data-model="ContractWork" data-field="gst_amount" value="{{ other.gst_amount|default_if_none:'0'}}" class="form-control" /></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tbody>
+                    {% for other in obj.total %}
+                        <tr class="bg-primary-subtle">
+                            <input type="hidden" name="mainTable" value="{{obj.key}}">
+                            <td><input type="text"  name="pf_totalbasicamount" id="pf_totalbasicamount" class="form-control bg-primary-subtle total-basic-amount" data-model="ContractWork" data-field="basic_amount" value="{{ other.basic_amount|default_if_none:'0'}}" readonly /></td>
+                            <td><input type="text" name="pf_gst" id="pf_gst" class="form-control bg-primary-subtle total-gst" data-model="ContractWork" data-field="gst_applied" value="{{ other.gst_applied|default_if_none:'0'}}" readonly  /></td>
+                            <td><input type="text"  name="pf_gstamount" id="pf_gstamount" data-model="ContractWork" data-field="gst_amount" value="{{ other.gst_amount|default_if_none:'0'}}" class="form-control bg-primary-subtle total-gst-amount" readonly  /></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+<!--        <div class="d-flex column-gap-3">-->
+<!--            <button data-id1="{{obj.key}}" data-id2="gst_other" data-table-type="other" class="fw-medium fs-6 ar_btn bg-white border border-2 rounded-3 d-flex align-items-center column-gap-2 p-2">-->
+<!--                <span class="material-symbols-rounded fs-4">add</span>-->
+<!--                <span>Add Row</span>-->
+<!--            </button>-->
+<!--            <button data-id1="{{obj.key}}" data-id2="gst_other" class="fw-medium fs-6 dr_btn bg-white border border-2 rounded-3 d-flex align-items-center column-gap-2 p-2">-->
+<!--                <span class="material-symbols-rounded fs-4">delete</span>-->
+<!--                <span>Delete Row</span>-->
+<!--            </button>-->
+<!--        </div>-->
+</div>

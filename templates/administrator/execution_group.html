@@ -1,0 +1,318 @@
+
+{% extends "partials/admin_base.html" %}
+{% block title %} Execution Group{% endblock %}
+
+{% block content %}
+
+    <div class="container p-5">
+
+        <div class="row justify-content-between fs-5 align-items-center  ">
+            <div class="row">
+                <span class="fs-4 mx-1 fw-semibold">Execution Group</span>
+                <span class="fs-6 mx-1 text-body-tertiary">Manage your Execution group here</span>
+            </div>
+        </div>
+<!-- Add Button -->
+        <div class="row">
+            <div class="col">
+                <button type="button" class="btn btn-primary mt-3 mb-3" data-bs-toggle="modal" data-bs-target="#addexecution_groupModal">Add Execution Group</button>
+            </div>    {% include 'administrator/search.html' with model_name='execution_group' %}
+        </div>
+
+<!-- {{ model_name|capfirst }} Table -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th style="text-align:left;"> <a href="?sort=name&order={% if current_sort_order == 'asc' and current_sort_field == 'name' %}desc{% else %}asc{% endif %}&group={{ selected_group }}"
+                            class="sort-link" style="text-decorator:none;color:white;">
+                        Name
+                        {% if current_sort_field == 'name' %}
+                            {% if current_sort_order == 'asc' %}
+                                <i class="fas fa-arrow-up"></i>
+                            {% else %}
+                                <i class="fas fa-arrow-down"></i>
+                            {% endif %}
+                        {% else %}
+                            <i class="fas fa-arrows-v"></i>  <!-- Default indicator for no sorting -->
+                        {% endif %}
+                    </a></th>
+                    <th style="text-align:left; width: 250px;">Image</th>
+                     <th style="text-align:left; width: 600px;">Sub Groups</th>
+                    <th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="{{ model_name }}TableBody">
+                {% for item in items %}
+                    <tr id="row-{{ item.id }}">
+                        <td>{{ forloop.counter|add:start_index }}</td>
+                        <td style="text-align:left;">
+                            {{ item.name }}
+                            <br>
+                            <!-- Button for viewing description -->
+                            {% if item.description %}
+                                <button type="button" class="btn btn-info btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#descriptionModal-{{ item.id }}">
+                                    View Description
+                                </button>
+                            {% else %}
+                                <p class="text-muted mt-2">No description available</p>
+                            {% endif %}
+                        </td>                        <td style="text-align:left;">
+                            <img src=" {% if item.logo %}{{ item.logo.url }} {% endif %}" alt="{{ item.name }}" style="max-width: 100px;cursor: pointer;">
+                        </td>
+                         <td style="text-align:left;" class="subgroup-list">
+
+                            {% if item.sub_groups.all %}
+                                            {% for sub in item.sub_groups.all %}
+                                            {{ sub.name }},
+                                            {% endfor %}
+                                        {% else %}
+                                        No subgroups available
+                                        {% endif %}
+                         </td>
+                         <td style="text-align:center;">
+                            <div class="dropdown">
+                                <!-- Button with 3 dots -->
+                                <button class="btn btn-secondary btn-sm three-dots-btn" type="button" id="dropdownMenuButton-{{ item.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    ...
+                                </button>
+                        
+                                <!-- Dropdown Menu for Add/Edit Subgroup, Edit, and Delete -->
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{ item.id }}">
+                                    <!-- Add/Edit Subgroup -->
+                                    <li>
+                                        <button type="button" class="dropdown-item btn btn-sm" data-bs-toggle="modal" data-bs-target="#addSubGroupModal-{{ item.id }}">
+                                            Add/Edit Subgroup
+                                        </button>
+                                    </li>
+                        
+                                    <!-- Edit Button -->
+                                    <li>
+                                        <button type="button" class="dropdown-item btn btn-sm" data-bs-toggle="modal" data-bs-target="#editexecution_modelModal-{{ item.id }}">
+                                            Edit
+                                        </button>
+                                    </li>
+                        
+                                    <!-- Delete Button -->
+                                    {% if item.is_referenced %}
+                                        <li>
+                                            <form action="" method="post" style="display:inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="dropdown-item btn btn-sm" disabled>Delete</button>
+                                            </form>
+                                        </li>
+                                    {% else %}
+                                        <li>
+                                            <form id="deleteForm" action="{% url 'administrator:dynamic-delete' model_name='execution_group' pk=item.pk %}" method="post" style="display:inline;">
+                                                {% csrf_token %}
+                                                <button type="button" class="dropdown-item btn btn-sm delete-btn" data-url="{% url 'administrator:dynamic-delete' model_name='execution_group' pk=item.pk %}">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </td>
+                        
+
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    <!-- Description Modals -->
+        {% for item in items %}
+            <div class="modal fade" id="descriptionModal-{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="descriptionModalLabel-{{ item.id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+<!--            <div class="modal-header">-->
+<!--                <h5 class="modal-title" id="descriptionModalLabel-{{ item.id }}">{{ item.name }} - Description</h5>-->
+<!--                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>-->
+<!--            </div>-->
+                        <div class="modal-body">
+                <!-- Display the description here -->
+                            <p >{{ item.description }}</p>
+                        </div>
+<!--            <div class="modal-footer">-->
+<!--                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>-->
+<!--            </div>-->
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+
+<!-- Pagination Controls -->
+        {% include 'administrator/pagination.html' %}
+
+<!-- Add {{ model_name|capfirst }} Modal -->
+        <div class="modal fade" id="addexecution_groupModal" tabindex="-1" role="dialog" aria-labelledby="add{{ model_name|capfirst }}ModalLabel" aria-hidden="true" >
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="add{{ model_name|capfirst }}ModalLabel">Add Execution Group</h5>
+<!--                <button type="button" class="close float-end"  data-bs-dismiss="modal" aria-label="Close">-->
+<!--                    <span aria-hidden="true">&times;</span>-->
+<!--                </button>-->
+                    </div>
+                    <form action="{% url 'administrator:dynamic-create' model_name='execution_group' %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                    <!-- Include your form fields here dynamically -->
+                            <label>Enter Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                            <label for="logo">Upload Logo</label>
+                            <input type="file" id="logo" name="logo" class="form-control">
+
+                            <label for="description">Description</label>
+                            <textarea id="noteTextarea" name="description" class="form-control"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+<!-- Edit {{ model_name|capfirst }} Modals -->
+        {% for item in items %}
+            <div class="modal fade" id="editexecution_modelModal-{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="edit{{ model_name|capfirst }}ModalLabel-{{ item.id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="edit{{ model_name|capfirst }}ModalLabel-{{ item.id }}">Edit {{ model_name|capfirst }}</h5>
+<!--                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">-->
+<!--                    <span aria-hidden="true">&times;</span>-->
+<!--                </button>-->
+                        </div>
+                        <form action="{% url 'administrator:dynamic-update' model_name='execution_group' pk=item.id %}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                    <!-- Include your form fields here dynamically -->
+                                <label>Enter Name</label>
+                                <input type="text" name="name" value="{{ item.name }}" class="form-control">
+                                <div class="form-group mt-3">
+                                    <label for="">Upload Logo</label>
+                                    <input type="file"  name="logo" value="{{ item.logo}}" class="form-control">
+                                    {% if item.logo %}
+                                        <img src="{{ item.logo.url }}" alt="{{ item.name }}" class="img-thumbnail mt-2" style="max-width: 100px;">
+                                    {% endif %}
+                                </div>
+
+                                <label for="description">Description</label>
+                                <textarea name="description" id="noteTextarea" class="form-control">{{ item.description}}</textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Save changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        {% for item in items %}
+    <!-- Add/Edit Sub Group Modal for each item -->
+    <div class="modal fade" id="addSubGroupModal-{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="addSubGroupModalLabel-{{ item.id }}" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSubGroupModalLabel-{{ item.id }}">Manage Sub Groups for {{ item.name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" id="subGroupForm-{{ item.id }}" action="{% url 'administrator:ex_subgroups' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="pk" value="{{ item.id }}">
+                    <div class="modal-body">
+                        <!-- Subgroups List -->
+                        <div id="subGroupFields-{{ item.id }}">
+                            {% for subgroup in item.sub_groups.all %}
+                                <div class="input-group mb-3">
+                                    <input type="hidden" name="sub_group_ids[]" value="{{ subgroup.id }}">
+                                    <input type="text" name="sub_group_names[]" class="form-control" value="{{ subgroup.name }}" placeholder="Sub Group Name">
+                                    <button type="button" class="btn btn-danger" onclick="removeField(this, '{{ subgroup.id }}')">Remove</button>
+
+                                </div>
+
+
+                            {% empty %}
+                                <!-- If no subgroups, show an empty field for adding -->
+                                <div class="input-group mb-3">
+                                    <input type="text" name="sub_group_names[]" class="form-control" placeholder="Sub Group Name">
+<!--                                    <button type="button" class="btn btn-outline-secondary" onclick="addField('{{ item.id }}')">Add More</button>-->
+                                </div>
+                            {% endfor %}
+                            <button type="button" class="btn btn-outline-secondary" onclick="addField('{{ item.id }}')">Add More</button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+
+
+
+<script>
+function addField(itemId) {
+    const container = document.getElementById(`subGroupFields-${itemId}`);
+    const inputGroup = document.createElement('div');
+    inputGroup.className = 'input-group mb-3';
+    inputGroup.innerHTML = `
+        <input type="text" name="sub_group_names[]" class="form-control" placeholder="Sub Group Name">
+        <button type="button" class="btn btn-outline-secondary" onclick="addField('${itemId}')">Add More</button>
+    `;
+    container.appendChild(inputGroup);
+}
+</script>
+
+
+<script>
+    function addField(itemId) {
+        var container = document.getElementById('subGroupFields-' + itemId);
+        if (container) {
+            var newField = document.createElement('div');
+            newField.className = 'input-group mb-3';
+
+            var newInput = document.createElement('input');
+            newInput.type = 'text';
+            newInput.name = 'sub_group_names[]';
+            newInput.className = 'form-control';
+            newInput.placeholder = 'Sub Group Name';
+
+            var removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'btn btn-danger';
+            removeButton.textContent = 'Remove';
+            removeButton.onclick = function() {
+                newField.remove();
+            };
+
+            newField.appendChild(newInput);
+            newField.appendChild(removeButton);
+
+            // Insert new field before the "Add More" button
+            var addMoreButton = container.querySelector('.btn-outline-secondary');
+            container.insertBefore(newField, addMoreButton);
+        }
+    }
+
+    function removeField(button, id) {
+        // Optionally handle server-side removal of the subgroup via AJAX
+        var confirmed = confirm('Are you sure you want to remove this sub group?');
+        if (confirmed) {
+            // If it's an existing subgroup, you can add logic here to mark it for deletion
+            // Remove the field from the DOM
+            button.closest('.input-group').remove();
+        }
+    }
+</script>
+{% endblock %}
+</div>

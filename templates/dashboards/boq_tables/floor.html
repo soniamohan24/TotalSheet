@@ -1,0 +1,167 @@
+
+<style>
+    /* Disable the arrow on the select element */
+.remove-arrow {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding-right: 10px; /* Adjust the padding as necessary */
+    background-color: #f0f0f0; /* You can set a background if needed */
+    border: 1px solid #ccc; /* Optional: add border for consistency */
+    pointer-events: none; /* Make sure it's not clickable */
+}
+
+/* Optionally, remove the background image for the arrow in some browsers */
+.remove-arrow::-ms-expand {
+    display: none;
+}
+
+/* Further customizations can be done to the select box if needed */
+
+</style>
+<div id="{{obj.key}}_div" data-order="{{table.order}}" class="d-flex flex-column row-gap-2 bg-white rounded-4 p-4 shadow-sm">
+    <div class="d-flex flex-column row-gap-3 overflow-auto">
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="">
+                    <div class="input-group">
+                        <span class="input-group-text" id="basic-addon1">Table Name</span>
+                        <input type="text" class="form-control table-name" name="table-heading-name"  data-model="Floor" data-value="{{obj.key}}"  value="{{obj.rows.0.table_heading_name}}">
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <div class="d-flex column-gap-3">
+                        <button data-main-table="{{obj.key}}" data-secondary-table="gst_{{obj.key}}"  class="fw-medium c_btn fs-6 bg-white border border-2 rounded-3 d-flex align-items-center column-gap-2 p-2">
+                            <span class="material-symbols-rounded fs-4">collapse_all</span>
+                            <span>Collapse Table</span>
+                        </button>
+                        <button data-id="gst_{{obj.key}}" class="fw-medium gst_btn fs-6 bg-white border border-2 rounded-3 d-flex align-items-center column-gap-2 p-2">
+                            <span class="material-symbols-rounded fs-4">collapse_all</span>
+                            <span>GST ON/OFF</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex column-gap-2 overflow-auto">
+                <table class="table table-bordered col-9" id="{{obj.key}}">
+                    <thead class="table-header">
+                        <tr class="fw-medium text-center">
+                            <th>A</th>
+                             <th></th>
+                            <th></th>
+                            <th>CODE</th>
+                            <th>WORK DETAIL</th>
+                            <th style="width:10px;">N(N)</th>
+                            <th style="width:10px;">L(M)</th>
+                            <th style="width:10px;">W(M2)</th>
+                            <th style="width:10px;">H(M3)</th>
+                            <th>QUANTITY</th>
+                            <th>UNITS</th>
+                            <th>RATE PER UNIT</th>
+                            <th>FULL AMOUNT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for floor in obj.rows %}
+
+                            <tr class="table-row floor">
+                                 <td></td>
+                                <td>
+                                    <div class="table-row-buttons  column-gap-3 d-flex">
+                                         <button data-table-type="floor" data-direction="above" class="add-row-btn ar_btn btn d-flex  rounded-3 d-flex align-items-center column-gap-1 p-1 btn btn-primary">
+                                            <span class="fs-5" style="color:white">+</span><span class="fs-5 " style="color:white;">↑</span>
+                                        </button>
+                                        <button data-table-type="floor" data-direction="below" class="add-row-btn ar_btn   d-flex border rounded-3 d-flex align-items-center column-gap-1 p-1 btn btn-primary">
+                                            <span class="fs-5" style="color:white">+</span><span class="fs-5 " style="color:white;">&darr;</span>
+                                        </button>
+
+                                        <button data-pk="{{floor.pk}}" onclick="deleteRow(this, 'floor','{{floor.pk}}')" data-table-type="floor" class="del-row-btnfloor btn d-flex    rounded-3 d-flex align-items-center column-gap-2 p-2 btn btn-danger ">
+                                            <span class="material-symbols-rounded fs-4  " style="color:white;">delete</span>
+                                        </button>
+                                    </div>
+                                </td>
+                                <input type="hidden" id="csrf_token" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+                                <input type="hidden" class="pk_row" name="pk_row_floor" id="pk_Floor_{{ floor.id }}" value="{{ floor.id }}" />
+                                {% if forloop.counter == 1 %}
+                                    <td class="bg-white" rowspan="{{obj.rows|length}}">
+                                        <textarea name="multiline_form_description" rowspan="{{obj.rows|length}}" class="form-control" data-model="Floor" data-field="description">{{ floor.description|default_if_none:" " }}</textarea>
+                                    </td>
+                                {% endif %}
+                                <td>
+                                    <select name="multiline_form_code" data-model="Floor" data-field="code" id="multiline_form_code_{{ floor.id }}" class="form-select">
+                                        <option selected disabled>Select Code</option>
+                                        {% for obj in code %} <option value="{{ obj.id }}" {% if floor.code.id == obj.id %}selected{% endif %}>{{ obj.code_preview }}</option> {% endfor %}
+                                    </select>
+                                </td>
+                                <td ><input type="text" name="multiline_form_workdetail" id="multiline_form_workdetail_{{ floor.id }}" placeholder="Work Detail" data-model="Floor" data-field="work_detail" class="form-control" value="{{ floor.work_detail|default_if_none:"" }}" /></td>
+                                <td><input type="text" name="multiline_form_N" id="multiline_form_N_{{ floor.id }}" class="form-control p-1" data-model="Floor" data-field="N" value="{{ floor.N|default_if_none:"0" }}" /></td>
+                                <td><input type="text" name="multiline_form_L" id="multiline_form_L_{{ floor.id }}" class="form-control p-1" data-model="Floor" data-field="L" value="{{ floor.L|default_if_none:"0" }}" /></td>
+                                <td><input type="text" name="multiline_form_W" id="multiline_form_W_{{ floor.id }}" class="form-control p-1" data-model="Floor" data-field="W" value="{{ floor.W|default_if_none:"0" }}" /></td>
+                                <td><input type="text" name="multiline_form_H" id="multiline_form_H_{{ floor.id }}" class="form-control p-1" data-model="Floor" data-field="H" value="{{ floor.H|default_if_none:"0" }}" /></td>
+                                <td><input type="text" name="multiline_form_quantity" id="multiline_form_quantity_{{ floor.id }}" disabled class="form-control" data-model="Floor" data-field="quantity" value="{{ floor.quantity|default_if_none:"0" }}" /></td>
+                                <td class="disabled">
+                                    <select name="multiline_form_unit" style="border:none;" class="bg-white remove-arrow" data-model="Floor" readonly data-field="unit" required >
+                                        {% for unit in units %} <option value="{{ unit.id }}" {% if floor.unit.id == unit.id %}selected{% endif %}>{{ unit.name }}</option> {% endfor %}
+                                    </select>
+                                </td>
+                                <td><input type="text" name="multiline_form_rateperunit" id="multiline_form_rateperunit_{{ floor.id }}" disabled data-model="Floor" data-field="rate_per_unit" class="form-control" value="{{ floor.rate_per_unit|default_if_none:"0" }}" /></td>
+                                <td><input type="text" name="multiline_form_fullamount" id="multiline_form_fullamount_{{ floor.id }}" disabled data-model="Floor" data-field="full_amount" class="form-control " value="{{ floor.full_amount|default_if_none:"0" }}" /></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tbody>
+                        {% for total in obj.total  %}
+                            <tr class="table-row1 bg-primary-subtle" id="totalcolum-multiline">
+                                <input type="hidden" name="total_pk" value="{{total.pk}}">
+                                  <td></td>
+                                <td class="disabled " colspan="11">Total</td>
+                                <td>
+                                    <input type="text" class="form-control bg-primary-subtle total-amount" disabled value="{{total.full_amount}}" />
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <table class="table table-bordered " id="gst_{{obj.key}}">
+                    <thead class="table-header" >
+                        <tr class="fw-medium text-center" style="height:20px;">
+                            <th class="">BASIC AMOUNT</th>
+                            <th>GST APPLIED</th>
+                            <th>GST AMOUNT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for floor in obj.rows %}
+                            <tr class="table-row disabled">
+                                <input type="hidden" class="pk_row" name="pk_row_floor" id="pk_Floor_{{ floor.id }}" value="{{ floor.id }}" />
+                                <td class=""><input type="text" name="mf_totalbasicamount" disabled data-model="Floor" data-field="basic_amount" id="mf_totalbasicamount_{{ floor.id }}" class="form-control p-2" value="{{ floor.basic_amount|floatformat:2|default_if_none:"0" }}" /></td>
+                                <td class=""><input type="text" name="mf_gst" disabled id="mf_gst_{{ floor.id }}" class="form-control p-2" data-model="Floor" data-field="gst_applied" value="{{ floor.gst_applied|default_if_none:"0"|floatformat:2 }}" /></td>
+                                <td class=""><input type="text" name="mf_gstamount" disabled id="mf_gstamount_{{ floor.id }}" data-model="Floor" data-field="gst_amount" class="form-control p-2" value="{{ floor.gst_amount|default_if_none:"0"|floatformat:2 }}" /></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tbody>
+                        {% for total in obj.total  %}
+                            <tr class="bg-primary-subtle " >
+                                <input type="hidden" name="mainTable" value="{{obj.key}}">
+                                <input type="hidden" name="total_pk" value="{{total.pk}}">
+                                <td><input type="text" disabled class="form-control bg-primary-subtle total-basic-amount " value="{{total.basic_amount|floatformat:2}}"></td>
+                                <td><input type="text" disabled class="form-control bg-primary-subtle total-gst" value="{{total.gst_applied|floatformat:2}}"></td>
+                                <td><input type="text" disabled class="form-control bg-primary-subtle total-gst-amount" value="{{total.gst_amount|floatformat:2}}"></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex column-gap-3 mt-3">
+                <button data-id="{{obj.key}}" class="fw-medium dp_btn fs-6 bg-white border border-2 rounded-3 d-flex align-items-center column-gap-2 p-2">
+                    <span class="material-symbols-rounded fs-4">tab_duplicate</span>
+                    <span>Duplicate Table</span>
+                </button>
+            </div>
+    </div>
+</div>
+<div class="d-flex column-gap-2 align-items-center">
+    <div class="border-bottom w-100 flex-1"></div>
+    <button type="button" data-id="{{obj.key}}_div" data-order="{{table.order}}" class="btn btn-primary col-1" data-bs-toggle="modal" data-bs-target="#addTable">Add Table</button>
+    <div class="border-bottom w-100 flex-1"></div>
+</div>

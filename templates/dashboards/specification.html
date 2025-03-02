@@ -1,0 +1,355 @@
+{% extends "partials/base.html" %} {% load static %} {% block title %}Calculator{% endblock title %} {% block body %}
+    <script src="{% static 'js/table.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/table.css' %}" />
+ <style>
+  /* Modal customization */
+  .modal-content {
+    border-radius: 15px;
+    overflow: hidden;
+  }
+
+  .modal-header {
+    border-bottom: none;
+  }
+
+  .modal-body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .modal-footer {
+    border-top: none;
+  }
+
+  /* Button styles */
+  .btn-outline-danger {
+    border: 2px solid #dc3545;
+    color: #dc3545;
+    transition: all 0.3s ease;
+  }
+
+  .btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .btn-close-white {
+    background-color: white;
+  }
+
+  /* Icon in the modal */
+  .bi-exclamation-circle {
+    font-size: 4rem;
+  }
+
+  /* Custom button styles */
+  .btn-danger {
+    background-color: #dc3545;
+    border: none;
+  }
+
+  .btn-danger:hover {
+    background-color: #c82333;
+  }
+
+  .btn-secondary {
+    border: none;
+  }
+
+  .btn-secondary:hover {
+    background-color: #5a6268;
+  }
+
+  /* Align text properly */
+  .modal-body p {
+    margin-bottom: 0;
+  }
+  .no, .designed, .unit{
+    width: 5%;
+  }
+  .code, .heading{
+    width: 15%;
+
+  }
+  .basic, .gst, .full 
+   {
+    width: 10%;
+   }
+ 
+</style>
+    <div class=" rounded-4 p-3 d-flex flex-column mt-5 ">
+        {% if messages %}
+    <div class="alert alert-danger">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+        <table class="table-fixed ">
+            <thead class="text-center">
+<!--            <tr class="border">-->
+<!--                <th></th>-->
+<!--                <th class="py-2">Filter By Group</th>-->
+<!--                <th>Mesonary</th>-->
+<!--                <th>Unit Filter</th>-->
+<!--                <th colspan=2>Split ON/OFF</th>-->
+<!--                <th></th>-->
+<!--                <th>Filter By Creator</th>-->
+<!--                <th>Filter By Laters</th>-->
+<!--                <th colspan=2></th>-->
+<!--                <th></th>-->
+<!--            </tr>-->
+<!--            <tr class="bg-secondary ">-->
+<!--                <th class="py-2 column-1">NO</th>-->
+<!--                <th class="column-2">CODE PREVIEW</th>-->
+<!--                <th>DESIGNED FOR</th>-->
+<!--                <th>UNIT</th>-->
+<!--                <th>BASIC VALUE</th>-->
+<!--                <th>GST VALUE</th>-->
+<!--                <th>FULL VALUE</th>-->
+<!--                <th>CREATOR NAME</th>-->
+<!--                <th>CREATED</th>-->
+<!--&lt;!&ndash;                <th>READ SPECIFICATION</th>&ndash;&gt;-->
+<!--                <th>ACTION</th>-->
+<!--            </tr>-->
+            </thead>
+        </table>
+        <span class="fs-5 fw-medium">Default Codes</span>
+          <table class="table table-stripped table-bordered">
+          <thead class="text-center">
+              <tr class="bg-secondary ">
+                  <th class="no">NO</th>
+                  <th class="code">CODE PREVIEW
+                      <form method="GET">
+                    <select id="filterCodeType" name="code_type" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="" disabled>Select</option>
+                        {% for i in code_type %}
+                            <option value="{{ i.pk }}" {% if request.GET.code_type == i.name %} selected {% endif %}>{{ i.name }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                  </th>
+                  <th class="heading">HEADING</th>
+                  <th class="designed">DESIGNED FOR</th>
+                  <th class="unit">UNIT
+                      <form method="GET">
+                    <select id="filterUnit" name="unit" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="" disabled>Select</option>
+                        {% for i in unit %}
+                            <option value="{{ i.name }}" {% if request.GET.unit == i.name %} selected {% endif %}>{{ i.name }}</option>
+                        {% endfor %}
+                    </select>
+                  </th>
+                  <th class="basic">BASIC VALUE</th>
+                  <th class="gst">GST VALUE</th>
+                  <th class="full">FULL VALUE</th>
+                  <th class="create_by">CREATED BY</th>
+                  <th class="create">CREATED AT</th>
+<!--                <th>READ SPECIFICATION</th>-->
+                  <th class="action">ACTIONS</th>
+              </tr>
+          </thead>
+          <tbody>
+            <tr style="background-color: #e4edff;">
+              <td>&nbsp;</td> <!-- Empty cell for NO -->
+              <td>&nbsp;</td> <!-- Empty cell for CODE PREVIEW -->
+              <td>&nbsp;</td> <!-- Empty cell for DESIGNED FOR -->
+              <td>&nbsp;</td> <!-- Empty cell for DES -->
+              <td>&nbsp;</td> <!-- Empty cell for UNIT -->
+              <td>&nbsp;</td> <!-- Empty cell for BASIC VALUE -->
+              <td>&nbsp;</td> <!-- Empty cell for GST VALUE -->
+              <td>&nbsp;</td> <!-- Empty cell for FULL VALUE -->
+              <td>&nbsp;</td> <!-- Empty cell for CREATED BY -->
+              <td>&nbsp;</td> <!-- Empty cell for CREATED AT -->
+              <td>&nbsp;</td> <!-- Empty cell for ACTIONS -->
+            </tr>
+            <tr style="background-color: #e4edff; border-bottom: 2px solid #000; border-spacing: 0 20px;">
+              <td>&nbsp;</td> <!-- Empty cell for NO -->
+              <td>&nbsp;</td> <!-- Empty cell for CODE PREVIEW -->
+              <td>&nbsp;</td> <!-- Empty cell for des -->
+              <td>&nbsp;</td> <!-- Empty cell for DESIGNED FOR -->
+              <td>&nbsp;</td> <!-- Empty cell for UNIT -->
+              <td>&nbsp;</td> <!-- Empty cell for BASIC VALUE -->
+              <td>&nbsp;</td> <!-- Empty cell for GST VALUE -->
+              <td>&nbsp;</td> <!-- Empty cell for FULL VALUE -->
+              <td>&nbsp;</td> <!-- Empty cell for CREATED BY -->
+              <td>&nbsp;</td> <!-- Empty cell for CREATED AT -->
+              <td>&nbsp;</td> <!-- Empty cell for ACTIONS -->
+            </tr>
+            <!-- test -->
+
+              {% for spec in specifications%}
+                  <tr >
+
+                      <td  class="py-2 column-1">{{forloop.counter}}</td>
+                      <td class="column-2" style="text-align:left;">{{spec.code_preview}}</td>
+                      <td class="column-2">{{spec.description}}</td>
+                      <td style="text-align:right">{{spec.design_for}}</td>
+                      <td>{{spec.unit}}</td>
+                      <td style="text-align:right">₹ {{spec.basic_value|floatformat:2}}</td>
+                      <td style="text-align:right">₹ {{spec.gst_value|floatformat:2}}</td>
+                      <td style="text-align:right">₹ {{spec.grand_total|floatformat:2}}</td>
+                      <td>{{spec.created_by}}</td>
+                      <td>{{spec.date}}</td>
+                      <td class=" align-items-center justify-content-start" style="flex-wrap: nowrap;">
+                        <!-- Three Dots Button -->
+                        <div class="dropdown">
+                            <button class="btn btn-secondary btn-sm three-dots-btn" type="button" id="dropdownMenuButton-{{ spec.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                ...
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{ spec.id }}">
+                                <!-- Add to Use Button -->
+<!--                                <li><button class="dropdown-item btn btn-primary btn-sm" style="white-space: nowrap;">Add to Use</button></li>-->
+
+                                <!-- Delete Button -->
+                                <li>
+                                     <button type="button" data-pk="{{spec.pk}}" class="dropdown-item btn btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                          Delete
+                                        </button>
+
+                                </li>
+                                 <form id="deleteForm" action="{% url 'code:specification_delete' spec.pk %}" method="post" class="d-none">
+                                                  {% csrf_token %}
+                                                </form>
+                                <!-- Edit Button Form -->
+                                <li>
+                                    <form method="get" action="{% url 'code:update_code' spec.id %}" style="display:inline;">
+                                        <button class="dropdown-item btn btn-light btn-sm" type="submit" style="white-space: nowrap;">Edit</button>
+                                    </form>
+                                </li>
+
+                                <!-- Duplicate Button -->
+                                <li>
+                                    <button class="dropdown-item btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#duplicateModal" data-id="{{ spec.pk }}">
+                                        Duplicate
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                    
+                    <!-- Delete Modal (Single modal for all rows) -->
+                    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-sm">
+                            <div class="modal-content shadow-lg border-0">
+<!--                              <div class="modal-header bg-danger text-white">-->
+<!--&lt;!&ndash;                                <h5 class="modal-title fw-bold" id="deleteModalLabel">Confirm Deletion</h5>&ndash;&gt;-->
+<!--                        &lt;!&ndash;        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>&ndash;&gt;-->
+<!--                              </div>-->
+                              <div class="modal-body text-center">
+                                <i class="bi bi-exclamation-circle display-1 text-danger"></i>
+                                <p class="mt-4 fs-5">Are you sure you want to delete this code?</p>
+                        <!--        <p class="text-muted">This action cannot be undone.</p>-->
+                              </div>
+                              <div class="modal-footer justify-content-center border-0">
+                                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                                <button id="confirmDeleteBtn" type="button" class="btn btn-danger rounded-pill px-4">Yes, Delete</button>
+                              </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+<!--                    &lt;!&ndash; Duplicate Modal (Single modal for all rows) &ndash;&gt;-->
+<!--                    <div class="modal fade" id="duplicateModal" tabindex="-1" role="dialog" aria-labelledby="duplicateModalLabel" aria-hidden="true">-->
+<!--                        <div class="modal-dialog" role="document">-->
+<!--                            <div class="modal-content">-->
+<!--                                <form id="duplicateForm" action="" method="POST">-->
+<!--                                    {% csrf_token %}-->
+<!--                                    <div class="modal-header">-->
+<!--                                        <h5 class="modal-title" id="duplicateModalLabel">Duplicate Code</h5>-->
+<!--                                    </div>-->
+<!--                                    <div class="modal-body">-->
+<!--                                        <div class="form-group">-->
+<!--                                            <label for="material_code">Material Code</label>-->
+<!--                                            <input type="text" class="form-control" id="material_code" name="material_code" required>-->
+<!--                                        </div>-->
+<!--                                        <div class="form-group">-->
+<!--                                            <label for="execution_code">Execution Code</label>-->
+<!--                                            <input type="text" class="form-control" id="execution_code" name="execution_code" required>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                    <div class="modal-footer">-->
+<!--                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>-->
+<!--                                        <button type="submit" class="btn btn-primary">Duplicate</button>-->
+<!--                                    </div>-->
+<!--                                </form>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    -->
+
+                  </tr>
+      <!-- Bootstrap Modal -->
+      <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold" id="deleteModalLabel">Confirm Deletion</h5>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="bi bi-exclamation-circle display-1 text-danger"></i>
+                    <p class="mt-4 fs-5">Are you sure you want to delete this code?</p>
+                </div>
+                <div class="modal-footer justify-content-center border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button id="confirmDeleteBtn" type="button" class="btn btn-danger rounded-pill px-4">Yes, Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Duplicate Modal (Single modal for all rows) -->
+    <div class="modal fade" id="duplicateModal" tabindex="-1" role="dialog" aria-labelledby="duplicateModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form id="duplicateForm" action="{% url 'code:duplicate_code'  spec.pk %}" method="post">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="duplicateModalLabel">Duplicate Code</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="material_code">Material Code</label>
+                            <input type="text" class="form-control" id="material_code" name="material_code" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="execution_code">Execution Code</label>
+                            <input type="text" class="form-control" id="execution_code" name="execution_code" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Duplicate</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+              {% endfor %}
+          </tbody>
+      </table>
+
+      
+    </div>
+<script>
+  // Handle delete button click to pass pk dynamically
+  document.querySelectorAll('button[data-bs-target="#deleteModal"]').forEach(button => {
+    button.addEventListener('click', function () {
+      const pk = this.getAttribute('data-pk');
+      const deleteForm = document.getElementById('deleteForm');
+
+      // Set the form action dynamically using the pk
+      deleteForm.action = `/client/specification/${pk}/delete/`;  // Adjust the URL to your URL pattern
+    });
+  });
+
+  // Confirm Delete button inside the modal
+  document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+    document.getElementById('deleteForm').submit();
+  });
+</script>
+
+{% endblock body %}
+

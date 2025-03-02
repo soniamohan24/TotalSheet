@@ -1,0 +1,17 @@
+
+{% extends "partials/admin_base.html" %}
+{% block title %} User Management{% endblock %}
+
+{% block content %}
+    <div class="container p-5">
+        {% include 'administrator/search.html' with model_name='user' %}
+        <div class="row justify-content-between fs-5 align-items-center  ">
+            <div class="row">
+                <span class="fs-4 mx-1 fw-semibold">User Management</span>
+                <span class="fs-6 mx-1 text-body-tertiary">Manage your Users here</span>
+            </div>
+        </div>
+
+
+{% endblock %}
+</div>

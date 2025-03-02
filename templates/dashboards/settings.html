@@ -1,0 +1,1189 @@
+{% extends "partials/base.html" %} {% load static %} {% block title %}Home{% endblock title %} {% block body %} {% load defaults %}
+    <script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.6/dist/inputmask.min.js"></script>
+
+    <style>
+        .nav-pills .nav-link.active,
+        .nav-pills .show > .nav-link {
+            color: #fff !important;
+            background-color: black !important;
+            font-weight: 500;
+            border: 1px solid black;
+        }
+        .nav-link {
+            color: black !important;
+            font-weight: 500;
+            border-radius: 50px !important;
+            border: 1px solid #ebe4e4;
+        }
+        .form-control,
+        .form-select {
+            padding: 0.7rem;
+            border-color: #e6e6e8 !important;
+        }
+    </style>
+    <div class="d-flex flex-column pt-5 w-100 p-4">
+        <span class="fs-1 fw-semibold">Settings</span>
+        <span class="fs-6 text-secondary">Manage your preferences here.</span>
+        <ul class="nav fs-5 column-gap-2 row-gap-2 nav-pills border-0 mt-4" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="true">Profile</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="account-tab" data-bs-toggle="tab" data-bs-target="#account-tab-pane" type="button" role="tab" aria-controls="account-tab-pane" aria-selected="false">Account</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications-tab-pane" type="button" role="tab" aria-controls="notifications-tab-pane" aria-selected="false">Notifications</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment-tab-pane" type="button" role="tab" aria-controls="payment-tab-pane" aria-selected="false">Payments</button>
+            </li>
+        </ul>
+        <div class="d-flex flex-column bg-white px-5 py-3 mt-3 rounded-4">
+            <div class="tab-content my-3" id="myTabContent">
+                <div class="tab-pane fade show active" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+                                      {% if messages %}
+                        <div class="d-flex justify-content-center align-items-center" id="alertmessage" style="min-height: 10vh;">
+                            {% for message in messages %}
+                                <div class="alert alert-danger text-center" style="max-width: 90%; padding: 1rem 2rem;">
+                                    <span class="fs-5">{{ message }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex flex-column row-gap-4">
+                        <span class="fs-6 text-body-secondary fw-semibold">Profile Picture</span>
+                        <div class="d-flex flex-column flex-md-row row-gap-3 align-items-center column-gap-3">
+                            {% if request.user.profile.profile_photo %}
+                                <img src="{{request.user.profile.profile_photo.url}}" class="rounded-circle object-fit-cover" width="75" height="75" alt="" srcset="" />
+                            {% else %}
+                                <img src="https://img.freepik.com/free-psd/3d-illustration-human-avatar-profile_23-2150671142.jpg?t=st=1719352969~exp=1719353569~hmac=5fb7135bcec1389932d070b4dfb4ce0852abe545339426819e4317908175ebaa" class="rounded-circle" width="75" alt="" srcset="" />
+                            {% endif %}
+                            <div class="d-flex column-gap-3">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changeProfilePicture">Upload Profile Picture</button>
+                                <form method="post" action="{% url 'profile:delete-profile-pic' %}">
+                                    {% csrf_token %}
+                                    <button type="button" id="deleteProfilePicButton" name="delete_profile_pic" class="btn bg-body-tertiary border text-danger">Delete Picture</button>
+                                </form>
+                            </div>
+                            <form action="" method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="modal fade" id="changeProfilePicture" tabindex="-1" aria-labelledby="changeProfilePictureLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header border-0">
+                                                <div class="d-flex flex-column">
+                                                    <h1 class="modal-title fs-5" id="changeProfilePictureLabel">Profile Picture Update</h1>
+                                                    <span class="fs-6 fw-medium text-body-tertiary">Upload a new profile picture</span>
+                                                </div>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="input-group mb-3">
+                                                    <input type="file" class="form-control" accept="image/*" id="profilePicture" />
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <button type="button" id="updateProfilePicture" disabled class="btn btn-primary">Update Picture</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if request.user.profile.profile_type == 'business' %}
+                                <div class="d-flex flex-column border-top pt-2">
+                                    <span class="fs-4 fw-semibold">Personal Information</span>
+                                    <span class="fs-6 text-secondary">Manage personal information about your profile</span>
+                                </div>
+                                <div class="d-flex border-bottom pb-3">
+                                    <div class="col-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Name</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">This will be displayed on your profile.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        <input type="text" name="first_name" class="form-control rounded-3" placeholder="First Name"  value="{{profile.first_name|default:''}}" />
+                                        <input type="text" name="mid_name" class="form-control rounded-3" placeholder="Middle Name" value="{{profile.mid_name|default:''}}" />
+                                        <input type="text" name="last_name" class="form-control rounded-3" placeholder="Last Name"  value="{{profile.last_name|default:''}}" />
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column  pt-2">
+                                    <span class="fs-4 fw-semibold">Company Information</span>
+                                    <span class="fs-6 text-secondary">Manage information about your company</span>
+                                </div>
+                                <div class="d-flex flex-column row-gap-3 flex-md-row border-bottom pb-3">
+                                    <div class="col col-md-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium"></span>
+                                        <span class="fs-6 text-body-secondary fw-medium">This will be displayed on your profile.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        <select name="business_type" id="" class="form-select">
+                                            <option selected disabled value="">Choose Profession Type</option>
+                                            {% for obj in business_type %}
+                                                <option value="{{obj.pk}}" {% if profile.business_profile.business_type == obj.name%} selected {% endif %}>{{obj.name}}</option>
+                                            {% endfor %}
+                                        </select>
+
+                                        <select name="scale" id="" class="form-select">
+                                            <option selected disabled value="">Choose Company Scale Type</option>
+                                            <option value="small" {% if profile.business_profile.scale == 'small' %} selected {% endif %}>Small</option>
+                                            <option value="medium" {% if profile.business_profile.scale == 'medium' %} selected {% endif %}>Medium</option>
+                                            <option value="large" {% if profile.business_profile.scale == 'large' %} selected {% endif %}>Large</option>
+                                        </select>
+                                        <select name="company_type" id="" class="form-select">
+                                            <option selected disabled value="">Choose Company Work Type</option>
+                                            <option value="civil-residential" {% if profile.business_profile.company_type == 'civil-residential' %} selected {% endif %}>Civil Residential</option>
+                                            <option value="civil-commercial" {% if profile.business_profile.company_type == 'civil-commercial' %} selected {% endif %}>Civil Commercial</option>
+                                            <option value="electrical" {% if profile.business_profile.company_type == 'electrical' %} selected {% endif %}>Electrical</option>
+                                            <option value="mechanical" {% if profile.business_profile.company_type == 'mechanical' %} selected {% endif %}>Mechanical</option>
+                                            <option value="plumbing" {% if profile.business_profile.company_type == 'plumbing' %} selected {% endif %}>Plumbing</option>
+                                            <option value="interior-design" {% if profile.business_profile.company_type == 'interior-design' %} selected {% endif %}>Interior Design</option>
+                                            <option value="road" {% if profile.business_profile.company_type == 'road' %} selected {% endif %}>Road</option>
+                                            <option value="factory" {% if profile.business_profile.company_type == 'factory' %} selected {% endif %}>Factory</option>
+                                            <option value="temples" {% if profile.business_profile.company_type == 'temples' %} selected {% endif %}>Temples</option>
+                                            <option value="bridges" {% if profile.business_profile.company_type == 'bridges' %} selected {% endif %}>Bridges</option>
+                                            <option value="sky-scrapers" {% if profile.business_profile.company_type == 'sky-scrapers' %} selected {% endif %}>Sky Scrapers</option>
+                                        </select>
+                                        <input type="text" name="company_name" class="form-control rounded-3" placeholder="Company Name" value="{{profile.business_profile.company_name|default:''}}"/>
+                                        <input type="text" name="cin_no" class="form-control rounded-3" placeholder="CIN No" value="{{profile.business_profile.cin_no|default:''}}" />
+                                        <label class="btn bg-body-tertiary border p-2 text-black" for="gstFile">Upload GST NO PDF</label>
+                                        <input type="file" class="d-none" name="" id="gstFile" />
+                                        <select name="company_size" id="" class="form-select">
+                                            <option selected disabled value="">Choose Company Size</option>
+                                            <option value="1-10" {% if profile.business_type.company_size == '1-10' %} selected {% endif %}>1-10</option>
+                                            <option value="11-50" {% if profile.business_type.company_size == '11-50' %} selected {% endif %}>11-50</option>
+                                            <option value="51-100" {% if profile.business_type.company_size == '51-100' %} selected {% endif %}>51-100</option>
+                                            <option value="101-200" {% if profile.business_type.company_size == '101-200' %} selected {% endif %}>101-200</option>
+                                            <option value="201-500" {% if profile.business_type.company_size == '201-500' %} selected {% endif %}>201-500</option>
+                                            <option value="501-1000" {% if profile.business_type.company_size == '501-1000' %} selected {% endif %}>501-1000</option>
+                                            <option value="1001-2000" {% if profile.business_type.company_size == '1001-2000' %} selected {% endif %}>1001-2000</option>
+                                            <option value="2001-5000" {% if profile.business_type.company_size == '2001-5000' %} selected {% endif %}>2001-5000</option>
+                                            <option value="5001-10000" {% if profile.business_type.company_size == '5001-10000' %} selected {% endif %}>5001-10000</option>
+                                            <option value="10001-20000" {% if profile.business_type.company_size == '10001-20000' %} selected {% endif %}>10001-20000</option>
+                                            <option value="20001-50000" {% if profile.business_type.company_size == '20001-50000' %} selected {% endif %}>20001-50000</option>
+                                            <option value="50001-100000" {% if profile.business_type.company_size == '50001-100000' %} selected {% endif %}>50001-100000</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column row-gap-3 flex-md-row border-bottom pb-3">
+                                    <div class="col col-md-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Address</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">This information will not be shared with anyone.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        <textarea type="text" name="address" row="4" placeholder="29th, Row Building, 4th Column, New York" class="form-control rounded-3" value="John">{{profile.address|default:''}}</textarea>
+                                        <input type="text" name="google_plus_code" class="form-control" placeholder="Google Plus Code" aria-label="Username" aria-describedby="basic-addon1" value="{{profile.business_profile.google_plus_code|default:''}}" />
+                                        <input type="text" name="location_link" class="form-control" placeholder="Google Location" aria-label="Username" aria-describedby="basic-addon1"value="{{profile.business_profile.location_link|default:''}}"   />
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column row-gap-3 flex-md-row border-bottom pb-3">
+                                    <div class="col col-md-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Contact Information</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">Provide information on how you can be contated.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        <div class="input-group">
+                                            <span class="input-group-text" id="basic-addon1"><i class="ph fs-4 ph-phone"></i></span>
+                                            <input type="text" name="phone" maxlegnth="10" class="form-control" placeholder="Number" aria-label="Username" aria-describedby="basic-addon1" value="{{profile.phone}}" />
+<!--                                    <span class="input-group-text"><i class="ph fs-4 ph-seal-warning"></i></span>-->
+                                        </div>
+                                        <div class="input-group">
+                                            <span class="input-group-text" id="basic-addon1"><i class="ph fs-4 ph-envelope-simple"></i></span>
+                                            <input type="text" name="email" class="form-control" placeholder="Email" aria-label="Username" aria-describedby="basic-addon1"  value="{{profile.email}}" readonly />
+                                            <span class="input-group-text"><i class="ph fs-4 ph-seal-warning"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column row-gap-3 flex-md-row border-bottom pb-3">
+                                    <div class="col col-md-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Social Links</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">This will be displayed on your profile.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        {% for obj in profile.social_link.all %}
+                                            <div class="input-group">
+                                                <span class="input-group-text" id="basic-addon1">{{obj.social_type|get_icon}}</span>
+                                                <input type="text" disabled class="form-control" value="{{obj.link}}" />
+                                            </div>
+                                        {% endfor %}
+                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSocial">Add Social</button>
+                                        <div class="modal fade" id="addSocial" tabindex="-1" aria-labelledby="addSocialLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header border-0">
+                                                        <div class="d-flex flex-column">
+                                                            <h1 class="modal-title fs-5" id="addSocialLabel">Add Social</h1>
+                                                            <span class="fs-6 text-body-tertiary">Select a social media and add your social link</span>
+                                                        </div>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="input-group">
+                                                            <!-- Dropdown with arrow -->
+                                                            <select id="social_type" class="form-control form-select">
+                                                                <option value="fb">Facebook</option>
+                                                                <option value="insta">Instagram</option>
+                                                                <option value="snapchat">Snapchat</option>
+                                                                <option value="x">X(Twitter)</option>
+                                                                <option value="linkedin">LinkedIn</option>
+                                                                <option value="tiktok">TikTok</option>
+                                                                <option value="whatsapp">WhatsApp</option>
+                                                                <option value="youtube">YouTube</option>
+                                                                <option value="other">Other</option>
+                                                            </select>
+                                                            <!-- Input field -->
+                                                            <input type="text" id="link" class="form-control" placeholder="alex-dunphy" aria-describedby="basic-addon3 basic-addon4" />
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button id="addSocialSubmit" class="btn btn-primary">Add Social</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column row-gap-3 flex-md-row border-bottom pb-3">
+                                    <div class="col col-md-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Website Link</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">Provide information on about your website.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        {% for obj in profile.website.all %}
+                                            <div class="input-group">
+                                                <span class="input-group-text" id="basic-addon1"><i class="ph ph-link"></i></span>
+                                                <a href="{{obj.url}}" class="form-control overflow-hidden">{{obj.url}}</a>
+                                            </div>
+                                        {% endfor %}
+                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addWebsite">Add Website</button>
+                                        <div class="modal fade" id="addWebsite" tabindex="-1" aria-labelledby="addWebsiteLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header border-0">
+                                                        <div class="d-flex flex-column">
+                                                            <h1 class="modal-title fs-5" id="addWebsiteLabel">Add Website</h1>
+                                                            <span class="fs-6 text-body-tertiary">Add links to your company website</span>
+                                                        </div>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text" id="basic-addon1"><i class="ph ph-link"></i></span>
+                                                            <input type="text" id="website" class="form-control" placeholder="www.example.com" aria-describedby="basic-addon3 basic-addon4" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button id="addWebsiteSubmit" class="btn btn-primary">Add Website</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column row-gap-3 flex-md-row border-bottom pb-3">
+                                    <div class="col col-md-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Work History</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">Provide work history on about your company.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        {% if profile.job_profile.short_work_history %}
+                                            <span class="fs-6 fw-medium text-body-tertiary mt-2">Short Description</span>
+                                            <span class="fs-5">{{profile.job_profile.short_work_history}}</span>
+                                            <span class="fs-6 fw-medium text-body-tertiary mt-2">Long Description</span>
+                                            <span class="fs-5">{{profile.job_profile.work_history}}</span>
+                                        {% endif %}
+                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addWorkHistory">Add Work History</button>
+
+                                        <div class="modal fade" id="addWorkHistory" tabindex="-1" aria-labelledby="addWorkHistoryLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header border-0">
+                                                        <div class="d-flex flex-column">
+                                                            <h1 class="modal-title fs-5" id="addSocialLabel">Add Work History</h1>
+                                                            <span class="fs-6 text-body-tertiary">Add brief summary and detailed work history</span>
+                                                        </div>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label for="exampleFormControlInput1" class="form-label">Short History</label>
+                                                            <input type="text" class="form-control" id="shortHistory" placeholder="History" />
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="exampleFormControlTextarea1" class="form-label">Long History</label>
+                                                            <textarea class="form-control" id="longHistory" rows="3"></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button type="button" id="workHistorySubmit" class="btn btn-primary">Add</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column row-gap-3 flex-md-row border-bottom pb-3">
+                                    <div class="col col-md-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Company Media</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">Provide media on about your projects.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        <div class="d-flex flex-column flex-md-row column-gap-3">
+<!--                                    <div class="d-flex flex-column col col-md-6">-->
+<!--                                        <span class="fs-6 fw-medium text-body-secondary">Project Photos</span>-->
+<!--                                        {% if project.project_photo %}-->
+<!--                                        <a href="{{ project.project_photo.url }}" target="_blank" class="btn mt-1 btn-outline-primary d-flex align-items-center justify-content-center column-gap-1 fs-5"> <i class="ph fs-4 ph-eye"></i>View </a>-->
+<!--                                        {% else %}-->
+<!--                                         <input type="file" name="project_photo" class="form-control mt-1">-->
+<!--&lt;!&ndash;                                        <button class="btn btn-primary">Add Project Photos</button>&ndash;&gt;-->
+<!--                                        {% endif %}-->
+<!--                                    </div>-->
+                                            <div class="d-flex flex-column col col-md-6">
+                                                <span class="fs-6 fw-medium text-body-secondary">Brocher</span>
+
+                                                {% if profile.business_profile.project_brochures %}
+                                                    <a href="{{ profile.business_profile.project_brochures.url }}" target="_blank" class="btn mt-1 btn-outline-primary d-flex align-items-center justify-content-center column-gap-1 fs-5"> <i class="ph fs-4 ph-eye"></i>View </a>
+                                                {% endif %}
+                                                <input type="file" name="project_brochures" class="form-control mt-1">
+<!--                                        <button class="btn btn-primary">Add Brocher</button>-->
+
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-column flex-md-row column-gap-3">
+<!--                                    <div class="d-flex flex-column col col-md-6">-->
+<!--                                        <span class="fs-6 fw-medium text-body-secondary">Building License</span>-->
+<!--                                        {% if project.building_license_no %}-->
+<!--                                        <a href="{{ project.building_license_no.url }}" target="_blank" class="btn mt-1 btn-outline-primary d-flex align-items-center justify-content-center column-gap-1 fs-5"> <i class="ph fs-4 ph-eye"></i>View </a>-->
+<!--                                        {% else %}-->
+<!--                                         <input type="file" name="building_license_no" class="form-control mt-1">-->
+<!--&lt;!&ndash;                                        <button class="btn btn-primary">Add Building License</button>&ndash;&gt;-->
+<!--                                        {% endif %}-->
+<!--                                    </div>-->
+<!--                                    <div class="d-flex flex-column col col-md-6">-->
+<!--                                        <span class="fs-6 fw-medium text-body-secondary">Building RERA License</span>-->
+<!--                                        {% if project.building_rera_license %}-->
+<!--                                        <a href="{{ project.building_rera_license.url }}" target="_blank" class="btn mt-1 btn-outline-primary d-flex align-items-center justify-content-center column-gap-1 fs-5"> <i class="ph fs-4 ph-eye"></i>View </a>-->
+<!--                                        {% else %}-->
+<!--                                         <input type="file" name="building_rera_license" class="form-control mt-1">-->
+<!--&lt;!&ndash;                                        <button class="btn btn-primary">Add Building RERA License</button>&ndash;&gt;-->
+<!--                                        {% endif %}-->
+<!--                                    </div>-->
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="d-flex flex-column border-top pt-2">
+                                    <span class="fs-4 fw-semibold">Personal Information</span>
+                                    <span class="fs-6 text-secondary">Manage personal information about your profile</span>
+                                </div>
+                                <div class="d-flex border-bottom pb-3">
+                                    <div class="col-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Name</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">This will be displayed on your profile.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        <input type="text" name="first_name" class="form-control rounded-3" placeholder="First Name"  value="{{profile.first_name|default:''}}" required />
+                                        <input type="text" name="mid_name" class="form-control rounded-3" placeholder="Middle Name" value="{{profile.mid_name|default:''}}" />
+                                        <input type="text" name="last_name" class="form-control rounded-3" placeholder="Last Name"  value="{{profile.last_name|default:''}}"required />
+                                    </div>
+                                </div>
+                                <div class="d-flex border-bottom pb-3">
+                                    <div class="col-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Choose your business</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">This information will not be shared with anyone.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                    <select name="business_type" id="business_type" class="form-select">
+                                        <option disabled  value="">Business Type</option>
+                                        {% for i in business_type %}
+                                            <option value="{{ i.name }}" {% if profile.job_profile.business_type == i.name %}selected{% endif %}>
+                                                {{i.name}}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+
+<!--                                        <input type="text" name="qualification" class="form-control rounded-3" placeholder="Qualification"  value="{{profile.job_profile.qualification|default:''}}" />-->
+                                        <lable>Date of Birth</lable>
+                                        <input type="date" name="date_of_birth" class="form-control rounded-3" placeholder="dd-mm-yyyy"  placeholder="Date of Birth" value="{{ profile.job_profile.date_of_birth|date:"Y-m-d"}}" />
+                                        <select name="sex" id="" class="form-select">
+                                            <option disabled value="">Choose Gender</option>
+                                            <option value="M" {% if profile.job_profile.sex == "M" %}selected{% endif %}>Male</option>
+                                            <option value="F" {% if profile.job_profile.sex == "F" %}selected{% endif %}>Female</option>
+                                            <option value="O" {% if profile.job_profile.sex == "O" %}selected{% endif %}>Other</option>
+                                        </select>
+
+
+                                        <input type="text" name="adhar_no" id="aadharInput" class="form-control rounded-3" placeholder="Aadhar Number"  value="{{profile.job_profile.adhar_no|default:''}}" />
+                                        <input type="text" name="pan_no" id="panInput" class="form-control rounded-3" placeholder="PAN Number"  value="{{profile.job_profile.pan_no|default:''}}" />
+                                        <small id="aadharHelpBlock" class="form-text text-muted"></small>
+                                        <select name="marital_status" class="form-select">
+                                            <option selected disabled value="">Choose Marital Status</option>
+                                            <option value="S" {% if profile.job_profile.marital_status == "S" %}selected{% endif %}>Single</option>
+                                            <option value="M" {% if profile.job_profile.marital_status == "M" %}selected{% endif %}>Married</option>
+                                            <option value="P" {% if profile.job_profile.marital_status == "P" %}selected{% endif %}>Partnered</option>
+                                            <option value="W" {% if profile.job_profile.marital_status == "W" %}selected{% endif %}>Widowed</option>
+                                        </select>
+
+                                        <input type="text" name="spouse_name" class="form-control rounded-3" placeholder="Spouse Name" value="{{profile.job_profile.spouse_name|default:''}}"  />
+                                        <input type="number" name="children_count" class="form-control rounded-3" placeholder="Number of Children" value="{{profile.job_profile.children_count|default:''}}" />
+                                    </div>
+                                </div>
+                                <div class="d-flex border-bottom pb-3">
+                                    <div class="col-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Address</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">This information will not be shared with anyone.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        <textarea name="address" type="text" row="4" placeholder="29th, Row Building, 4th Column, New York" class="form-control rounded-3" >{{profile.address}}</textarea>
+                                    </div>
+                                </div>
+                                <div class="d-flex border-bottom pb-3">
+                                    <div class="col-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Contact Information</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">Provide information on how you can be contated.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        <div class="input-group">
+                                            <span class="input-group-text" id="basic-addon1"><i class="ph fs-4 ph-phone"></i></span>
+                                            <input type="text" name="phone" id="phoneInput" class="form-control" placeholder="Number" aria-label="Username" aria-describedby="basic-addon1" value="{% if profile.number %}{{profile.number}} {% else %}{{profile.user.phone_number}} {% endif %}" maxlength="10" />
+                                            <span class="input-group-text"><i class="ph fs-4 ph-seal-warning"></i></span>
+                                        </div>
+                                        <small id="phoneHelpBlock" class="form-text text-muted"></small>
+                                        <div class="input-group">
+                                            <span class="input-group-text" id="basic-addon1"><i class="ph fs-4 ph-envelope-simple"></i></span>
+                                            <input type="email" name="email" class="form-control" placeholder="Email" aria-label="Username" aria-describedby="basic-addon1"  value="{% if profile.email %} {{profile.email}} {% else %} {{profile.user.username}} {% endif %}"  readonly/>
+                                            <span class="input-group-text"><i class="ph fs-4 ph-seal-warning"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex border-bottom pb-3">
+                                    <div class="col col-md-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Social Links</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">This will be displayed on your profile.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        {% for obj in profile.social_link.all %}
+                                            <div class="input-group">
+                                                <span class="input-group-text" id="basic-addon1">{{obj.social_type|get_icon}}</span>
+                                                <input type="text" disabled class="form-control" value="{{obj.link}}" />
+                                                <span class="input-group-text del-social" data-pk="{{obj.pk}}" ><i class="ph-fill text-danger ph-trash-simple fs-5"></i></span>
+                                            </div>
+                                        {% endfor %}
+                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSocial">Add Social Link</button>
+                                        <div class="modal fade" id="addSocial" tabindex="-1" aria-labelledby="addSocialLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header border-0">
+                                                        <div class="d-flex flex-column">
+                                                            <h1 class="modal-title fs-5" id="addSocialLabel">Add Social Link</h1>
+                                                            <span class="fs-6 text-body-tertiary">Select a social media and add your social link</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="input-group">
+                                                            <select id="social_type" class="form-control" >
+                                                                <option value="fb">Facebook</option>
+                                                                <option value="insta">Instagram</option>
+                                                                <option value="snapchat">Snapchat</option>
+                                                                <option value="x">X(Twitter)</option>
+                                                                <option value="linkedin">LinkedIn</option>
+                                                                <option value="tiktok">TikTok</option>
+                                                                <option value="whatsapp">WhatsApp</option>
+                                                                <option value="youtube">YouTube</option>
+                                                                <option value="other">Other</option>
+                                                            </select>
+                                                            <input type="text" id="link" class="form-control" placeholder="alex-dunphy" aria-describedby="basic-addon3 basic-addon4" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button id="addSocialSubmit" class="btn btn-primary" type="button">Add Social Link</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex border-bottom pb-3 mt-3">
+                                    <div class="col-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Website Link</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">Provide information on about your website.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        {% for obj in profile.website.all %}
+                                            <div class="input-group">
+                                                <span class="input-group-text" id="basic-addon1"><i class="ph ph-link"></i></span>
+                                                <a href="{{obj.url}}" class="form-control overflow-hidden">{{obj.url}}</a>
+                                                <span class="input-group-text del-website" data-pk="{{obj.pk}}" ><i class="ph-fill text-danger ph-trash-simple fs-5"></i></span>
+                                            </div>
+                                        {% endfor %}
+                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addWebsite">Add Website Link</button>
+                                        <div class="modal fade" id="addWebsite" tabindex="-1" aria-labelledby="addWebsiteLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header border-0">
+                                                        <div class="d-flex flex-column">
+                                                            <h1 class="modal-title fs-5" id="addWebsiteLabel">Add Website Link</h1>
+                                                            <span class="fs-6 text-body-tertiary">Add links to your company website</span>
+                                                        </div>
+<!--                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>-->
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text" id="basic-addon1"><i class="ph ph-link"></i></span>
+                                                            <input type="text" id="website" class="form-control" placeholder="www.example.com" aria-describedby="basic-addon3 basic-addon4" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button id="addWebsiteSubmit" type="button" class="btn btn-primary">Add Website Link</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex border-bottom pb-3">
+                                    <div class="col-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Choice of Work Place</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">This will be used to filter the workplace.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+<!--                            <input type="text" class="form-control rounded-3" placeholder="Select Multiple Place" />-->
+                                        <select name="looking_for_international" class="form-select">
+                                            <option value="" {% if not profile.job_profile.looking_for_international %}selected{% endif %}>Choose Work Place Type</option>
+                                            <option value="H" {% if profile.job_profile.looking_for_international == "H" %}selected{% endif %}>Home Country</option>
+                                            <option value="I" {% if profile.job_profile.looking_for_international == "I" %}selected{% endif %}>International</option>
+                                        </select>
+
+                                        <div class="input-group">
+                                            <span class="input-group-text" id="basic-addon1"><i class="ph fs-4 ph-identification-card"></i></span>
+                                            <input type="text" name="passport_no" maxlength="9" class="form-control rounded-3" placeholder="Passport Number" value="{{profile.job_profile.passport_no|default:''}}" />
+                                        </div>
+                                       <div class="mb-3">
+                    <!-- Button to trigger file input -->
+                    <label for="medicalFile" class="btn btn-primary d-flex align-items-center">
+                        <span class="me-2">📄</span> Upload Medical Report PDF
+                    </label>
+
+                    <!-- Hidden file input -->
+                    <input type="file" class="d-none" name="medical_report" id="medicalFile" onchange="updateFileName()" />
+
+                    <!-- Display selected file name -->
+                    <div id="fileNameDisplay" class="mt-2 text-secondary">
+                        <em>No file selected</em>
+                    </div>
+
+                    <!-- Conditional display of download link if file exists -->
+                    {% if profile.job_profile.medical_report %}
+                        <div class="mt-3">
+                            <p class="fw-semibold">Current Medical Report:</p>
+                            <a href="{{ profile.jobprofile.medical_report.url }}" target="_blank" class="btn btn-outline-secondary">
+                                <span class="me-2">⬇️</span> Download Medical Report
+                            </a>
+                            <button type="button" class="btn btn-danger" onclick="removeMedicalReport()">🗑️</button>
+                        </div>
+                    {% else %}
+
+                    {% endif %}
+                </div>
+
+                                    </div>
+                                </div>
+<!--                    <div class="d-flex flex-column pt-2">-->
+<!--                        <span class="fs-4 fw-semibold">Profession</span>-->
+<!--                        <span class="fs-6 text-secondary">Manage profession information about your profile</span>-->
+<!--                    </div>-->
+                                <div class="d-flex border-bottom pb-3">
+                                    <div class="col-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Work</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">This will be displayed on your profile.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2 mt-2">
+                                        <select name="work_choice" id="work_choice" class="form-select" >
+                                            <option selected disabled value="">Choose Work Time Type</option>
+                                            <option value="H" {% if profile.jobprofile.work_time_type == 'H' %}selected{% endif %}>Hourly</option>
+                                            <option value="D" {% if profile.jobprofile.work_time_type == 'D' %}selected{% endif %}>Daily</option>
+                                            <option value="M" {% if profile.jobprofile.work_time_type == 'M' %}selected{% endif %}>Monthly</option>
+                                        </select>
+
+                                        <div class="input-group" style="display: none;" id="hourly-rate">
+                                            <span class="fs-5 fw-medium"> </span>
+                                            <span class="input-group-text" id="basic-addon3">₹ </span>
+                                            <input type="number" step="0.01" class="form-control" placeholder="Hourly Rate" id="basic-url" aria-describedby="basic-addon3 basic-addon4" name="expected_salary_hourly"  value="{{profile.job_profile.expected_salary_hourly|default:"0.00"}}"   />
+                                        </div>
+                                        <div class="input-group" style="display: none;" id="daily-rate">
+                                            <span class="input-group-text" id="basic-addon3">₹ </i></span>
+                                        <input type="number" step="0.01" class="form-control" placeholder="Daily Rate" id="basic-url" aria-describedby="basic-addon3 basic-addon4" name="expected_salary_daily"   value="{{profile.job_profile.expected_salary_daily|default:"0.00"}}" />
+                                    </div>
+                                    <div class="input-group" id="monthly-rate" style="display: none;">
+                                        <span class="input-group-text" id="basic-addon3">₹ </span>
+                                        <input type="number" step="0.01" class="form-control" placeholder="Monthly Rate" id="basic-url" aria-describedby="basic-addon3 basic-addon4" name="expected_salary_daily"  value="{{profile.job_profile.expected_salary_daily|default:"0.00"}}"  />
+                                    </div>
+                                </div>
+                                </div>
+                                <div class="d-flex border-bottom pb-3">
+                                    <div class="col-4 d-flex flex-column mt-2">
+                                        <span class="fs-5 fw-medium">Experience</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">This will be displayed on your profile.</span>
+                                    </div>
+                                    <div id="experience-container" class="col-3 d-flex flex-column row-gap-4 mt-2">
+                            <!-- Existing Experience Entries -->
+                                               {% if profile.job_profile.experience %}
+                                            {% for exp in profile.job_profile.experience.all %}
+                                                <div class="d-flex flex-column row-gap-2 experience-entry">
+                                                    <div class="d-flex flex-column row-gap-2">
+                                                        <input type="text" class="fs-6 form-control" name="new_experience_job_title" value="{{ exp.job_title }}"  />
+                                                        <input type="text" class="fs-6 form-control" name="new_experience_company_name" value="{{ exp.company_name }}"/>
+                                                    </div>
+                                                    <div class="d-flex align-items-center column-gap-1">
+                                                        <input type="date" class="fs-6 form-control fw-medium"  name="new_experience_start_date"  value="{{ exp.start_date|date:"Y-m-d" }}"  />
+                                                        -
+                                                        <input type="date" class="fs-6 form-control fw-medium" name="new_experience_end_date" value="{{ exp.end_date|date:"Y-m-d" }}"  />
+                                                    </div>
+                                                    <textarea class="fs-6 form-control" name="new_experience_role_description" placeholder="Role Description" >{{ exp.role_description }}</textarea>
+                                                </div>
+
+                                            {% endfor %}
+                                        {% else %}
+
+                                            <div class="d-flex flex-column row-gap-1 experience-entry mt-2 ">
+                                                <div class="d-flex flex-column row-gap-2">
+                                                    <input type="text" class="fs-5" name="new_experience_job_title" placeholder="Job Title" />
+                                                    <input type="text" class="fs-6 form-control" name="new_experience_company_name" placeholder="Company Name" />
+                                                </div>
+                                                <div class="d-flex column-gap-1 align-items-center">
+                                                    <input type="date" class="fs-6 form-control fw-medium" name="new_experience_start_date" placeholder="Start Date" />
+                                                    -
+                                                    <input type="date" class="fs-6 form-control fw-medium" name="new_experience_end_date" placeholder="End Date" />
+                                                </div>
+                                                <textarea class="fs-6 form-control"  placeholder="Role Description" name="new_experience_role_description" placeholder="Role Description"></textarea>
+                                            </div>
+                                        {% endif %}
+                            <!-- Add more entries here -->
+                                        <button class="btn btn-primary" type="button" id="add-experience-btn">New Work Experience</button>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex border-bottom pb-3">
+                                    <div class="col-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Emergency Contact</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">This will be used in case of emergency.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        <input type="text" name="emergency_contact_name" class="form-control rounded-3" placeholder="Name" value="{{profile.job_profile.emergency_contact_name|default:''}}" />
+                                        <input type="text" name="emergency_contact_phone_no" maxlength="10" class="form-control rounded-3" placeholder="Phone Number" value="{{profile.job_profile.emergency_contact_phone_no|default:''}}" />
+                                        <input type="text" name="emergency_contact_place" class="form-control rounded-3" placeholder="Location"   value="{{profile.job_profile.emergency_contact_place|default:''}}" />
+                                        <select name="emergency_contact_relationship" id="" class="form-select">
+                                            <option selected disabled value="">Choose Relationship Type</option>
+                                            <option value="Mother" {% if profile.job_profile.emergency_contact_relationship == "Mother" %}selected{% endif %}>Mother</option>
+                                            <option value="Father" {% if profile.job_profile.emergency_contact_relationship == "Father" %}selected{% endif %}>Father</option>
+                                            <option value="Brother" {% if profile.job_profile.emergency_contact_relationship == "Brother" %}selected{% endif %}>Brother</option>
+                                            <option value="Sister" {% if profile.job_profile.emergency_contact_relationship == "Sister" %}selected{% endif %}>Sister</option>
+                                            <option value="Husband" {% if profile.job_profile.emergency_contact_relationship == "Husband" %}selected{% endif %}>Husband</option>
+                                            <option value="Wife" {% if profile.job_profile.emergency_contact_relationship == "Wife" %}selected{% endif %}>Wife</option>
+                                            <option value="Mother-in-law" {% if profile.job_profile.emergency_contact_relationship == "Mother-in-law" %}selected{% endif %}>Mother-in-law</option>
+                                            <option value="Father-in-law" {% if profile.job_profile.emergency_contact_relationship == "Father-in-law" %}selected{% endif %}>Father-in-law</option>
+                                        </select>
+
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-column pt-2">
+                                    <span class="fs-4 fw-semibold">Insurance</span>
+                                    <span class="fs-6 text-secondary">Manage insurance information about your profile</span>
+                                </div>
+                                <div class="d-flex border-bottom pb-3">
+                                    <div class="col-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Life Insurance</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">Provide life insurance information on about you.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        <input type="text" class="form-control rounded-3" placeholder="Insurance Number" name="insurance_policy_no" value="{{profile.job_profile.insurance_policy_no|default:''}}" />
+                                        <input type="text" class="form-control rounded-3" placeholder="Insurance Company" name="insurance_company" value="{{profile.job_profile.insurance_company|default:''}}" />
+                                        <label>Insurance Validity upto</label>
+                                        <input type="date" name="insurance_policy_valid_upto" class="form-control rounded-3" placeholder="Insurance Validity" value="{% if profile.job_profile.insurance_policy_valid_upto %}{{ profile.job_profile.insurance_policy_valid_upto|date:'YYYY-MM-DD' }}{% endif %}" />
+                                        <a href="https://www.example.com" target="_blank" class="btn btn-primary" role="button">Get Life Insurance</a>
+
+                                    </div>
+                                </div>
+                                <div class="d-flex border-bottom pb-3">
+                                    <div class="col-4 d-flex flex-column">
+                                        <span class="fs-5 fw-medium">Vehicle Insurance</span>
+                                        <span class="fs-6 text-body-secondary fw-medium">Provide vehicle insurance information on about you.</span>
+                                    </div>
+                                    <div class="col col-md-6 col-lg-3 d-flex flex-column row-gap-2">
+                                        <label class="form-label">Do you own a vehicle</label>
+                                        <div class="d-flex align-items-center column-gap-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="vehicle_owned" id="vehicle_own1" value="True"
+                                                       {% if profile.job_profile.vehicle_owned %} checked {% endif %} />
+                                                <label class="form-check-label" for="vehicle_own1"> Yes </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="vehicle_owned" id="vehicle_own2" value="False"
+                                                       {% if not profile.job_profile.vehicle_owned %} checked {% endif %} />
+                                                <label class="form-check-label" for="vehicle_own2"> No </label>
+                                            </div>
+                                        </div>
+                                        <select name="vehicle_type" id="" class="form-select">
+                                            <option selected disabled value="">Choose Vehicle Type</option>
+                                            <option value="2 Wheeler" {% if profile.job_profile.vehicle_type == '2 Wheeler' %} selected {% endif %}>2 Wheeler</option>
+                                            <option value="3 Wheeler" {% if profile.job_profile.vehicle_type == '3 Wheeler' %} selected {% endif %}>3 Wheeler</option>
+                                            <option value="4 Wheeler" {% if profile.job_profile.vehicle_type == '4 Wheeler' %} selected {% endif %}>4 Wheeler</option>
+                                            <option value="6 Wheeler" {% if profile.job_profile.vehicle_type == '6 Wheeler' %} selected {% endif %}>6 Wheeler</option>
+                                            <option value="8 Wheeler" {% if profile.job_profile.vehicle_type == '8 Wheeler' %} selected {% endif %}>8 Wheeler</option>
+                                        </select>
+                                        <input type="text" name="vehicle_registration_no" class="form-control rounded-3" placeholder="Vehicle Number" value="{{ profile.job_profile.vehicle_registration_no|default:'' }}" />
+                                        <select name="vehicle_usage" id="" class="form-select">
+                                            <option selected disabled value="">Choose Vehicle Usage Type</option>
+                                            <option value="Personal" {% if profile.job_profile.vehicle_usage == 'Personal' %} selected {% endif %}>Personal</option>
+                                            <option value="Passenger" {% if profile.job_profile.vehicle_usage == 'Passenger' %} selected {% endif %}>Passenger</option>
+                                            <option value="Goods" {% if profile.job_profile.vehicle_usage == 'Goods' %} selected {% endif %}>Goods</option>
+                                        </select>
+                                        <input type="text" name="vehicle_insurance_policy_no" class="form-control rounded-3" placeholder="Insurance Number" value="{{profile.job_profile.vehicle_insurance_policy_no|default:''}}" />
+                                        <input type="text" name="vehicle_insurance_company" class="form-control rounded-3" placeholder="Insurance Company" value="{{profile.job_profile.vehicle_insurance_company|default:''}}" />
+<!--                            <input type="date" name="vehicle_accident_policy_valid_upto" class="form-control rounded-3" placeholder="Insurance Validity" value="{{ profile.job_profile.vehicle_accident_policy_valid_upto|date:"Y-m-d" }}" />-->
+                                        <input type="date" name="vehicle_accident_policy_valid_upto" class="form-control rounded-3" placeholder="Insurance Validity" value="{% if profile.job_profile.vehicle_accident_policy_valid_upto %}{{ profile.job_profile.vehicle_accident_policy_valid_upto|date:"Y-m-d" }}{% endif %}" />
+
+                                        <a href="https://www.example.com" target="_blank" class="btn btn-primary" role="button">Get Vehicle Insurance</a>
+
+                                    </div>
+                                </div>
+                            {% endif %}
+                            <div class="d-flex justify-content-end mt-2">
+                                <button class="btn btn-primary" type="submit">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="account-tab-pane" role="tabpanel" aria-labelledby="account-tab" tabindex="0">Hello</div>
+                <div class="tab-pane fade" id="notifications-tab-pane" role="tabpanel" aria-labelledby="notifications-tab" tabindex="0">...</div>
+            </div>
+        </div>
+        <div class="modal fade" id="deleteLinkModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header border-0">
+                  <h5 class="modal-title fs-5" id="deleteModalLabel"></h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                  <i class="ph-fill ph-warning-circle text-warning" style="font-size: 4rem;"></i>
+                  <p class="mt-3 mb-0 fs-5">Are you sure you want to delete this <span id="deleteText"></span> link?</p>
+                  <p class="text-muted fs-6">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                  <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                  <button type="button" class="btn btn-danger px-4" id="confirmDelete">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% if request.user.profile.profile_type == 'jobseeker' %}
+<script>
+document.getElementById("add-experience-btn").addEventListener("click", function () {
+    // Get the container where experiences are listed
+    var container = document.getElementById("experience-container");
+
+    // Create a new experience entry
+    var newEntry = document.createElement("div");
+    newEntry.className = "d-flex flex-column row-gap-1 experience-entry";
+
+    // Add input fields for new experience entry
+    newEntry.innerHTML = `
+        <div class="d-flex flex-column row-gap-1">
+            <input type="text" name="new_experience_job_title" class="fs-6 form-control" placeholder="Job Title">
+            <input type="text" class="fs-6 form-control" name="new_experience_company_name" placeholder="Company Name">
+        </div>
+        <div class="d-flex column-gap-1 align-items-center">
+            <input type="date" class="fs-6 form-control fw-medium" name="new_experience_start_date" placeholder="Start Date (e.g., Aug, 2022)">
+            -
+            <input type="date" class="fs-6 form-control fw-medium" name="new_experience_end_date" placeholder="End Date (e.g., Sep, 2022)">
+        </div>
+        <textarea class="fs-6 form-control" name="new_experience_role_description" placeholder="Describe your role here..."></textarea>
+    `;
+
+    // Append the new entry to the container
+    container.insertBefore(newEntry, document.getElementById("add-experience-btn"));
+});
+</script>
+{% endif %}
+        <script>
+
+            const id = {{request.user.profile.pk}};
+            $('#profilePicture').on('change', function(){
+                $('#updateProfilePicture').prop('disabled', false);
+            })
+            $('#updateProfilePicture').on('click', function(){
+                var fileInput = document.getElementById('profilePicture');
+                var file = fileInput.files[0];
+
+                let reader = new FileReader();
+                reader.onloadend = function() {
+                    var base64data = reader.result;
+
+                    $.ajax({
+                        url: "{% url 'profile:profile-picture-upload' %}",
+                        type: "POST",
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        data: {
+                            id: id,
+                            img: base64data
+                        },
+                        success: function(response) {
+                            window.location.reload();
+                        },
+                        error: function(xhr, status, error) {
+                            console.log("Error: " + error);
+                        }
+                    });
+                }
+                reader.readAsDataURL(file);
+            })
+
+$('#addSocialSubmit').on('click', function() {
+    const socialType = $('#social_type').val();
+    const link = $('#link').val().trim();
+
+    // Basic URL pattern validation
+    const urlPattern = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,6}(\/[a-zA-Z0-9-._~:?#@!$&'()*+,;=]*)?$/;
+
+    // Validate that the link is not empty
+    if (!link) {
+        alert("Please enter your social link.");
+        return; // Stop execution if link is empty
+    }
+
+
+
+    // If validation passes, proceed with AJAX request
+    $.ajax({
+        url: "{% url 'profile:add-social' %}",
+        type: "POST",
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        data: {
+            id: {{ request.user.profile.pk }},
+            social_type: socialType,
+            link: link
+        },
+        success: function(response) {
+            window.location.reload();
+        },
+        error: function(xhr, status, error) {
+            console.log("Error: " + error);
+        }
+    });
+});
+
+
+    $('#addWebsiteSubmit').on('click', function() {
+    const website = $('#website').val().trim();
+
+    // Basic URL pattern for validation
+    const urlPattern = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,6}(\/[a-zA-Z0-9-._~:?#@!$&'()*+,;=]*)?$/;
+
+    // Validate that the website field is not empty
+    if (!website) {
+        alert("Please enter a website link.");
+        return; // Stop execution if website field is empty
+    }
+
+    // Validate the website link format
+    if (!urlPattern.test(website)) {
+        alert("Please enter a valid URL for your website.");
+        return; // Stop execution if website format is invalid
+    }
+
+    // If validation passes, proceed with AJAX request
+    $.ajax({
+        url: "{% url 'profile:add-website' %}",
+        type: "POST",
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        data: {
+            id: {{ request.user.profile.pk }},
+            url: website
+        },
+        success: function(response) {
+            window.location.reload();
+        },
+        error: function(xhr, status, error) {
+            console.log("Error: " + error);
+        }
+    });
+});
+            $('#workHistorySubmit').on('click', function(){
+                $.ajax({
+                    url: "{% url 'profile:add-work-history' %}",
+                    type: "POST",
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    data: {
+                        id:{{request.user.profile.pk}},
+                        short_history: $('#shortHistory').val(),
+                        long_history: $('#longHistory').val()
+                    },
+                    success: function(response) {
+                        window.location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("Error: " + error);
+                    }
+                });
+            })
+            document.getElementById('deleteProfilePicButton').addEventListener('click', function () {
+                if (confirm('Are you sure you want to delete your profile picture?')) {
+                    const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+                    fetch('{% url "profile:delete-profile-pic" %}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken,  // Set CSRF token header
+                            'Content-Type': 'application/json',  // Ensure correct content type
+                        },
+                        body: JSON.stringify({}),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                // Optionally update the UI or reload the page
+                                location.reload();  // This can be replaced with UI updates instead of reload
+                            } else {
+                              location.reload();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred while deleting the profile picture');
+                        });
+                }
+            });
+
+
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.del-social').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                      pkToDelete = this.dataset.pk;
+                      type = "social"
+                      const modal = new bootstrap.Modal(document.getElementById('deleteLinkModal'));
+                      document.querySelector("#deleteText").textContent = "social"
+                      modal.show();
+                    });
+                  });
+
+                  document.querySelectorAll('.del-website').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                      pkToDelete = this.dataset.pk;
+                      type = "website"
+                      const modal = new bootstrap.Modal(document.getElementById('deleteLinkModal'));
+                      document.querySelector("#deleteText").textContent = "website"
+                      modal.show();
+                    });
+                  });
+
+                document.getElementById('confirmDelete').addEventListener('click', function() {
+                if (pkToDelete) {
+                    let url;
+                    if (type == "social"){
+                        url = '{% url "profile:delete-social" %}'
+                    } else if(type == "website") {
+                        url = '{% url "profile:delete-website" %}'
+                    }
+                    console.log(type)
+                    fetch( url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ id: pkToDelete })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data)
+                    if (data.success) {
+                        document.querySelector(`.del-website[data-pk="${pkToDelete}"]`).closest('.input-group').remove();
+                        bootstrap.Modal.getInstance(document.getElementById('deleteLinkModal')).hide();
+                        location.reload();
+                    } else {
+                       bootstrap.Modal.getInstance(document.getElementById('deleteLinkModal')).hide();
+                       location.reload();
+                    }
+                    })
+                    .catch(error => {
+                    console.error('Error:', error);
+                    bootstrap.Modal.getInstance(document.getElementById('deleteLinkModal')).hide();
+                    location.reload();
+                    });
+                }
+                });
+
+
+                Inputmask('9999 9999 9999').mask(document.getElementById('aadharInput'));
+
+                document.getElementById('aadharInput').addEventListener('input', function() {
+                    const aadharInput = document.getElementById('aadharInput');
+                    const aadharValue = aadharInput.value.replace(/\s+/g, ''); // Remove spaces for validation
+                    const aadharRegex = /^\d{12}$/;
+
+                    if (aadharRegex.test(aadharValue)) {
+                        aadharInput.classList.remove('is-invalid');
+                        aadharInput.classList.add('is-valid');
+                        document.getElementById('aadharHelpBlock').textContent = 'Valid Aadhaar number.';
+                        document.getElementById('aadharHelpBlock').classList.remove('text-danger');
+                        document.getElementById('aadharHelpBlock').classList.add('text-success');
+                    } else {
+                        aadharInput.classList.remove('is-valid');
+                        aadharInput.classList.add('is-invalid');
+                        document.getElementById('aadharHelpBlock').textContent = 'Aadhaar number must be a 12-digit number.';
+                        document.getElementById('aadharHelpBlock').classList.remove('text-success');
+                        document.getElementById('aadharHelpBlock').classList.add('text-danger');
+                    }
+                });
+            });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const phoneInput = document.getElementById('phoneInput');
+                const phoneHelpBlock = document.getElementById('phoneHelpBlock');
+
+                phoneInput.addEventListener('input', function() {
+        // Remove non-numeric characters
+                    const phoneValue = phoneInput.value.replace(/\D/g, '');
+
+        // Validate 10-digit phone number
+                    if (phoneValue.length === 10) {
+                        phoneInput.classList.remove('is-invalid');
+                        phoneInput.classList.add('is-valid');
+                        phoneHelpBlock.textContent = 'Valid phone number.';
+                        phoneHelpBlock.classList.remove('text-danger');
+                        phoneHelpBlock.classList.add('text-success');
+                    } else {
+                        phoneInput.classList.remove('is-valid');
+                        phoneInput.classList.add('is-invalid');
+                        phoneHelpBlock.textContent = 'Phone number must be 10 digits.';
+                        phoneHelpBlock.classList.remove('text-success');
+                        phoneHelpBlock.classList.add('text-danger');
+                    }
+
+        // Format the phone number as (123) 456-7890 for better readability
+                    phoneInput.value = phoneValue.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
+                });
+            });
+        </script>
+
+        <script>
+    // Function to toggle the visibility of salary inputs
+            function toggleSalaryInput() {
+                const workChoice = document.getElementById('work_choice').value;
+
+        // Hide all salary input fields initially
+                document.getElementById('hourly-rate').style.display = 'none';
+                document.getElementById('daily-rate').style.display = 'none';
+                document.getElementById('monthly-rate').style.display = 'none';
+
+        // Show only the relevant salary input based on the selection
+                if (workChoice === 'H') {
+                    document.getElementById('hourly-rate').style.display = 'flex';
+                } else if (workChoice === 'D') {
+                    document.getElementById('daily-rate').style.display = 'flex';
+                } else if (workChoice === 'M') {
+                    document.getElementById('monthly-rate').style.display = 'flex';
+                }
+            }
+
+    // Add event listener for the select dropdown change
+            document.getElementById('work_choice').addEventListener('change', toggleSalaryInput);
+
+    // Run the function on page load to handle pre-selected options
+            window.onload = toggleSalaryInput;
+        </script>
+        <script>
+    setTimeout(function() {
+        var alertMessage = document.getElementById("alertmessage");
+        if (alertMessage) {
+            alertMessage.classList.add("fade");
+            setTimeout(function() {
+                alertMessage.style.display = "none";
+            }, 500); // Additional delay to match Bootstrap fade-out effect (0.5s)
+        }
+    }, 5000); // 5 seconds delay
+</script>
+<script>
+document.getElementById("addSocialSubmit").addEventListener("click", function (event) {
+    const socialType = document.getElementById("social_type").value;
+    const link = document.getElementById("link").value.trim();
+
+    // Basic URL regex pattern for validation
+    const urlPattern = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,6}(\/[a-zA-Z0-9-._~:?#@!$&'()*+,;=]*)?$/;
+
+    if (!link) {
+        alert("Please enter your social link.");
+        event.preventDefault();  // Prevent form submission
+        return;
+    }
+
+    if (!urlPattern.test(link)) {
+        alert("Please enter a valid URL for your social link.");
+        event.preventDefault();  // Prevent form submission
+        return;
+    }
+
+    // If validation passes, you can proceed with submitting or closing the modal
+    alert("Social link added successfully!");
+    // Optionally, you could close the modal programmatically, if needed:
+    const addSocialModal = new bootstrap.Modal(document.getElementById("addSocial"));
+    addSocialModal.hide();
+});
+</script>
+<script>
+    function updateFileName() {
+        // Get the file input and file name display elements
+        const fileInput = document.getElementById('medicalFile');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+
+        // Update the text to show the selected file name or "No file selected"
+        if (fileInput.files.length > 0) {
+            fileNameDisplay.textContent = fileInput.files[0].name;
+            fileNameDisplay.classList.remove('text-secondary');  // Optional: make it more prominent once a file is selected
+        } else {
+            fileNameDisplay.textContent = 'No file selected';
+        }
+    }
+    function removeMedicalReport() {
+    if (confirm("Are you sure you want to remove the medical report?")) {
+        fetch("{% url 'profile:remove_medical_report' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}"
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // Optionally, update the UI after removing the file
+               // alert("Medical report removed successfully.");
+                location.reload(); // Reload the page to update the UI
+            } else {
+                alert("Failed to remove the medical report.");
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    }
+}
+
+</script>
+{% endblock body %}

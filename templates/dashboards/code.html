@@ -1,0 +1,2530 @@
+{% extends "partials/base.html" %} {% block title %}BOQ{% endblock title %} {% block body %}
+{% load static %}
+<head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.9.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/static/css/quill.snow.css" rel="stylesheet">
+    <link href="/static/css/quill.bubble.css" rel="stylesheet">
+    <link href="/static/css/quill.core.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+    </head>
+    <style>
+    /* For Chrome, Safari, Edge, Opera */
+.no-arrows::-webkit-outer-spin-button,
+.no-arrows::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* For Firefox */
+.no-arrows[type=number] {
+    -moz-appearance: textfield;
+}
+
+    .container {
+            margin: 20px;
+            height:30px;
+        }
+
+        .table > :not(caption) > * > * {
+            background-color: transparent;
+            text-align: center;
+        }
+        thead tr {
+            background-color: #fff !important;
+        }
+        tr th {
+            color: #4a657e !important;
+        }
+        table tr:nth-child(even) {
+            background-color: #ffffff; /* This can be omitted if the default is white */
+        }
+        .table td {
+            padding: 0;
+        }
+        .table td:has(input.form-control, select.form-select, textarea.form-control) {
+            padding: 0;
+        }
+        .table td input.form-control,
+        .table td textarea.form-control,
+        .table td select.form-select {
+            border: 0 !important;
+        }
+
+        .table-bordered > thead > tr > th,
+        .table-bordered > tbody > tr > th,
+        .table-bordered > tfoot > tr > th,
+        .table-bordered > thead > tr > td,
+        .table-bordered > tbody > tr > td,
+        .table-bordered > tfoot > tr > td {
+            border: 1px solid #dddddd;
+            border-right-width: 0px;
+            border-left-width: 0px;
+        }
+        .table-fixed {
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        #toggleRows {
+            background-color: #4992f0 !important;
+            border: none;
+
+        }
+        #toggleRows4{
+            background-color: #4992f0 !important;
+            border: none;
+        }
+
+    table.table-fixed {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    table.table-fixed th,
+    table.table-fixed td {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    /* Ensure all rows maintain the same height */
+    tr.table-row {
+        height: 1%;
+    }
+
+    /* Responsive fix */
+    .table-container {
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    </style>
+    <div class="container-fluid d-flex flex-column row-gap-5 mt-5"  >
+        <form action="{% url 'code:code' %}" method="POST" id="quill-form">
+            {% csrf_token %}
+            <div class="d-flex flex-column row-gap-3"  >
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex flex-column">
+                        <span class="fs-3 fw-medium">Code Wizard</span>
+                        <span class="fs-6 text-body-secondary">Create and Manage your code here</span>
+                                </div>
+                                  {% if messages %}
+                <div class="alert alert-danger">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                    <div class="d-flex column-gap-3">
+                        <a href="{% url 'code:specification' %}" target="_blank" class="btn btn-primary d-flex algin-items-center column-gap-2"><span class="material-symbols-rounded fs-4">open_in_new</span>View all codes</a>
+                        <a href="{% url 'profile:calculator' %}" class="btn btn-primary d-flex algin-items-center column-gap-2">Calculator</a>
+                        <button class="btn btn-success d-flex algin-items-center column-gap-2" id="save" type="submit"><i class="ph ph-floppy-disk fs-4"></i>Save Code</button>
+                    </div>
+                </div>
+                    <div class="container-fluid bg-white rounded-4 p-2" style="position: sticky; top: 0; z-index: 1000;">
+                        <div class="row g-2">
+                            <div class="col-lg-3 col-md-6 col-12 d-flex align-items-center">
+                                <div class="input-group">
+                                    <span class="input-group-text">Group Name</span>
+                                    <select class="form-select" name="group_name" id="worktypeSelect" style="font-weight: bold;" required>
+                                        <option value="" >Select Group Name</option>
+                                        {% for name in worktype %}
+                                        <option value="{{ name.id }}" data-description="{{ name.description }}"
+                                            {% if code and code.group_name == name.pk|stringformat:"s" %} selected {% endif %}>
+                                            {{ name.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 col-12 d-flex align-items-center">
+                                <div class="input-group">
+                                    <span class="input-group-text">Sub Group Name</span>
+                                    <select class="form-select" name="subgroup_name" id="subgroupSelect" style="font-weight: bold;"  disabled required>
+                                        {% for sub in worktypesubgroup %}
+                                            <option value="{{ sub.id }}"
+                                            {% if code and code.subgroup_name == sub.pk|stringformat:"s" %} selected {% endif %}>
+                                            {{ sub.name}}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-6 col-12 d-flex align-items-center">
+                                <div class="input-group">
+                                    <span class="input-group-text">Designed For</span>
+                                    <select class="form-select" name="design_for" style="font-weight: bold;"  required>
+                                <option disabled {% if not code.design_for %} selected {% endif %}>Select</option>
+                                <option value="1" {% if code.design_for == '1' or not code.design_for %} selected {% endif %}>1</option>
+                                <option value="10" {% if code.design_for == '10' %} selected {% endif %}>10</option>
+                                <option value="100" {% if code.design_for == '100' %} selected {% endif %}>100</option>
+                                <option value="1000" {% if code.design_for == '1000' %} selected {% endif %}>1000</option>
+                            </select>
+                                </div>
+                            </div>
+                             <input type="hidden" name="pk" value="{{ code.id }}">
+                            <div class="col-lg-2 col-md-6 col-12 d-flex align-items-center">
+                                <div class="input-group">
+                                    <span class="input-group-text">Unit</span>
+                                   <select class="form-select" name="unit"style="font-weight: bold;"  required>
+                            <option disabled {% if not code.unit %} selected {% endif %}>Select</option>
+                            {% for u in unit %}
+                                <option value="{{ u.name }}"
+                                    {% if code.unit == u.name or not code.unit and u.name == "M3." %} selected {% endif %}>
+                                    {{ u.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-6 col-12 d-flex align-items-center">
+                                <div class="input-group">
+                                    <span class="input-group-text">Created By</span>
+                                    <input type="text" value="{{request.user.profile.first_name}} {{request.user.profile.last_name}}" class="form-control" style="font-weight: bold;" name="created_by" required />
+                                </div>
+                            </div>
+
+                        </div>
+                    <div class="row g-2 mt-1">
+                        <div class="col-lg-3">
+                            <div class="input-group">
+                            <span class="input-group-text" >Code Preview</span>
+                            <input type="text" name="code_preview" value="{{code.code_preview}}" style="font-weight: bold;text-transform: uppercase;"  class="form-control code-preview" readonly />
+                        </div>
+                        </div>
+                        <div class="col-lg-2">
+                            <div class="input-group">
+                                <span class="input-group-text">Basic Value ₹</span>
+                                <input type="text" class="form-control" style="text-align: right;font-weight: bold;" name="basic_value" value="{{code.basic_value|floatformat:2}}" readonly />
+                            </div>
+                        </div>
+
+                        <div class="col-lg-2">
+                            <div class="input-group">
+                                <span class="input-group-text">Tax %</span>
+                                <input type="text" class="form-control" style="text-align: right;font-weight: bold;" name="gst" value="{{code.gst_per|floatformat:2}}" readonly />
+                            </div>
+                        </div>
+
+                        <div class="col-lg-2">
+                            <div class="input-group">
+                                <span class="input-group-text">Tax Value ₹</span>
+                                <input type="text" class="form-control" style="text-align: right;font-weight: bold;" name="gst_value" value="{{code.gst_value|floatformat:2}}" readonly />
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3">
+                            <div class="input-group">
+                                <span class="input-group-text">Grand Total ₹</span>
+                                <input type="text" class="form-control" style="text-align: right; font-weight: bold;"  name="grand_total" value="{{code.grand_total|floatformat:2}}" readonly />
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Third Row -->
+                    <div class="row g-2 mt-1">
+                        <div class="col-lg-9">
+                            <div class="input-group ">
+                                <span class="input-group-text">Heading</span>
+                                <textarea class="form-control" name="description" placeholder="Write heading here" style="height:3em; resize: none;">{{code.description}}</textarea>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="input-group">
+                                <span class="input-group-text">Date</span>
+                                <input type="text" class="form-control" name="date" readonly value="{% if code.date %}{{ code.date|date:"Y-m-d" }}{% else %}{{ today|date:"m-d-Y"}}{% endif %}" required style="height:3em; resize: none;"/>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-12">
+                            <div class="input-group w-100 p-0">
+                                <div id="snow-editor" class="w-100" style="height: 50px;">{{code.note}}</div>
+                                <!-- <textarea class="form-control w-100 " id="snow-editor" style="height: 8em; overflow-y: auto; resize: none;
+                                 width: 100%;"   placeholder="Write long description here" name="note">{{code.note}}</textarea> -->
+                            </div>
+                            <textarea name="note" id="quill-note" style="display:none;"></textarea>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <br>
+
+                <div class="d-flex flex-column row-gap-1 bg-white rounded-4 p-2">
+                    <!-- <div class="flex-column border-bottom ">
+                        <span class="fs-5 me-2">Materials Table </span class=""><i class="bi bi-info-circle-fill"
+                                                                                   data-bs-toggle="tooltip"
+                                                                                   data-bs-placement="left"
+                                                                                   title="Manage your materials for this code">
+                        </i>
+                    </div> -->
+                    <div class="table-responsive">
+                    <table class="table table-bordered table-fixed mb-0" id="table_floor">
+                        <thead>
+                            <tr class="fw-medium text-center">
+                                <th style="width: 70%; padding-right: 60px;">
+                                    <i class="bi bi-info-circle-fill"
+                                       data-bs-toggle="tooltip"
+                                       data-bs-placement="left"
+                                       style="margin-right: 70px;"
+                                       title="Manage your materials for this code">
+                                    </i>
+                                    WRITE CODE HERE
+
+                                </th>
+                                <th style="width: 60%;">MATERIAL GROUP</th>
+                                <th style="width: 50%;">MATERIAL</th>
+                                <th style="width: 20%;">RATE</th>
+                                <th style="width: 20%;">UNIT</th>
+                                <th style="width: 17%;">RATIO</th>
+                                <th style="width: 28%;">BASIC VALUE</th>
+                                <th style="width: 20%;">TAX</th>
+                                <th style="width: 30%;">TAX VALUE</th>
+                                <th style="width: 60%;">SUB TOTAL</th>
+                                <th style="width: 15%;">REMOVE</th>
+
+                            </tr>
+                        </thead>
+                        <tbody id="material_body">
+                            {% if code and code.code_material.all %}
+                                {% for mat in code.code_material.all %}
+                                    <tr class="table-row" id="tablerow">
+                                        <input type="hidden" name="material_pk[]" value="{{mat.pk}}">
+                                        <td class="bg-white" id="first_td" style="width: 300px;">
+                                            {% if forloop.first %}
+                                                <textarea name="materialcode" class="materialcode form-control pt-0 pb-0" style="resize: none;text-transform: uppercase;" required>{{code.material_code}}</textarea>
+                                            {% else %}
+                                                <input type="hidden" name="materialcode" style="resize: none" value="{{ mat.material_name }}">
+                                            {% endif %}
+                                        </td>
+
+                                        <td style="width: 250px;text-align: right;">
+                                            <select class="form-select material-group pt-0 pb-0" id="materialgroup" name="material_group[]" data-section="group">
+                                                <option selected disabled>Select Material Group</option>
+                                                {% for mg in materialgroup %}
+                                                    <option value="{{ mg.pk }}" {% if mat.group.name == mg.name %} selected {% endif %}>{{ mg.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                        <td style="width: 200px;">
+                                            <select class="form-select materialSelect " id="materialSelect" name="materialselect[]" required disabled>
+                                                <option selected disabled>Select Material</option>
+                                                {% for m in material %}
+                                                    <option value="{{ m.id }}" data-rate="{{ m.price }}" data-unit="{{ m.unit }}" data-gst="{{ m.gst }}" {% if mat.mat_name == m %} selected {% endif %}>{{ m }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                        <td class="rateCell p-1 " style="width: 80px; text-align: right;">₹ {{ mat.price }}<input type="hidden" name="rate[]" class="rateInput" value="{{ mat.price }}" required /></td>
+                                        <td class="unitCell "style="width: 80px;">{{ mat.unit }}<input type="hidden" name="unit[]" class="unitInput" value="{{ mat.unit }}" required /></td>
+                                        <td class="ratiocell p-1" style="width:70px;">
+                                            <input type="number" class="ratio form-control no-arrows" style="text-align: right;" name="ratio[]" value="{{ mat.Required|floatformat:3 }}" oninput="calculate(event, this)"  required />
+                                        </td>
+                                        
+
+
+                                        <td class="basicValueCell p-1 "style="width: 200px;text-align: right;">₹ {{ mat.basic_value }}<input type="hidden" name="basicvalue[]" class="basicValueInput" value="{{ mat.basic_value }}" required /></td>
+                                        <td class="gstCell"style="width: 70px; text-align: right;">{{ mat.gst }}%<input type="hidden" name="gst[]" class="gstInput" value="{{ mat.gst}}" /></td>
+                                        <td class="gstValueCell p-1"style="width: 100px;text-align: right;">₹ {{ mat.gst_value }}<input type="hidden" name="gstvalue[]" class="gstValueInput" value="{{ mat.gst_value }}" required /></td>
+                                        <td class="subTotalCell p-1"style="width: 200px;text-align: right;">₹ {{ mat.sub_total }}<input type="hidden" name="subtotal[]" class="subTotalInput" value="{{ mat.sub_total }}" required /></td>
+                                        <!-- <td> {% if forloop.first %} {% else %}<button type="button" class="remove-row btn btn-danger">Remove</button> {% endif %}</td> -->
+
+
+                                        <td class="p-1">
+                                            <div>
+                                                {% if forloop.first %}
+                                                {% else %}
+                                                    <button class="fw-medium fs-6 border border-2 rounded-3 material-symbols-rounded d-flex align-items-center justify-content-center column-gap-2 p-1 remove-row" title="Remove" style="background-color: red; width: 25px; height: 25px;" type="button">
+                                                        <span class="material-symbols-rounded fs-5" style="color: #fff; font-weight: bold;">close</span> <!-- "X" icon -->
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+<!--
+                                        <td class="p-1">
+                                            <div>
+                                                {% if forloop.first %}
+                                                {% else %}
+                                                    <button class="fw-medium fs-6 border border-2 rounded-3 material-symbols-rounded d-flex align-items-center justify-content-center column-gap-2 p-1 remove-row" title="Remove" style="background-color: red; width: 25px; height: 25px;" type="button">
+                                                        <span class="material-symbols-rounded fs-5" style="color: #fff; font-weight: bold;">close</span>
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </td> -->
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                      <!-- Empty form row for new material input -->
+                                <tr class="table-row" id="tablerow">
+                                    <input type="hidden" name="material_pk[]" value="{{mat.pk}}">
+                                    <td class="bg-white" style="width: 300px;" >
+                                        <textarea name="materialcode" class="materialcode form-control pt-0 pb-0"  style="resize: none; text-transform: uppercase;" required></textarea>
+                                    </td>
+
+                                    <td style="width: 250px; text-align: right;">
+                                        <select class="form-select material-group" id="materialgroup" name="material_group[]" data-section="group">
+                                            <option selected disabled>Select Material Group</option>
+                                            {% for mg in materialgroup %}
+                                                <option value="{{ mg.pk }}">{{ mg.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </td >
+                                    <td style="width: 200px;">
+                                        <select class="form-select materialSelect pt-0 pb-0" id="materialSelect" name="materialselect[]" required disabled>
+                                            <option selected disabled>Select Material</option>
+                                            {% for m in material %}
+                                                <option value="{{ m.id }}" data-rate="{{ m.price }}" data-unit="{{ m.unit }}" data-gst="{{ m.gst }}">{{ m }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td class="rateCell p-1  "style="width: 80px;text-align: right;">₹ 0.00<input type="hidden" name="rate[]" class="rateInput" required /></td>
+                                    <td class="unitCell "style="width: 80px;">UNIT<input type="hidden" name="unit[]" class="unitInput" required /></td>
+                                    <td class="ratiocell p-1" style="width:70px; ">
+                                        <input type="number"  class="ratio form-control p-0 no-arrows" style="text-align: right;" name="ratio[]" value="{{ mat.Required|floatformat:3 }}" oninput="calculate(event, this)" step="1.000" min="0" required />
+                                    </td>
+                                    <td class="basicValueCell p-1"style="width: 200px;text-align: right; ">₹ 0.00<input type="hidden" name="basicvalue[]" class="basicValueInput" required /></td>
+                                    <td class="gstCell p-1"style="width: 70px;text-align: right;">0%<input type="hidden" name="gst[]" class="gstInput" /></td>
+                                    <td class="gstValueCell p-1"style="width: 100px;text-align: right;">₹ 0.00<input type="hidden" name="gstvalue[]" class="gstValueInput" required /></td>
+                                    <td class="subTotalCell p-1"style="width: 200px;text-align: right;">₹ 0.00<input type="hidden" name="subtotal[]" class="subTotalInput" required /></td>
+                                    <td class=""></td>
+
+                                </tr>
+                            {% endif %}
+
+                            <tr class="table-row" id="summarymaterial">
+                                <td class="p-1">
+                                    <div >
+                                    <button id="addRowButton" class="fw-medium fs-6  border border-2 rounded-3 material-symbols-rounded d-flex align-items-center justify-content-center column-gap-2 p-1" style="background-color: #1585cf; width: 25px; height: 25px;"type="button">
+                                        <span class="material-symbols-rounded fs-5" style="color: #fff ; font-weight: bold;">add</span>
+                                        <!-- <span>Add Row</span> -->
+                                    </button>
+                                </div></td>
+
+                                <td class="p-1"    colspan="5" style="font-weight: bold; text-align: left;" >Total</td>
+                                <!-- <td  class="total-rate"style="font-weight: bold;"><input type="hidden" name="material_total_rate" value="{{code.material_total_rate}}" /></td> -->
+                                <!-- <td colspan=2 ></td> -->
+                                <td class="basic-value  p-1"style="font-weight: bold;text-align: right;">₹{{code.material_total_basicvalue}}<input type="hidden" name="material_basicvalue" class="summarybasicvalue" value="{{code.material_basicvalue}}" /></td>
+                                <td class="total-gst-rate p-1"style="font-weight: bold;text-align: right;">{{code.material_total_gst}}%<input type="hidden" name="material_gstratevalue" class="summarygstratevalue" value="{{code.material_gstratevalue}}" /></td>
+                                <td class="gst-value p-1"style="font-weight: bold;text-align: right;">₹{{code.material_total_gstvalue}}<input type="hidden" name="material_gstvalue" class="summarygstvalue" value="{{code.material_gstvalue}}" /></td>
+                                <td class="total-value p-1"style="font-weight: bold;text-align: right;">₹{{code.material_subtotal}}<input type="hidden" name="material_totalvalue"  value="{{code.material_totalvalue}}" class="summarrytotalvalue" /></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    </div>
+
+                </div><br>
+
+                <div class="d-flex flex-column row-gap-1 bg-white rounded-4 p-2">
+                    <!-- <div class=" flex-column border-bottom ">
+                        <span class="fs-5 me-2">Execution Table</span>
+                        <i class="bi bi-info-circle-fill"
+                           data-bs-toggle="tooltip"
+                           data-bs-placement="left"
+                           title="Manage your executions for this code">
+                        </i>
+                    </div> -->
+
+                    <div class="table-responsive">
+                    <table class="table table-bordered table-fixed" id="table_execution">
+                        <thead>
+                            <tr class="fw-medium text-center">
+                                <!-- <th style="width: 300px;">WRITE CODE HERE</th> -->
+
+                                <th style="width: 70%; padding-right: 60px;">
+                                    <i class="bi bi-info-circle-fill"
+                                       data-bs-toggle="tooltip"
+                                       data-bs-placement="left"
+                                       style="margin-right: 70px;"
+                                       title="Manage your executions for this code">
+                                    </i>
+                                    WRITE CODE HERE
+
+                                </th>
+                                <th style="width: 60%;">EXECUTION GROUP</th>
+                                <th style="width: 50%;">EXECUTION</th>
+                                <th style="width: 20%;">RATE</th>
+                                <th style="width: 20%;">UNIT</th>
+                                <th style="width: 17%;">RATIO</th>
+                                <th style="width: 28%;">BASIC VALUE</th>
+                                <th style="width: 20%;">TAX</th>
+                                <th style="width: 30%;">TAX VALUE</th>
+                                <th style="width: 60%;">SUB TOTAL</th>
+                                <th style="width: 15%;">REMOVE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="execution_body">
+                            {% if code and code.code_execution.all %}
+                                {% for execu in code.code_execution.all %}
+                                    <tr class="exe-row table-row">
+                                        <input type="hidden" name="exe_pk[]" value="{{execu.pk}}">
+                                        <td class="bg-white" style="width: 300px;">
+                                            {% if forloop.first %}
+                                                <textarea name="executioncode" class="executioncode form-control pt-0 pb-0" style="resize: none;text-transform: uppercase;" required>{{ code.execution_code }}</textarea>
+                                            {% else %}
+                                                <input type="hidden" name="executioncode" value="{{ code.execution_code }}">
+                                            {% endif %}
+                                        </td>
+                                        <td style="width: 250px;">
+                                            <select class="form-select execution-group" id="executionGroupSelect pt-0 pb-0" name="execution_group[]" data-section="group">
+                                                <option disabled selected>Select </option>
+                                                {% for ex in executiongroup %}
+                                                    <option value="{{ ex.pk }}" {% if execu.group.name == ex.name %}selected{% endif %}>{{ ex.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                        <td style="width: 200px;">
+                                            <select class="form-select execution-name pt-0 pb-0" id="exe-select" name="exeselect[]" required disbaled>
+                                                <option  disabled>Select Execution Group</option>
+                                                {% for e in execution %}
+                                                    <option value="{{ e.id }}" data-rate="{{ e.price }}" data-unit="{{ e.unit }}" data-gst="{{ e.gst }}" {% if execu.ex_name == e %}selected{% endif %}>{{ e.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                        <td class="exe_rateCell p-1" style="width: 80px;text-align: right;" >₹ {{ execu.price }}<input type="hidden" name="exe_rate[]" class="exe_rateInput" value="{{execu.price}}" required /></td>
+                                        <td class="exe_unitCell"style="width: 80px;">{{ execu.unit }}<input type="hidden" name="exe_unit[]" class="exe_unitInput" value="{{execu.unit}}" required /></td>
+                                        <td class="exe_ratio p-1 " style="width:70px;">{{ execu.exe_ratio }}<input type="number" style="text-align: right;" class="exratio form-control p-0 no-arrows" name="exe_ratio[]" value="{{execu.need|floatformat:2 }}" oninput="exeCalculate(event, this)" required /></td>
+                                        <td class="exe_basicValueCell p-1" style="width: 200px;text-align: right;" class="exe_basicValueCell">₹ {{ execu.basic_value }}<input type="hidden" name="exe_basicvalue[]" class="exe_basicInput" value="{{execu.basic_value}}" required /></td>
+                                        <td class="exe_gstCell p-1" style="width: 70px; text-align: right;" class="exe_gstCell">{{ execu.gst.rate |floatformat:2 }}%<input type="hidden" name="exe_gst[]" class="exe_gstInput" value="{{execu.gst.rate|floatformat:2 }}" /></td>
+                                        <td class="exe_gstValueCell p-1" style="width: 100px;text-align: right;" class="exe_gstValueCell">₹ {{ execu.gst_value }}<input type="hidden" name="exe_gstvalue[]" class="exe_gstvalueInput" value="{{execu.gst_value}}" required /></td>
+                                        <td class="exe_subTotalCell p-1" style="width: 200px;text-align: right;" class="exe_subTotalCell">₹ {{ execu.sub_total }}<input type="hidden" name="exe_subtotal[]" class="exe_subtotalInput" value="{{execu.sub_total}}" required /></td>
+                                        <td class="p-1">
+                                            <div>
+                                                {% if forloop.first %}
+                                                {% else %}
+                                                    <button class="fw-medium fs-6 border border-2 rounded-3 material-symbols-rounded d-flex align-items-center justify-content-center column-gap-2 p-1 remove-row-execution" title="Remove" style="background-color: red; width: 25px; height: 25px;" type="button">
+                                                        <span class="material-symbols-rounded fs-5" style="color: #fff; font-weight: bold;">close</span> <!-- "X" icon -->
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+                            {% else %}
+                                    <!-- Default row when no execution codes exist -->
+                                <tr class="exe-row table-row">
+                                    <input type="hidden" name="exe_pk[]" value="{{execu.pk}}">
+                                    <td class="bg-white" style="width: 300px;">
+                                        <textarea name="executioncode" class="executioncode form-control pt-0 pb-0"style="resize: none;text-transform: uppercase;" required></textarea></td>
+                                    <td style="width: 250px;">
+                                        <select class="form-select execution-group pt-0 pb-0" id="executionGroupSelect" name="execution_group[]" data-section="group" value="{{ e.group }}">
+                                            <option  disabled selected>Select Execution Group</option>
+                                            {% for ex in executiongroup %}
+                                                <option value="{{ex.pk}}" {% if e.group.name == ex.name %}selected{% endif %}>{{ ex.name}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td style="width: 200px;">
+                                        <select class="form-select execution-name pt-0 pb-0" id="exe-select" name="exeselect[]" required disabled>
+                                            <option selected disabled>Select Execution</option>
+                                            {% for e in execution %}
+                                                <option value="{{e}}" data-rate="{{ e.price }}" data-unit="{{ e.unit }}" data-gst="{{ e.gst }}" >{{e}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td class="exe_rateCell p-1" style="width: 80px;text-align: right;" class="exe_rateCell">₹ 0.00<input type="hidden" name="exe_rate[]" class="exe_rateInput" required /></td>
+                                    <td class="exe_unitCell " style="width: 80px;" class="exe_unitCell">UNIT<input type="hidden" name="exe_unit[]" class="exe_unitInput" required /></td>
+                                    <td class="exe_ratio p-1 " style="width:70px;"><input type="number"  class="exratio form-control p-0 no-arrows" style="text-align: right;" name="exe_ratio[]" value="{{execu.need|floatformat:2 }}"oninput="exeCalculate(event, this)"  required /></td>
+                                    <td class="exe_basicValueCell p-1" style="width: 200px;text-align: right;" class="exe_basicValueCell">₹ 0.00<input type="hidden" name="exe_basicvalue[]" class="exe_basicInput" required /></td>
+                                    <td class="exe_gstCell p-1" style="width: 70px;text-align: right;" class="exe_gstCell">0%<input type="hidden" name="exe_gst[]" class="exe_gstInput" required /></td>
+                                    <td class="exe_gstValueCell p-1" style="width: 100px;text-align: right;" class="exe_gstValueCell">₹ 0.00<input type="hidden" name="exe_gstvalue[]" class="exe_gstvalueInput" required /></td>
+                                    <td class="exe_subTotalCell p-1" style="width: 200px;text-align: right;" class="exe_subTotalCell">₹ 0.00<input type="hidden" name="exe_subtotal[]" class="exe_subtotalInput" required /></td>
+                                    <td class=""></td>
+                                </tr>
+                            {% endif %}
+
+                            <tr class="table-row" id="summaryexecution">
+                                <td class="p-1">
+                                    <div>
+                                <button  id="addRowButtonExecution" class="fw-medium fs-6  border border-2 rounded-3 material-symbols-rounded d-flex align-items-center justify-content-center column-gap-2 p-1" style="background-color: #1585cf; width: 25px; height: 25px;"type="button">
+                                        <span class="material-symbols-rounded fs-5" style="color: #fff ; font-weight: bold;">add</span>
+                                    </button> </div></td>
+
+                                <td class="p-1" colspan="5" style="font-weight: bold; text-align: left;">Total</td>
+
+<!--                                <td class="exe_total-rate" style="font-weight: bold;">{{code.execution_total_rate}}<input type="hidden" name="execution_total_rate" class="execution_totalvalue" /></td>-->
+
+                           <!-- <td></td> -->
+                                <td class="exe_basic-value p-1"style="font-weight: bold;text-align: right;">₹{{code.execution_total_basicvalue}}<input type="hidden" name="execution_basicvalue" class="summaryexbasicvalue" /></td>
+                                <td class="exe_gstrate p-1"style="font-weight: bold;text-align: right;">{{code.execution_total_gst}}%<input type="hidden" name="execution_gstrate" class="summaryexgstrate" /></td>
+                                <td class="exe_gst-value p-1"style="font-weight: bold;text-align: right;">₹{{code.execution_total_gstvalue}}<input type="hidden" name="execution_gstvalue" class="summaryexgstvalue" /></td>
+                                <td class="exe_total-value p-1"style="font-weight: bold;text-align: right;">₹{{code.execution_subtotal}}<input type="hidden" name="execution_total-value" class="summaryextotalvalue" /></td>
+
+                               <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- <div class="mb-1"> -->
+<!--                        <button id="addRowButtonExecution" class="fw-medium fs-6 bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2" type="button">-->
+<!--                            <span class="material-symbols-rounded fs-4">add</span>-->
+<!--                            <span>Add Row</span>-->
+<!--                        </button>-->
+                    <!-- </div> -->
+                </div>
+                </div>
+                <br>
+                <div class="d-flex flex-column row-gap-1 bg-white rounded-4 p-2">
+                   
+
+
+
+                    <!-- Table 1 -->
+                    <div class="table-container">
+                    <table class="table table-bordered table-fixed" id="table_floor1">
+                        <thead>
+                            <tr class="fw-medium text-center">
+                                <!-- Separate the button in its own th -->
+                                <th class="text-start pl-1  pt-0 pb-0" style="width: 15%">
+                                    <button type="button" id="toggleRows" class="btn btn-secondary pl-1 pt-0 pb-0">
+                                        <i id="toggleIcon" class="bi bi-chevron-down" style="color: #fff; font-size: 1.5rem;  font-weight:bolder;"></i>
+                                    </button>
+                                </th>
+
+                                <!-- Center the remaining table headings -->
+                                <th style="width: 56%; padding-right: 2%;padding-left: 0%;">  <i class="bi bi-info-circle-fill"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    style="margin-right: 10%;"
+                                    title="Manage your project management details for this code">
+                                 </i>
+                                 Formula</th>
+
+                                <th style="width: 61%;">OPERATIONAL EXPENSE</th>
+                                <th style="width: 52%;">FREE TEXT</th>
+                                <th style="width: 38%;">AMOUNT</th>
+                                <th style="width: 30%;">ALLOW</th>
+                                <th style="width: 30%;">BASIC VALUE</th>
+                                <th style="width: 20%;">TAX</th>
+                                <th style="width: 30%;">TAX VALUE</th>
+                                <th style="width: 60%;">SUB TOTAL</th>
+                                <th style="width: 15%;"></th>
+                                <!-- <th style="width: %;"></th> -->
+                            </tr>
+                        </thead>
+
+                        <tbody id="tableBody">
+
+                            {% if code.onsite_expense.all %}
+                                {% for onsite in code.onsite_expense.all %}
+
+                                <tr class="table-row">
+                                    <!-- <td></td> -->
+                                    <input type="hidden" name="onside_pk[]" value="{{ onsite.pk }}">
+                                    <td class="formula  " style="text-align: left;padding-left: 5%;" colspan="2">{{ onsite.formula }} <input type="hidden" name="formula" value="{{ onsite.formula.pk }}" required /></td>
+                                   
+                                    <td class="p-1" style="text-align: left;">{{ onsite.onsite_expense_name }}<input type="hidden" name="onsideexpensename" class="managementamount" value="{{ onsite.onsite_expense_name }}" required /></td>
+                                    <td>
+                                        <input type="text" name="onside_description" class="form-control"  style="font-style: italic; color: #033270;"  placeholder="" value="{{onsite.description}}" />
+                                    </td>
+
+                                    <td class="onsideamount p-1" style="text-align: right;" >₹{{onsite.on_value}} <input type="hidden"  value="{{onsite.on_value}}"name="onsideamount" class="managementamount" required /></td>
+                                    <td class="onsidereqvalue p-1" style="text-align: right;">
+                                    <div class="d-flex align-items-center justify-content-end">
+                                        <input type="float" style="text-align: right;" class="form-control managmentratio p-0" name="managmentratio" value="{{ onsite.allow_me|floatformat:2 }}" readonly />
+                                        <span>%</span>
+                                    </div>
+                                </td>
+                                    <td class="onsidebasicvalue p-1" style="text-align: right;" >₹{{ onsite.basic_value }} <input type="hidden" name="onside_basic_value"  value="{{onsite.onside_basic_value}}" class="managementbasicvalue" required /></td>
+                                    <td class="onsidegst p-1" style="text-align: right;" >{{ onsite.gst.rate |floatformat:2 }}%  <input type="hidden" name="onside_gst" class="managementgst" value="{{onsite.gst.rate |floatformat:2}}" required /></td>
+                                    <td class="onsidegstvalue p-1" style="text-align: right;" >₹{{ onsite.gst_value }} <input type="hidden" name="onside_gst_value" value="{{ onsite.gst_value }}" class="managementgstvalue" required /></td>
+                                    <td class="onsidesubtotal p-1" style="text-align: right;" >₹{{ onsite.sub_total }}  <input type="hidden" value="{{ onsite.sub_total }}" name="onside_subtotal" class="managementonsidesubtotal" required /></td>
+                                    <td></td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                            {% for code in operational_cost %}
+
+                            <tr class="table-row">
+                                <input type="hidden" name="onside_pk[]" value="{{code.pk}}">
+
+                                <td class="bg-white formula" style="padding-left: 5%; text-align: left;" colspan="2">
+                                    {{ code.formula }}
+                                    <input type="hidden" name="formula" value="{{ code.formula.pk }}" required />
+                                </td>
+                                
+                                <td class="p-1" style="text-align: left;" >{{code.name}} <input type="hidden" name="onsideexpensename" class="managementamount" value="{{code.name}}" required /></td>
+                                <!-- <td class="onsideamount">₹{{code.on_value}}</td> -->
+                                <td>
+                                    <input type="text" name="onside_description" class="form-control"  style="font-style: italic; color: #033270;"  placeholder="" value="{{code.description}}" />
+                                </td>
+
+                                <td class="onsideamount p-1" style="text-align: right;">₹ <input type="hidden" name="onsideamount" class="managementamount" required /></td>
+
+                                <td class="onsidereqvalue p-1" style="text-align: right;">
+                                    <div class="d-flex align-items-center justify-content-end">
+                                        <input type="float" style="text-align: right;" class="form-control managmentratio p-0" name="managmentratio" value="{{ code.allow_me|floatformat:2 }}" readonly />
+                                        <span>%</span>
+                                    </div>
+                                </td>
+
+                                <td class="onsidebasicvalue p-1" style="text-align: right;">₹ <input type="hidden" name="onside_basic_value" class="managementbasicvalue" required /></td>
+                                <td class="onsidegst p-1"style="text-align: right;">{{code.gst.rate|floatformat:2}} %<input type="hidden" name="onside_gst" class="managementgst" value="{{code.gst.rate|floatformat:2}}" required /></td>
+                                <td class="onsidegstvalue p-1"style="text-align: right;">₹{{code.gst_value}}<input type="hidden" name="onside_gst_value" class="managementgstvalue" required /></td>
+                                <td class="onsidesubtotal p-1"style="text-align: right;">₹{{code.sub_total}}<input type="hidden" name="onside_subtotal" class="managementonsidesubtotal" required /></td>
+                                <td></td>
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+
+                        <!--           <tr class="table-row">-->
+                        <!--                     <td><button id="addRowButton3" class="fw-medium fs-6 bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2">-->
+                        <!--                    <span class="material-symbols-rounded fs-4">add</span>-->
+                        <!--                    <span>Add Row</span>-->
+                        <!--                </button>-->
+                        <!--                     </td>-->
+<!--                                        </tr>-->
+                        </tbody>
+
+                        <tbody class="table-summary">
+                            <tr class="table-row onsidesummary">
+
+                                <td colspan="2" style="font-weight: bold;"></td>
+                                <td class="p-1"    colspan="3" style="font-weight: bold; text-align: left;">Total</td>
+                                <!-- <td></td> -->
+                             <td class="allow-me" style="font-weight: bold; text-align: right;">
+                                <div class="d-flex align-items-center justify-content-end">
+                                    {{ code.op_allowme }}
+                                    <input type="hidden" name="op_allowme" value="{{ code.op_allowme }}" readonly/>
+                                    <span>%</span>
+                                </div>
+                            </td>
+                                <td class="basic-value p-1"style="font-weight: bold;text-align: right;">₹{{code.operational_cost_basicvalue}}<input type="hidden" name="op_basicvalue" value="{{code.operational_cost_basicvalue}}" /></td>
+                                <td class="gst p-1" style="font-weight: bold; text-align: right;">
+                                     <div class="d-flex  " style="text-align: right;!important">
+                                        {{ code.operational_cost_gst }}
+                                        <input type="hidden" name="op_gst"  value="{{ code.op_gst }}" />
+                                         <span>%</span>
+                                     </div>
+                                </td>
+
+                                <td class="gst-value p-1"style="font-weight: bold;text-align: right;">₹{{code.operational_cost_gst_value}}<input type="hidden" value="{{code.op_gstvalue}}" name="op_gstvalue" /> </td>
+                                    <td class="sub-total p-1"style="font-weight: bold;text-align: right;">₹{{code.operational_cost_subtotal}}<input type="hidden" value="{{op.op_total}}" name="op_total" /> </td>
+                                    <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                  <!-- Table 2 -->
+                <div class="table-container">
+                    <table class="table table-bordered table-fixed" id="table_floor4">
+
+                        <thead>
+                            <tr class="fw-medium text-center">
+                                <!-- <th>
+                                    <button id="toggleRows4" class="btn btn-secondary p-1 ">
+                                        <i id="toggleIcon4" class="bi bi-chevron-down me-3"style="color: #fff; font-weight:bolder;"></i>
+                                    </button>
+
+                                Formula </th> -->
+                                <!-- Separate the button in its own th -->
+                                <th class="text-start pl-1  pt-0 pb-0" style="width: 30%;">
+                                    <button type="button" id="toggleRows4" class="btn btn-secondary pl-1  pt-0 pb-0">
+                                        <i id="toggleIcon4" class="bi bi-chevron-down" style="color: #fff; font-size: 1.5rem;  font-weight:bolder;"></i>
+                                    </button>
+                                </th>
+
+                                <!-- Center the remaining table headings -->
+                                <th style="width: 42%; padding-right: 4%; padding-left: 0%;">Formula</th>
+
+                                <th  style="width: 61%;"> MANAGEMENT PROFIT</th>
+
+                                <th style="width: 52%;">FREE TEXT</th>
+                                <th style="width: 38%;">AMOUNT</th>
+                                <th style="width: 30%;">ALLOW</th>
+                                <th style="width: 30%;">BASIC VALUE</th>
+                                <th style="width: 20%;">TAX</th>
+                                <th style="width: 30%;">TAX VALUE</th>
+                                <th style="width: 60%;">SUB TOTAL</th>
+                                <th style="width: 15%;"></th>
+                            </tr>
+                        </thead>
+                        <tbody  id="tableBody4">
+                            {% if  offsite_expense.all %}
+
+                              {% for offsideexpense in offsite_expense.all %}
+                                        <tr class="table-row">
+                                                      <!-- <td></td> -->
+                                                    <input type="hidden" name="offside_pk[]" value="{{offsideexpense.pk}}">
+
+                                                     <td class="formula" colspan="2" style="text-align: left;padding-left: 5%;">{{offsideexpense.formula.name}}<input type="hidden" name="cm_formula" value="{{offsideexpense.formula.pk}}" required /></td>
+                                                    <td class="p-1" style="text-align: left;">{{offsideexpense.offsite_expense_name}}<input type="hidden" name="Contract_Margin_name[]" value="{{offsideexpense.offsite_expense_name}}" required /></td>
+                                                    <td>
+                                                        <input type="text" name="offside_description[]" class="form-control" style="font-style: italic; color: #033270;" placeholder="" value="{{offsideexpense.description}}"/>
+                                                    </td>
+                                                    <td class="material-rate p-1 ;"style="width:80px ; text-align: right;">₹{{offsideexpense.on_value}}<input type="hidden" value="{{offsideexpense.on_value}}" name="Contract_Marginamount[]" required /></td>
+<!--                                                    <td>{{offsideexpense.unit.name}} <input type="hidden" name="Contract_Margin_unit[]" required /></td>-->
+                                                   <td class="material-margin-required p-1" style="width:80px; text-align: right;">
+                                                        <div class="d-flex align-items-center justify-content-end">
+                                                            <input type="float" style="text-align: right;" class="form-control Contract_Marginreqvalue p-0" value="{{ offsideexpense.i_need|floatformat:2 }}" name="Contract_Marginreqvalue[]" required />
+                                                            <span>%</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="material-margin-basicvalue p-1 "style="text-align: right;">₹{{offsideexpense.basic_value}}<input type="hidden" value="{{offsideexpense.basic_value}}" name="Contract_Marginbasicvalue[]" required /></td>
+                                                    <td class="material-margin-gst p-1 "style="text-align: right;">{{offsideexpense.gst|floatformat:2}}%<input type="hidden" value="{{offsideexpense.gst|floatformat:2}}" name="Contract_Margingst[]" required /></td>
+                                                    <td class="material-margin-gstvalue p-1 " style="text-align: right;">₹{{offsideexpense.gst_value}}<input type="hidden" value="{{offsideexpense.gst_value}}" name="Contract_Margingstvalue[]" required /></td>
+                                                    <td class="material-margin-subtotal p-1" style="text-align: right;">₹{{offsideexpense.sub_total}}<input type="hidden" value="{{offsideexpense.sub_total}}" name="Contract_Marginsubtotal[]" required /></td>
+                                                    <td></td>
+                                        </tr>
+                            {% endfor %}
+
+                            {% else %}
+                            {% for offsideexpense in  contract_margin %}
+                                <tr class="table-row">
+
+                                    <input type="hidden" name="offside_pk[]" value="{{offsideexpense.pk}}">
+                                    <td class="formula" colspan="2"style="text-align: left; padding-left: 5%;">{{offsideexpense.formula.name}}<input type="hidden" name="cm_formula" value="{{offsideexpense.formula.pk}}" required /></td>
+                                    <td class="p-1" style="text-align: left;" >{{offsideexpense.name}}<input type="hidden" name="Contract_Margin_name[]" value="{{offsideexpense.name}}" required /></td>
+                            <!--                    <td>X</td>-->
+                            <td>
+                                <input type="text" name="offside_description[]" class="form-control" style="font-style: italic; color: #033270;"  placeholder="" value="{{offsideexpense.description}}" />
+                            </td>
+
+                                    <td class="material-rate p-1" style="text-align: right;">₹{{offsideexpense.on_value}}<input type="hidden" name="Contract_Marginamount[]" required /></td>
+<!--                                    <td>{{offsideexpense.unit}} <input type="hidden" name="Contract_Margin_unit[]"  required /></td>-->
+
+
+                                    <td class="material-margin-required p-1" style="width:80px;">
+                                    <div class="d-flex align-items-center">
+                                        <input type="float" style="text-align: right;" class="form-control p-0" value="{{ offsideexpense.allow_me|floatformat:2 }}" name="Contract_Marginreqvalue[]" required readonly />
+                                        <span>%</span>
+                                    </div>
+                                </td>
+
+                                    <td class="material-margin-basicvalue p-1" style="text-align: right;">₹{{offsideexpense.basic_value}}<input type="hidden" name="Contract_Marginbasicvalue[]" required /></td>
+                                    <td class="material-margin-gst p-1" style="text-align: right;">{{offsideexpense.gst|floatformat:2}}%<input type="hidden" name="Contract_Margingst[]"  value="{{offsideexpense.gst.rate|floatformat:2}}"required /></td>
+                                    <td class="material-margin-gstvalue p-1"style="text-align: right;">₹{{offsideexpense.gst_value}}<input type="hidden" name="Contract_Margingstvalue[]" required /></td>
+                                    <td class="material-margin-subtotal p-1"style="text-align: right;">₹{{offsideexpense.sub_total}}<input type="hidden" name="Contract_Marginsubtotal[]" required /></td>
+                                    <td></td>
+
+                                </tr>
+                            {% endfor %}
+                            {% endif %}
+                        </tbody>
+                        <tbody class="table-summary">
+                            <tr class="table-row offside-summary">
+                                <td  colspan="2" style="font-weight: bold;"></td>
+                                <td class="p-1"    colspan="3" style="font-weight: bold; text-align: left;">Total</td>
+
+                                <!-- <td></td> -->
+<!--                                <td class="managment-ratetotal">{{code.margin_totalrate}}<input type="hidden" name="margin_rate" /></td>-->
+<!--                                <td class="managment-unit"><input type="hidden" name="margin_unit" /></td>-->
+                                
+                                                                <td class="managment-required p-1" style="font-weight: bold; text-align: right;">
+                                    <div class="d-flex align-items-center justify-content-end">
+                                        {{ code.margin_allowme }}
+                                        <input type="hidden" name="margin_required" value="{{ code.margin_allowme }}" required />
+                                        <span>%</span>
+                                    </div>
+                                </td>
+
+                                <td class="managment-basicvalue p-1"style="font-weight: bold;text-align:right">₹{{code.margin_total_basicvalue}}<input type="hidden" name="margin_basicvalue" value="{{code.margin_total_basicvalue}}"/></td>
+                                <td class="managment-gst p-1"style="font-weight: bold;text-align:right">{{code.margin_total_gst}}%<input type="hidden" name="margin_gst" /></td>
+                                <td class="managment-gstvalue p-1"style="font-weight: bold;text-align:right">₹{{code.margin_total_gst_value}}<input type="hidden" name="margin_gstvalue" value="{{code.margin_total_gst_value}}" /></td>
+                                <td class="managment-subtotal p-1"style="font-weight: bold; text-align:right">₹{{code.margin_subtotal}}<input type="hidden" name="margin_subtotal" value="{{code.margin_subtotal}}" /></td>
+                                <td></td>
+
+                            </tr>
+                        </tbody>
+
+
+                    </table>
+                    <!-- <div class="mb-1">
+                        <button id="addRowButton4" class="fw-medium fs-6 bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2 d-none">
+                            <span class="material-symbols-rounded fs-4">add</span>
+                            <span>Add Row</span>
+                        </button>
+                    </div> -->
+                </div>
+            </div>
+        </form><br>
+
+
+<script>
+    // Function to calculate values for a given table
+    function calculateTableTotals(tableId, basicSelector, gstSelector, totalSelector) {
+        const rows = document.querySelectorAll(`${tableId} .table-row`);
+        let basicTotal = 0, gstTotal = 0, grandTotal = 0;
+
+        rows.forEach(row => {
+            const basicValue = parseFloat(row.querySelector(basicSelector)?.value || 0);
+            const gstValue = parseFloat(row.querySelector(gstSelector)?.value || 0);
+            const subTotal = parseFloat(row.querySelector(totalSelector)?.value || 0);
+
+            basicTotal += basicValue;
+            gstTotal += gstValue;
+            grandTotal += subTotal;
+        });
+
+        return { basicTotal, gstTotal, grandTotal };
+    }
+
+    // Main calculation function
+    function calculateValues() {
+        // Calculate sums for each table (material, execution, management, contract margin)
+        const materialSums = calculateTableTotals("#table_floor", 'input[name="basicvalue[]"]', 'input[name="gstvalue[]"]', 'input[name="subtotal[]"]');
+        const executionSums = calculateTableTotals("#table_execution", 'input[name="exe_basicvalue[]"]', 'input[name="exe_gstvalue[]"]', 'input[name="exe_subtotal[]"]');
+        const managementSums = calculateTableTotals("#table_floor1", 'input[name="onside_basic_value"]', 'input[name="onside_gst_value"]', 'input[name="onside_subtotal"]');
+        const contractMarginSums = calculateTableTotals("#table_floor4", 'input[name="Contract_Marginbasicvalue[]"]', 'input[name="Contract_Margingstvalue[]"]', 'input[name="Contract_Marginsubtotal[]"]');
+
+        // Total basic, gst, and grand totals
+        const totalBasicValue = (materialSums.basicTotal + executionSums.basicTotal + managementSums.basicTotal + contractMarginSums.basicTotal).toFixed(2);
+        const totalGstValue = (materialSums.gstTotal + executionSums.gstTotal + managementSums.gstTotal + contractMarginSums.gstTotal).toFixed(2);
+        const totalGrandValue = (materialSums.grandTotal + executionSums.grandTotal + managementSums.grandTotal + contractMarginSums.grandTotal).toFixed(2);
+
+        // Calculate GST percentage based on basic value
+        const gstPercentage = totalBasicValue > 0 ? ((totalGstValue * 100) / totalBasicValue).toFixed(2) : "0.00";
+
+        // Update the respective fields with calculated totals
+        setInputValue("basic_value", totalBasicValue);
+        setInputValue("gst_value", totalGstValue);
+        setInputValue("grand_total", totalGrandValue);
+        setInputValue("gst", gstPercentage, true);
+    }
+
+    // Function to set values to the input fields
+    function setInputValue(name, value) {
+        const input = document.querySelector(`input[name="${name}"]`);
+        if (input) {
+            input.value = value;
+        } else {
+            console.error(`Input field with name "${name}" not found.`);
+        }
+    }
+
+    // Event listener to trigger calculation on document load and other events
+    document.addEventListener("DOMContentLoaded", () => {
+        // Call calculateValues() when the page loads
+       // calculateValues();
+
+        // Optionally, add an event listener to recalculate when input values change
+        document.addEventListener("input", calculateValues);
+    });
+</script>
+
+
+
+        <script>
+        // Initialize totals variables
+            let basicTotal = 0;
+            let gstTotal = 0;
+            let grandTotal = 0;
+            let totalRate = 0;
+            let gstrateCount = 0;
+
+        // Function to update totals in the HTML
+            function updateColumnTotals() {
+               calculateValues();
+            // Reset totals
+                basicTotal = 0;
+                gstTotal = 0;
+                grandTotal = 0;
+                totalRate = 0;
+                gstrateTotal=0;
+                gstrateCount = 0;
+                gstrateAverage=0;
+
+            // Loop through each row and calculate totals
+                document.querySelectorAll("#table_floor .table-row").forEach((row) => {
+                // Parse basic value
+                    let basicValueCell = row.querySelector(".basicValueCell");
+                    if (basicValueCell) {
+                        let basicValueText = basicValueCell.textContent.trim().replace("₹ ", "");
+                        let basicValue = parseFloat(basicValueText);
+                        if (!isNaN(basicValue)) basicTotal += basicValue;
+                    // Update hidden input
+                        let basicValueInput = row.querySelector(".basicValueInput");
+                        if (basicValueInput) basicValueInput.value = basicValue.toFixed(2);
+                    }
+                  // Parse gst ratevalue
+                    let gstrateCell = row.querySelector(".gstCell");
+                    let totalRowCount = row.length;
+                    if (gstrateCell) {
+                        let gstrateCellText = gstrateCell.textContent.trim().replace("₹ ", "");
+                        let gstrateCellValue = parseFloat( gstrateCellText);
+
+                        console.log(gstrateCellValue)
+                        if (!isNaN( gstrateCellValue)) gstrateTotal +=  gstrateCellValue;
+                        console.log(gstrateTotal,'hello')
+                        let gstrateAverage = gstrateTotal / (document.querySelectorAll("#table_floor .table-row").length -1);
+                    // Update hidden input
+                        let gstrateInput = row.querySelector(".gstInput");
+                        if ( gstrateInput)  gstrateInput.value =  gstrateCellValue.toFixed(2);
+
+                    }
+                // Parse GST value
+                    let gstValueCell = row.querySelector(".gstValueCell");
+                    if (gstValueCell) {
+                        let gstValueText = gstValueCell.textContent.trim().replace("₹ ", "");
+                        let gstValue = parseFloat(gstValueText);
+                        if (!isNaN(gstValue)) gstTotal += gstValue;
+                    // Update hidden input
+                        let gstValueInput = row.querySelector(".gstValueInput");
+                        if (gstValueInput) gstValueInput.value = gstValue.toFixed(2);
+                    }
+
+                // Parse total value
+                    let totalValueCell = row.querySelector(".subTotalCell");
+                    if (totalValueCell) {
+                        let totalValueText = totalValueCell.textContent.trim().replace("₹ ", "");
+                        let totalValue = parseFloat(totalValueText);
+                        if (!isNaN(totalValue)) grandTotal += totalValue;
+                    // Update hidden input
+                        let subtotalInput = row.querySelector(".subTotalInput");
+                        if (subtotalInput) subtotalInput.value = totalValue.toFixed(2);
+                    }
+
+                // Parse rate value
+                    let rateCell = row.querySelector(".rateCell");
+                    if (rateCell) {
+                        let rateText = rateCell.textContent.trim().replace("₹ ", "");
+                        let rateValue = parseFloat(rateText);
+                        if (!isNaN(rateValue)) totalRate += rateValue;
+                    // Update hidden input
+                        let rateInput = row.querySelector(".rateInput");
+                        if (rateInput) rateInput.value = rateValue.toFixed(2);
+                    }
+                });
+
+
+            // Update the text content and hidden input values
+                document.querySelector(".basic-value").innerHTML = "₹ " + basicTotal.toFixed(2) + '<input type="hidden" name="material_basicvalue" value="' + basicTotal.toFixed(2) + '">';
+
+                document.querySelector(".gst-value").innerHTML = "₹ " + gstTotal.toFixed(2) + '<input type="hidden" name="material_gstvalue" value="' + gstTotal.toFixed(2) + '">';
+                //document.querySelector(".total-gst-rate").innerHTML = gstrateTotal / (document.querySelectorAll("#table_floor .table-row").length -1).toFixed(2)+'%' + '<input type="hidden" name="material_gstratevalue" value="' + gstrateAverage.toFixed(2) + '">';
+            //document.querySelector(".total-rate").innerHTML = "₹ " + totalRate.toFixed(2) + '<input type="hidden" name="material_total_rate" value="' + totalRate.toFixed(2) + '">';
+          document.querySelector(".total-gst-rate").innerHTML = ((gstTotal * 100) / basicTotal).toFixed(2) + '%' +
+          '<input type="hidden" name="material_gstratevalue" value="' + ((gstTotal * 100) / basicTotal).toFixed(2) + '">';
+
+                document.querySelector(".total-value").innerHTML = "₹ " + grandTotal.toFixed(2) + '<input type="hidden" name="material_totalvalue" value="' + grandTotal.toFixed(2) + '">';
+
+                document.querySelectorAll("#table_floor4 .table-row").forEach((row) => {
+                    let rateCell = row.querySelector(".material-rate");
+                    if (rateCell) {
+                        //rateCell.innerHTML = `₹ ${basicTotal.toFixed(2)}<input type="hidden" name="Contract_Marginamount[]" value="${basicTotal.toFixed(2)}">`;
+                    }
+                });
+
+            }
+            function attachEventListeners(row) {
+    // Attach event listeners to material group select elements
+                row.querySelectorAll(".material-group").forEach((select) => {
+                    attachSelectEventListenersgroup(select);
+                });
+    // Attach event listeners to remove buttons
+                attachRemoveEventListeners();
+
+    // Attach event listeners to material select elements
+                row.querySelectorAll(".material-select").forEach((select) => {
+                    attachSelectEventListeners(select);
+                });
+
+    // Attach event listeners to ratio inputs
+                row.querySelectorAll(".ratio").forEach((input) => {
+                    attachCalculateEventListener(input);
+                });
+
+
+            }
+            function attachSelectEventListenersgroup(selectElement) {
+    // Attach change event listener
+                selectElement.addEventListener("change", function () {
+                    const selectedGroup = this.value;
+                    loadMaterialDetails(this);
+        // Additional code to recalculate and update totals, if necessary
+                });
+            }
+
+        // Function to attach select event listeners
+            function attachSelectEventListeners(selectElement) {
+                selectElement.addEventListener("change", function () {
+                    const selectedMaterial = this.options[this.selectedIndex];
+
+                    const rate = parseFloat(selectedMaterial.getAttribute("data-rate"));
+                    const unit = selectedMaterial.getAttribute("data-unit");
+                    const gstPercent = parseFloat(selectedMaterial.getAttribute("data-gst"));
+                    const basicValue = rate;
+                    const gstValue = (basicValue * gstPercent) / 100;
+                    const subtotal = basicValue + gstValue;
+                    const row = selectElement.closest("tr");
+
+                // Update visible text
+                    row.querySelector(".rateCell").innerHTML = "₹ " + rate.toFixed(2) + '<input type="hidden" name="rate[]" class="rateInput">';
+                    row.querySelector(".unitCell").innerHTML = unit + '<input type="hidden" name="unit[]" class="unitInput">';
+                    row.querySelector(".gstCell").innerHTML = gstPercent.toFixed(2) + "% " + '<input type="hidden"  name="gst[]"  class="gstInput">';
+
+                // Update hidden inputs
+                    row.querySelector(".rateInput").value = rate.toFixed(2);
+                    row.querySelector(".unitInput").value = unit;
+                    row.querySelector(".gstInput").value = gstPercent.toFixed(2);
+                    row.querySelector(".ratio").value = "";
+                    row.querySelector(".basicValueInput").value = "0.00";
+
+                // Recalculate and update totals
+                    updateColumnTotals();
+                    // calculateValues();
+
+
+                });
+            }
+
+        // Function to attach calculate event listeners
+            function attachCalculateEventListener(inputElement) {
+                inputElement.addEventListener("keydown", calculate);
+                inputElement.addEventListener("change", calculate); // Ensure it updates on change as well
+            }
+
+        // Function to calculate values based on ratio
+            function calculate(event) {
+                if (event.type === "keydown" && event.key !== "Enter") {
+                    return;
+                }
+
+                let input = event.target;
+                let row = input.closest("tr");
+                let ratio = parseFloat(row.querySelector(".ratio").value).toFixed(3);
+                console.log(ratio)
+                let rateText = row.querySelector(".rateCell").textContent.trim();
+                let rateValue = parseFloat(rateText.replace(/[^0-9.-]+/g, ""));
+                let basicValue = rateValue * ratio;
+
+            // Update basic value cell and hidden input
+                let basicValueCell = row.querySelector(".basicValueCell");
+                basicValueCell.innerHTML = "₹ " + basicValue.toFixed(2) + '<input type="hidden" name="basicvalue[]" class="basicValueInput" value="' + basicValue.toFixed(2) + '">';
+
+            // Calculate GST value
+                let gstPercent = parseFloat(row.querySelector(".gstCell").textContent.replace("%", ""));
+                let gstValue = (basicValue * gstPercent) / 100;
+
+            // Update GST value cell and hidden input
+                let gstValueCell = row.querySelector(".gstValueCell");
+                gstValueCell.innerHTML = "₹ " + gstValue.toFixed(2) + '<input type="hidden" name="gstvalue[]" class="gstValueInput" value="' + gstValue.toFixed(2) + '">';
+
+            // Calculate total value (basic value + gst value)
+                let totalValue = basicValue + gstValue;
+
+            // Update total value cell and hidden input
+                let totalValueCell = row.querySelector(".subTotalCell");
+                totalValueCell.innerHTML = "₹ " + totalValue.toFixed(2) + '<input type="hidden" name="subtotal[]" class="subTotalInput" value="' + totalValue.toFixed(2) + '">';
+
+            // Update totals after calculation
+                updateColumnTotals();
+
+            }
+            function loadMaterialDetails(groupSelectElement) {
+                const groupName = groupSelectElement.value;
+                const materialSelect = document.getElementById('materialSelect');
+                const row = groupSelectElement.closest("tr");
+                if (!row) {
+                    console.error("Row is null");
+                    return;
+                }
+
+                const materialNameSelect = row.querySelector(".materialSelect");
+                if (!materialNameSelect) {
+                    console.error("Material select element is null");
+                    return;
+                }
+
+                $.ajax({
+                    url: "/client/load-materials/", // Adjust this URL according to your URL configuration
+                    method: "GET",
+                    data: { group: groupName },
+                })
+                    .done(function (response) {
+        // Assuming response.materials contains the list of materials
+                        console.log(response.materials)
+                        if (!response.materials) {
+                            console.error("Invalid response format");
+                            return;
+                        }
+
+                        materialNameSelect.innerHTML = '<option value="">Select</option>';
+                        if (response.materials && response.materials.length > 0) {
+                            materialSelect.disabled = false;        
+        // Add options from the response
+                            response.materials.forEach(function (material) {
+                                materialNameSelect.innerHTML += `
+                <option value="${material.name}"
+                    data-rate="${material.price}"
+                    data-unit="${material.unit__name}"
+                    data-gst="${material.gst__rate}">
+                    ${material.name}
+                </option>`;
+                            });
+                        } else {
+        // No materials available, add a placeholder option
+                            materialNameSelect.innerHTML += '<option value="" disabled>No material available</option>';
+                        }
+
+                        hideSelectedOptions(); // Ensure this function is defined and updates the select options
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        console.error("AJAX Error:", textStatus, errorThrown);
+                    });
+            }
+
+
+            function hideSelectedOptions() {
+                const selectedValues = new Set();
+                document.querySelectorAll(".materialSelect").forEach((select) => {
+                    if (select.value) {
+                        selectedValues.add(select.value);
+                    }
+                });
+
+                document.querySelectorAll(".materialSelect").forEach((select) => {
+                    const options = select.options;
+                    for (let i = 0; i < options.length; i++) {
+                        const option = options[i];
+                        if (selectedValues.has(option.value) && option.value !== select.value) {
+                            option.style.display = "none";
+                        } else {
+                            option.style.display = "block";
+                        }
+                    }
+                });
+            }
+
+        // Call hideSelectedOptions() whenever you need to hide selected options,
+        // especially after adding a new row or updating a select element
+
+        // Function to attach remove event listeners
+            function attachRemoveEventListeners() {
+                const removeButtons = document.querySelectorAll("#table_floor .remove-row");
+                removeButtons.forEach((button) => {
+                    button.removeEventListener("click", removeRow);
+                    button.addEventListener("click", removeRow);
+                });
+            }
+
+        // Function to remove a row
+            function removeRow(event) {
+                const row = event.target.closest("tr");
+                const tableBody = document.getElementById("table_floor").getElementsByTagName("tbody")[0];
+                const codeCell = tableBody.querySelector("td.bg-white");
+
+
+            // Check if codeCell exists before removing row
+                if (codeCell) {
+                    row.remove();
+                //adjustRowspan(codeCell, -1);
+
+                }
+
+            // Update totals after removing row
+                updateColumnTotals();
+
+                // const tbody = document.querySelector('#material_body');
+                // console.log(tbody.rows[0].cells[0]);
+                // tbody.rows[0].cells[0].rowSpan = (tbody.rows.length - 1);
+
+
+            }
+
+        // Function to adjust rowspan of the code cell
+        //  function adjustRowspan(codeCell, increment) {
+             // let currentRowspan = parseInt(codeCell.getAttribute("rowspan") || 1);
+            //  codeCell.setAttribute("rowspan", currentRowspan + increment);
+         // }
+
+        // Wait for DOM content to load before executing
+            document.addEventListener("DOMContentLoaded", function () {
+            // Initial setup for existing rows
+                document.querySelectorAll("#table_floor .ratio").forEach((input) => {
+                    attachCalculateEventListener(input);
+                });
+                attachRemoveEventListeners();
+                attachSelectEventListeners(document.getElementById("materialSelect"));
+                attachSelectEventListenersgroup(document.getElementById("materialgroup"));
+            });
+            // Function to format value to two decimal places
+                function formatToTwoDecimalPlaces(element) {
+                    const value = parseFloat(element.value) || 0;
+                    element.value = value.toFixed(2);
+                }
+                
+
+                // Function to attach blur event specifically for .ratio input fields in a row
+                function attachRatioEventListener(row) {
+                    const ratioInput = row.querySelector(".ratio");
+                    if (ratioInput) {
+                        ratioInput.addEventListener("blur", function() {
+                            formatToTwoDecimalPlaces(ratioInput);
+                        });
+                    }
+                }
+
+
+
+
+
+
+
+
+        // Add row button click handler
+            document.getElementById("addRowButton").addEventListener("click", function () {
+                const table = document.getElementById("table_floor").getElementsByTagName("tbody")[0];
+
+                const rowTemplate = table.querySelector("tr.table-row:first-of-type");
+                const newRow = rowTemplate.cloneNode(true);
+                newRow.deleteCell(0);
+
+    // Clear out the values in the new row's input fields and selects
+                newRow.querySelectorAll("input, textarea,select").forEach((input) => {
+                    input.value = "";
+                });
+                if (!newRow.querySelector(".remove-row")) {
+                    const lastCell = newRow.querySelector("td:last-child");
+                    // lastCell.innerHTML += '<button type="button" class="remove-row btn btn-danger">Remove</button>';
+                    lastCell.innerHTML += '<i class="fas fa-times remove-row p-2 rounded-2" title="Remove" style="cursor: pointer; background-color: red;color:white;"></i>'; // Font Awesome "X" icon
+
+                }
+                newRow.querySelectorAll("input, select").forEach((element) => {
+                    if (element.type === "text" || element.type === "number" || element.type === "hidden") {
+                        element.value = ""; // Clear input values
+                    } else if (element.tagName === "SELECT") {
+                        element.selectedIndex = 0; // Reset selects to the first option
+                    }
+                });
+                newRow.querySelectorAll("td").forEach((cell) => {
+                    Array.from(cell.childNodes).forEach((node) => {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            node.textContent = "";
+                        }
+                    });
+                });
+                const textarea = newRow.querySelector("textarea");
+                if (textarea) {
+                    textarea.remove();
+                }
+
+
+    // Append the new row to the table just before the "Add Row" button row
+                const lastRow = table.querySelector("tr:last-child"); // Get the last row
+                table.insertBefore(newRow, lastRow); // Insert before the last row
+
+                // Make a rowspan to first cell of the table after adding new row
+                const tbody = document.querySelector('#material_body');
+                tbody.rows[0].cells[0].rowSpan = (tbody.rows.length - 1);
+                // Attach the specific event listener for .ratio field in the new row
+                attachRatioEventListener(newRow);
+
+             // Attach event listeners to the new row's elements
+                attachEventListeners(newRow);
+
+                newRow.querySelector(".remove-row").addEventListener("click", function () {
+                    newRow.remove();
+                    updateExecutionColumnTotals();
+
+                    const first_row = document.querySelector("#material_body");
+                    first_row.rows[0].cells[0].rowSpan = first_row.rows.length - 1;
+                });
+
+
+
+
+    // Attach group listener specifically for the new row
+                const groupSelect = newRow.querySelector(".material-group"); // Assuming .material-group is the class used for group select
+
+                if (groupSelect) {
+                    attachSelectEventListenersgroup(groupSelect);
+                }
+                const materialSelect = newRow.querySelector(".materialSelect"); // Assuming .material-group is the class used for group select
+
+                if (materialSelect) {
+                    attachSelectEventListeners(materialSelect);
+                }
+
+    // Recalculate totals after adding a row
+                updateColumnTotals();
+
+
+
+            });
+
+        </script>
+
+        <script>
+        // Function to update the code preview input
+            function updateCodePreview() {
+                const materialcodeTextarea = document.querySelector(".materialcode");
+                const executioncodeTextarea = document.querySelector(".executioncode");
+                const codePreviewInput = document.querySelector(".code-preview");
+
+                if (materialcodeTextarea && executioncodeTextarea && codePreviewInput) {
+                    codePreviewInput.value = materialcodeTextarea.value +'-'+ executioncodeTextarea.value;
+                }
+            }
+
+        // Wait for DOM content to load before executing
+            document.addEventListener("DOMContentLoaded", function () {
+                const materialcodeTextarea = document.querySelector(".materialcode");
+                const executioncodeTextarea = document.querySelector(".executioncode");
+
+                if (materialcodeTextarea && executioncodeTextarea) {
+                // Attach input event listeners to both textareas
+                    materialcodeTextarea.addEventListener("input", function () {
+                        updateCodePreview();
+                    });
+
+                    executioncodeTextarea.addEventListener("input", function () {
+                        updateCodePreview();
+                    });
+                } else {
+                    console.error("Materialcode or Executioncode textarea not found.");
+                }
+            });
+        </script>
+
+        <script>
+    // Initialize totals variables for the second table
+            let exeBasicTotal = 0;
+            let exeGstTotal = 0;
+            let exeGrandTotal = 0;
+            let exeTotalRate = 0;
+
+    // Function to update totals in the HTML for the second table
+            function updateExecutionColumnTotals() {
+        // Reset totals for the second table
+                exeBasicTotal = 0;
+                exeGstTotal = 0;
+                exeGstrateTotal = 0;
+                exeGrandTotal = 0;
+                exeGrandTotal = 0;
+                exeTotalRate = 0;
+
+        // Loop through each row in the second table and calculate totals
+                document.querySelectorAll("#table_execution .exe-row").forEach((row) => {
+                    let basicValueCell = row.querySelector(".exe_basicValueCell");
+                    console.log( basicValueCell)
+                    if (basicValueCell) {
+                        let basicValueText = basicValueCell.textContent.trim().replace("₹ ", "");
+                        let basicValue = parseFloat(basicValueText);
+                        if (!isNaN(basicValue)) exeBasicTotal += basicValue;
+                    }
+
+                    let gstValueCell = row.querySelector(".exe_gstValueCell");
+                    if (gstValueCell) {
+                        let gstValueText = gstValueCell.textContent.trim().replace("₹ ", "");
+                        let gstValue = parseFloat(gstValueText);
+                        if (!isNaN(gstValue)) exeGstTotal += gstValue;
+                    }
+                    let gstrateCell = row.querySelector(".exe_gstCell");
+                    if (gstrateCell) {
+                        let gstrateText = gstrateCell.textContent.trim().replace("% ", "");
+                        let gstrateValue = parseFloat(gstrateText);
+                        if (!isNaN(gstrateValue)) exeGstrateTotal += gstrateValue;
+                    }
+
+                    let totalValueCell = row.querySelector(".exe_subTotalCell");
+                    if (totalValueCell) {
+                        let totalValueText = totalValueCell.textContent.trim().replace("₹ ", "");
+                        let totalValue = parseFloat(totalValueText);
+                        if (!isNaN(totalValue)) exeGrandTotal += totalValue;
+                    }
+
+                    let rateInput = row.querySelector(".exe_rateCell input");
+                    if (rateInput) {
+                        let rateValue = parseFloat(rateInput.value);
+                        if (!isNaN(rateValue)) exeTotalRate += rateValue;
+                    }
+                     calculateValues();
+                });
+
+        // Update the totals in the HTML for the second table
+                document.querySelector(".exe_basic-value").innerHTML = "₹ " + exeBasicTotal.toFixed(2) + '<input type="hidden" name="execution_basicvalue" value="' + exeBasicTotal.toFixed(2) + '">';
+                document.querySelector(".exe_gst-value").innerHTML = "₹ " + exeGstTotal.toFixed(2) + '<input type="hidden" name="execution_gstvalue" value="' + exeGstTotal.toFixed(2) + '">';
+                document.querySelector(".exe_total-value").innerHTML = "₹ " + exeGrandTotal.toFixed(2) + '<input type="hidden" name="execution_total-value" value="' +exeGrandTotal.toFixed(2) + '">';
+        //document.querySelector(".exe_total-rate").innerHTML = "₹ " + exeTotalRate.toFixed(2) + '<input type="hidden" name="execution_total-rate" value="' + exeTotalRate.toFixed(2) + '">';
+                console.log(document.querySelectorAll("#table_execution .exe-row").length )
+                console.log(exeGstrateTotal )
+
+                //document.querySelector(".exe_gstrate").innerHTML = exeGstrateTotal / (document.querySelectorAll("#table_execution .exe-row").length )+'%'  + '<input type="hidden" name="execution_gstrate" value="' + exeGstrateTotal.toFixed(2) + '">';
+               document.querySelector(".exe_gstrate").innerHTML = ((exeGstTotal * 100) / exeBasicTotal).toFixed(2) + '%' +
+    '<input type="hidden" name="execution_gstrate" value="' + ((exeGstTotal * 100) / exeBasicTotal).toFixed(2) + '">';
+
+                document.querySelectorAll("#table_floor4 .table-row").forEach((row) => {
+                    let exe_rateCell = row.querySelector(".execution-rate");
+                    if (exe_rateCell) {
+                        exe_rateCell.innerHTML = `₹ ${ exeBasicTotal.toFixed(2)}<input type="hidden" name="Contract_Marginamount[]" value="${exeBasicTotal.toFixed(2)}">`;
+                    }
+                });
+            }
+            function attachCalculateEventListeners(inputElement) {
+                inputElement.addEventListener("input", function (event) {
+                    exeCalculate(event);
+                });
+            }
+    // Wait for DOM content to load before executing
+            document.addEventListener("DOMContentLoaded", function () {
+            // Initial setup for existing rows
+                document.querySelectorAll("#table_execution .exratio ").forEach((input) => {
+                    attachCalculateEventListeners(input);
+                });
+                attachRemoveEventListeners1();
+                attachSelectEventListeners1(document.getElementById("exe-select"));
+                attachSelectEventListenersexecution(document.getElementById("executionGroupSelect"));
+            });
+    // Function to attach select event listeners for the second table
+            function attachSelectEventListeners1(selectElement) {
+                selectElement.addEventListener("change", function () {
+                    const selectedMaterial = this.options[this.selectedIndex];
+                    const rate = parseFloat(selectedMaterial.getAttribute("data-rate"));
+                    const unit = selectedMaterial.getAttribute("data-unit");
+                    const gstPercent = parseFloat(selectedMaterial.getAttribute("data-gst"));
+                    const basicValue = rate;
+                    const gstValue = (basicValue * gstPercent) / 100;
+                    const subtotal = basicValue + gstValue;
+                    const row = selectElement.closest("tr");
+                    row.querySelector(".exe_rateCell").innerHTML = "₹ " + rate.toFixed(2) + '<input type="hidden" name="exe_rate[]" class="exe_rateInput">';
+                    row.querySelector(".exe_unitCell").innerHTML = unit + '<input type="hidden" name="exe_unitInput[]" class="exe_unitInput">';
+                    row.querySelector(".exe_gstCell").innerHTML = gstPercent.toFixed(2) + "% " + '<input type="hidden" name="exe_gst[]" class="exe_gstInput">';
+                // Update hidden inputs
+                    row.querySelector(".exe_rateInput").value = rate.toFixed(2);
+                    row.querySelector(".exe_unitInput").value = unit;
+                    row.querySelector(".exe_gstInput").value = gstPercent.toFixed(2);
+                    row.querySelector(".exratio").value = "".toFixed(2);
+
+
+
+                // Update rate and subtotal cells for the second table
+                    row.querySelector(".exe_rateCell").innerHTML = "₹ " + rate.toFixed(2) + '<input type="hidden" name="exe_rate[]" class="rateInput">';
+                    let rateInput = row.querySelector(".exe_rateCell input");
+                    if (rateInput) {
+                        rateInput.value = rate.toFixed(2);
+                    }
+                    let gstCell = row.querySelector(".exe_gstCell");
+                    if (gstCell) {
+                        gstCell.innerHTML = gstPercent.toFixed(2)+'%' + '<input type="hidden" name="exe_gst[]" class="exe_gstInput" value="' + gstPercent.toFixed(2) + '">';
+                    }
+                    let subtotalCell = row.querySelector(".exe_subTotalCell");
+                    if (subtotalCell) {
+                        subtotalCell.textContent = "₹ " + subtotal.toFixed(2);
+                    }
+
+                // Recalculate and update totals for the second table
+                    updateExecutionColumnTotals();
+                      calculateValues();
+                    updateOnsideAmount();
+                    updateOffsideAmount();
+                });
+            }
+    // Function to attach select event listeners for execution group
+            function attachSelectEventListenersexecution(selectElement) {
+                selectElement.addEventListener("change", function () {
+                    loadExecutionDetails(this);
+                });
+            }
+
+    // Function to load execution details via AJAX
+            function loadExecutionDetails(selectElement) {
+                const groupName = selectElement.value;
+                const row = selectElement.closest('.exe-row');
+                const executionNameSelect = row.querySelector('.execution-name');
+                var exeselect = document.getElementById('exe-select');
+                $.ajax({
+                    url: '/client/load-exe-materials/',
+                    method: 'GET',
+                    data: { 'group': groupName },
+                })
+                    .done(function (response) {
+        // Clear the existing options and add the default 'Select' option
+                        executionNameSelect.innerHTML = '<option value="">Select</option>';
+
+        // Check if response.executions is defined and contains items
+                        if (response.executions && response.executions.length > 0) {
+                            exeselect.disabled = false;
+            // Add options from the response
+                            response.executions.forEach(execution => {
+                                executionNameSelect.innerHTML += `<option value="${execution.name}"
+                    data-rate="${execution.price}"
+                    data-unit="${execution.unit__name}"
+                    data-gst="${execution.gst__rate}">
+                    ${execution.name}
+                </option>`;
+                            });
+                        } else {
+            // No executions available, add a placeholder option
+                            executionNameSelect.innerHTML += '<option value="" disabled>No execution available</option>';
+                        }
+
+                        hideSelectedOptions1(); // Ensure this function is defined and updates the select options
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        console.error("AJAX Error:", textStatus, errorThrown);
+                    });
+            }
+
+
+
+    // Function to hide selected options to prevent duplicates
+            function hideSelectedOptions1() {
+                const selectedValues = new Set();
+                document.querySelectorAll('.execution-name').forEach(select => {
+                    if (select.value) {
+                        selectedValues.add(select.value);
+                    }
+                });
+
+                document.querySelectorAll('.execution-name').forEach(select => {
+                    const options = select.options;
+                    for (let i = 0; i < options.length; i++) {
+                        const option = options[i];
+                        if (selectedValues.has(option.value) && option.value !== select.value) {
+                            option.style.display = 'none';
+                        } else {
+                            option.style.display = 'block';
+                        }
+                    }
+                });
+            }
+
+
+           // Function to format value to two decimal places
+            function formatToTwoDecimalPlaces(element) {
+                const value = parseFloat(element.value) || 0;
+                element.value = value.toFixed(2);
+            }
+
+            // Function to attach blur event specifically for .exratio input fields in a row
+            function attachExratioEventListener(row) {
+                const exratioInput = row.querySelector(".exratio");
+                if (exratioInput) {
+                    exratioInput.addEventListener("blur", function() {
+                        formatToTwoDecimalPlaces(exratioInput);
+                    });
+                }
+            } 
+
+    // Function to handle adding new rows
+            document.getElementById("addRowButtonExecution").addEventListener("click", function () {
+                const table = document.getElementById("table_execution").getElementsByTagName("tbody")[0];
+                const rowTemplate = table.querySelector("tr.exe-row:first-of-type");
+                const newRow = rowTemplate.cloneNode(true);
+                // removing the first cell
+                newRow.deleteCell(0);
+                if (!newRow.querySelector(".remove-row-execution")) {
+                    const lastCell = newRow.querySelector("td:last-child");
+                    // lastCell.innerHTML += '<button type="button" class="remove-row-execution btn btn-success">Remove</button>';
+                    lastCell.innerHTML += '<i class="fas fa-times remove-row-execution rounded-2 p-2" title="Remove" style="cursor: pointer;background-color: red; color:white; height:25;width:25;"></i>'; // Font Awesome "X" icon
+                }
+
+        // Clear out the values in the new row's input fields and selects
+                newRow.querySelectorAll("input, textarea, select").forEach((input) => {
+                    if (input.tagName === "SELECT") {
+                        input.selectedIndex = 0; // Reset to default option
+                    } else {
+                        input.value = ""; // Clear value
+                    }
+                });
+
+
+                const textarea = newRow.querySelector("textarea");
+                if (textarea) {
+                    textarea.remove();
+                }
+                newRow.querySelectorAll("td").forEach((cell) => {
+                    Array.from(cell.childNodes).forEach((node) => {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            node.textContent = "";
+                        }
+                    });
+                });
+
+        // Append the new row to the table just before the "Add Row" button row
+                const lastRow = table.querySelector("tr:last-child");
+                table.insertBefore(newRow, lastRow);
+
+                const first_row = document.querySelector("#execution_body");
+                first_row.rows[0].cells[0].rowSpan = first_row.rows.length - 1;
+
+                // Attach the specific event listener for .exratio field in the new row
+                attachExratioEventListener(newRow);
+
+        // Attach event listeners to the new row's elements
+                attachEventListeners(newRow);
+
+
+                newRow.querySelector(".remove-row-execution").addEventListener("click", function () {
+                    newRow.remove();
+                    updateExecutionColumnTotals();
+
+                    const first_row = document.querySelector("#execution_body");
+                    first_row.rows[0].cells[0].rowSpan = first_row.rows.length - 1;
+                });
+
+        // Attach group listener specifically for the new row
+                const executionGroupSelect = newRow.querySelector(".execution-group");
+                if (executionGroupSelect) {
+                    attachSelectEventListenersexecution(executionGroupSelect);
+                }
+
+                const executionSelect = newRow.querySelector(".execution-name");
+                if (executionSelect) {
+                    attachSelectEventListeners1(executionSelect);
+                }
+
+        // Recalculate totals after adding a row
+                updateExecutionColumnTotals();
+
+
+
+            });
+
+    // Attach event listeners to existing rows on DOM load
+            document.addEventListener("DOMContentLoaded", function () {
+                document.querySelectorAll("#table_execution .exratio").forEach((input) => {
+                    attachexCalculateEventListener(input);
+                });
+                attachRemoveEventListeners1();
+                attachSelectEventListeners1(document.getElementById("exe-select"));
+            });
+
+    // Function to attach remove event listeners
+            function attachRemoveEventListeners1() {
+                document.querySelectorAll(".remove-row-execution").forEach((button) => {
+                    button.addEventListener("click", function () {
+                        let row = this.closest("tr");
+                        row.parentNode.removeChild(row);
+                        updateExecutionColumnTotals();
+                    });
+                });
+            }
+
+    // Function to attach calculate event listeners
+            function attachexCalculateEventListener(inputElement) {
+                inputElement.addEventListener("input", function (event) {
+                    exeCalculate(event);
+                });
+            }
+
+    // Calculation function based on ratio
+            function exeCalculate(event) {
+                let input = event.target;
+                let row = input.closest("tr");
+
+                let ratio = parseFloat(row.querySelector(".exratio").value).toFixed(3);
+                let rateText = row.querySelector(".exe_rateCell").textContent.trim().replace(/[^0-9.-]+/g, "");
+                let basicValue = parseFloat(rateText) * ratio;
+
+                let basicValueCell = row.querySelector(".exe_basicValueCell");
+                if (basicValueCell) {
+                    basicValueCell.innerHTML = "₹ " + basicValue.toFixed(2) + '<input type="hidden" name="exe_basicvalue[]" class="basicValueInput" value="' + basicValue.toFixed(2) + '">';
+                }
+
+                let gstPercent = parseFloat(row.querySelector(".exe_gstCell").textContent.trim().replace("%", ""));
+                let gstValue = (basicValue * gstPercent) / 100;
+
+                let gstValueCell = row.querySelector(".exe_gstValueCell");
+                if (gstValueCell) {
+                    gstValueCell.innerHTML = "₹ " + gstValue.toFixed(2) + '<input type="hidden" name="exe_gstvalue[]" class="gstValueInput" value="' + gstValue.toFixed(2) + '">';
+                }
+
+                let subTotal = basicValue + gstValue;
+                let subTotalCell = row.querySelector(".exe_subTotalCell");
+                if (subTotalCell) {
+                    subTotalCell.innerHTML = "₹ " + subTotal.toFixed(2) + '<input type="hidden" name="exe_subtotal[]" class="subTotalInput" value="' + subTotal.toFixed(2) + '">';
+                }
+
+        // Update totals
+                updateExecutionColumnTotals();
+                updateOffsideAmount();
+            }
+        </script>
+
+
+   <script>
+       // Function to calculate and update onsideamount
+function updateOnsideAmount() {
+    var sumFloor = 0;
+    var sumExecution = 0;
+
+    // Sum values from #table_floor
+    $("#table_floor tbody tr#summarymaterial").each(function () {
+        var rateCall = $(this).find(".basic-value").text().trim();
+        if (rateCall && rateCall !== "-") {
+            sumFloor += parseFloat(rateCall.replace("₹ ", "").trim()) || 0;
+        }
+    });
+
+    // Sum values from #table_execution
+    $("#table_execution tbody tr#summaryexecution").each(function () {
+        var exeRate = $(this).find(".exe_basic-value").text().trim();
+        if (exeRate && exeRate !== "-") {
+            sumExecution += parseFloat(exeRate.replace("₹ ", "").trim()) || 0;
+        }
+    });
+
+    // Calculate total amount
+    var totalAmount = sumFloor + sumExecution;
+
+    $("tr.table-row").each(function () {
+        var formula = $(this).find(".formula").text().trim();
+
+        var variableA = sumFloor ? parseFloat(sumFloor) : 0;
+        var variableB = sumExecution ? parseFloat(sumExecution) : 0;
+
+        let sum = 0;
+        if (formula.toLowerCase().includes("a") && formula.toLowerCase().includes("b")) {
+            sum = variableA + variableB;
+        } else if (formula.toLowerCase().includes("a")) {
+            sum = variableA;
+        } else if (formula.toLowerCase().includes("b")) {
+            sum = variableB;
+        }
+
+        $(this).find(".onsideamount").html("₹ " + sum.toFixed(2) + '<input type="hidden" name="onsideamount" value="' + sum.toFixed(2) + '">');
+        updateExpenseDetails($(this), sum);
+    });
+
+    updateSummaryTotals(); // Call the function to update summary totals
+
+    // Update profit rate cells based on the total amount
+    document.querySelectorAll("#table_floor4 .table-row2").forEach((row) => {
+        let profit_rateCell = row.querySelector(".profit-rate");
+        let onsidebasicvalue = row.querySelector(".onsidebasicvalue");
+        var final_amount = totalAmount + (onsidebasicvalue ? parseFloat(onsidebasicvalue.textContent.trim().replace("₹ ", "")) : 0);
+
+        if (profit_rateCell) {
+           // profit_rateCell.innerHTML = `₹ ${final_amount.toFixed(2)}<input type="hidden" name="Contract_Marginamount[]" value="${final_amount.toFixed(2)}">`;
+        }
+    });
+}
+
+// Function to calculate and update expense details
+function updateExpenseDetails(row, onsideamount) {
+    if (!row || row.length === 0) return;
+
+    var ratio = parseFloat(row.find(".managmentratio").val()) || 0.00;
+    var basicValue = (onsideamount * ratio) / 100;
+    row.find(".onsidebasicvalue").html("₹ " + basicValue.toFixed(2) + '<input type="hidden" name="onside_basic_value" value="' + basicValue.toFixed(2) + '">');
+    var gstPercentage = parseFloat(row.find(".onsidegst").text().trim()) ;
+    var gstValue = (basicValue * gstPercentage) / 100;
+    row.find(".onsidegstvalue").html("₹ " + gstValue.toFixed(2) + '<input type="hidden" name="onside_gst_value" value="' + gstValue.toFixed(2) + '">');
+    var subtotal = basicValue + gstValue;
+    row.find(".onsidesubtotal").html("₹ " + subtotal.toFixed(2) + '<input type="hidden" name="onside_subtotal" value="' + subtotal.toFixed(2) + '">');
+
+    updateSummaryTotals(); // Call the function to update summary totals after expense update
+}
+
+// Function to update totals in the summary row
+function updateSummaryTotals() {
+    var totalAllowMe = 0;
+    var totalBasicValue = 0;
+    var totalGstValue = 0;
+    var totalSubTotal = 0;
+    var GstValue=0;
+
+    $("tr.table-row").each(function () {
+        totalAllowMe += parseFloat($(this).find(".managmentratio").val()) || 0;
+        totalBasicValue += parseFloat($(this).find(".onsidebasicvalue").text().replace("₹", "").trim()) || 0;
+        totalGstValue += parseFloat($(this).find(".onsidegstvalue").text().replace("₹", "").trim()) || 0;
+        totalSubTotal += parseFloat($(this).find(".onsidesubtotal").text().replace("₹", "").trim()) || 0;
+
+    });
+
+    // Update the summary row with totals
+   // Update the onsidesummary row with the calculated totals
+$(".onsidesummary .allow-me").text( totalAllowMe .toFixed(2)+ "%");
+$(".onsidesummary .allow-me").append('<input type="hidden" name="op_allowme" value="' + totalAllowMe.toFixed(2) + '">');
+
+$(".onsidesummary .basic-value").text("₹ " + totalBasicValue.toFixed(2));
+$(".onsidesummary .basic-value").append('<input type="hidden" name="op_basicvalue" value="' + totalBasicValue.toFixed(2) + '">');
+
+$(".onsidesummary .gst-value").text("₹ " + totalGstValue.toFixed(2));
+$(".onsidesummary .gst-value").append('<input type="hidden" name="op_gstvalue" value="' + totalGstValue.toFixed(2) + '">');
+
+$(".onsidesummary .sub-total").text("₹ " + totalSubTotal.toFixed(2));
+$(".onsidesummary .sub-total").append('<input type="hidden" name="op_total" value="' + totalSubTotal.toFixed(2) + '">');
+
+let gstPercentage = parseFloat((totalGstValue * 100) / totalBasicValue).toFixed(2);
+$(".onsidesummary .gst").text(gstPercentage + '%');
+$(".onsidesummary .gst").append('<input type="hidden" name="op_gst" value="' + gstPercentage + '">');
+
+}
+
+// Event listeners
+$("#table_execution tbody").on("input", "input.exratio", function () {
+    updateOnsideAmount();
+     updateOffsideAmount();
+});
+
+$("#table_execution tbody").on("input", 'textarea[name="execution"]', function () {
+    updateOnsideAmount();
+     updateOffsideAmount();
+});
+
+$("#table_floor tbody").on("input", "input.ratio", function () {
+    updateOnsideAmount();
+     updateOffsideAmount();
+});
+
+$(".managmentratio").on("input", function () {
+    var row = $(this).closest("tr");
+    var onsideamount = parseFloat(row.find(".onsideamount input").val()) || 0;
+    updateExpenseDetails(row, onsideamount);
+});
+
+   </script>
+<script>
+    // Function to calculate and update offsideamount
+function updateOffsideAmount() {
+    var sumFloor = 0;
+    var sumExecution = 0;
+    var sumMargin = 0;
+
+    // Sum values from #table_floor
+    $("#table_floor tbody tr#summarymaterial").each(function () {
+        var rateCall = $(this).find(".basic-value").text().trim();
+        if (rateCall && rateCall !== "-") {
+            sumFloor += parseFloat(rateCall.replace("₹ ", "").trim()) || 0;
+        }
+    });
+
+    // Sum values from #table_execution
+    $("#table_execution tbody tr#summaryexecution").each(function () {
+        var exeRate = $(this).find(".exe_basic-value").text().trim();
+        if (exeRate && exeRate !== "-") {
+            sumExecution += parseFloat(exeRate.replace("₹ ", "").trim()) || 0;
+        }
+    });
+
+    // Sum values from #table_floor1 for margin
+    $("#table_floor1 tbody tr").each(function () {
+        var marginRate = $(this).find(".onsidebasicvalue").text().trim();
+        if (marginRate && marginRate !== "-") {
+            sumMargin += parseFloat(marginRate.replace("₹", "").trim()) || 0;
+            console.log( sumMargin)
+        }
+    });
+
+    // Calculate total amount
+    var totalAmount = sumFloor + sumExecution + sumMargin;
+
+    // Update rows in the table
+    $("tr.table-row").each(function () {
+        var formula = $(this).find(".formula").text().trim();
+        var variableA = sumFloor ? parseFloat(sumFloor) : 0;
+        var variableB = sumExecution ? parseFloat(sumExecution) : 0;
+        var variableC = sumMargin ? parseFloat(sumMargin) : 0;
+
+        let sum = 0;
+
+        // Handle formula cases
+        if (formula.toLowerCase().includes("a") && formula.toLowerCase().includes("b") && formula.toLowerCase().includes("c")) {
+            sum = variableA + variableB + variableC;
+            console.log( variableC,'cccccccccccc');
+        } else if (formula.toLowerCase().includes("a") && formula.toLowerCase().includes("b")) {
+            sum = variableA + variableB;
+        } else if (formula.toLowerCase().includes("a") && formula.toLowerCase().includes("c")) {
+            sum = variableA + variableC;
+        } else if (formula.toLowerCase().includes("b") && formula.toLowerCase().includes("c")) {
+            sum = variableB + variableC;
+        } else if (formula.toLowerCase().includes("a")) {
+            sum = variableA;
+        } else if (formula.toLowerCase().includes("b")) {
+            sum = variableB;
+        } else if (formula.toLowerCase().includes("c")) {
+            sum = variableC;
+        }
+
+        // Update the table with the calculated sum
+        $(this).find(".material-rate").html("₹ " + sum.toFixed(2) + '<input type="hidden" name="Contract_Marginamount[]" value="' + sum.toFixed(2) + '">');
+        updateOffsideExpenseDetails($(this), sum);  // Update expense details based on new sum
+    });
+
+    updateOffsideSummaryTotals(); // Update summary totals after row calculations
+}
+
+// Function to calculate and update expense details
+function updateOffsideExpenseDetails(row, offsideamount) {
+    if (!row || row.length === 0) return;
+
+    var ratio = parseFloat(row.find(".material-margin-required input").val()) ;
+
+    var basicValue = (offsideamount * ratio) / 100;
+    row.find(".material-margin-basicvalue").html("₹ " + basicValue.toFixed(2) + '<input type="hidden" name="Contract_Marginbasicvalue[]" value="' + basicValue.toFixed(2) + '">');
+
+    var gstPercentage = parseFloat(row.find(".material-margin-gst").text().trim()) || 0;
+    var gstValue = (basicValue * gstPercentage) / 100;
+    row.find(".material-margin-gstvalue").html("₹ " + gstValue.toFixed(2) + '<input type="hidden" name="Contract_Margingstvalue[]" value="' + gstValue.toFixed(2) + '">');
+
+
+    var subtotal = basicValue + gstValue;
+    row.find(".material-margin-subtotal").html("₹ " + subtotal.toFixed(2) + '<input type="hidden" name="Contract_Marginsubtotal[]" value="' + subtotal.toFixed(2) + '">');
+
+    updateOffsideSummaryTotals(); // Update summary totals after updating expense details
+}
+// Function to update totals in the summary row
+function updateOffsideSummaryTotals() {
+    var totalAllowMe = 0;
+    var totalBasicValue = 0;
+    var totalGstValue = 0;
+    var totalSubTotal = 0;
+    var  totalGst  =0;
+
+    $("tr.table-row").each(function () {
+        // Access input field directly for allowMe value
+        totalAllowMe += parseFloat($(this).find('input[name="Contract_Marginreqvalue[]"]').val()) || 0;
+
+        // Ensure to access text correctly for other values 
+        totalBasicValue += parseFloat($(this).find('input[name="Contract_Marginbasicvalue[]"]').val()) || 0;
+        totalGstValue += parseFloat($(this).find('input[name="Contract_Margingstvalue[]"]').val()) || 0;
+        totalSubTotal += parseFloat($(this).find('input[name="Contract_Marginsubtotal[]"]').val()) || 0;
+        //totalGst += parseFloat($(this).find('input[name="Contract_Margingst[]"]').val()) || 0;
+    });
+
+
+    // Update the summary row with the calculated totals
+
+   // Update the summary row with the calculated totals
+
+$(".offside-summary .managment-required").text(totalAllowMe.toFixed(2)+ "%");
+$(".offside-summary .managment-required").append('<input type="hidden" name="margin_required" value="' + totalAllowMe.toFixed(2) + '">');     
+   
+$(".offside-summary .managment-basicvalue").text("₹ " + totalBasicValue.toFixed(2));
+$(".offside-summary .managment-basicvalue").append('<input type="hidden" name="margin_basicvalue" value="' + totalBasicValue.toFixed(2) + '">');
+
+$(".offside-summary .managment-gstvalue").text("₹ " + totalGstValue.toFixed(2));
+$(".offside-summary .managment-gstvalue").append('<input type="hidden" name="margin_gstvalue" value="' + totalGstValue.toFixed(2) + '">');
+
+$(".offside-summary .managment-subtotal").text("₹ " + totalSubTotal.toFixed(2));
+$(".offside-summary .managment-subtotal").append('<input type="hidden" name="margin_subtotal" value="' + totalSubTotal.toFixed(2) + '">');
+
+let gstPercentage = ((totalGstValue * 100) / totalBasicValue).toFixed(2);
+$(".offside-summary .managment-gst").text(gstPercentage + '%');
+$(".offside-summary .managment-gst").append('<input type="hidden" name="margin_gst" value="' + gstPercentage + '">');
+
+}
+
+
+// Event listener for input changes
+$(".material-margin-required input").on("input", function () {
+    var row = $(this).closest("tr");
+    var offsideamount = parseFloat(row.find(".material-rate input").val()) || 0;
+    updateOffsideExpenseDetails(row, offsideamount);
+});
+
+</script>
+
+        <script>
+            document.getElementById("addRowButton4").addEventListener("click", function () {
+                const table = document.getElementById("table_floor4").getElementsByTagName("tbody")[0];
+                const addButtonRow = document.getElementById("addRowButton4").closest("tr");
+                const codeCell = table.querySelector("td.bg-white");
+
+                if (addButtonRow) {
+                // Insert new row before the addButtonRow
+                    const newRow = table.insertRow(addButtonRow.rowIndex - 1);
+
+                    newRow.className = "table-row";
+
+                    const newCell1 = newRow.insertCell(0);
+                    newCell1.innerHTML = '<select class="form-control"><option value="New Offsite Expense">New Offsite Expense</option></select>';
+
+                    const newCell2 = newRow.insertCell(1);
+                    newCell2.innerHTML = '<button class="remove-row">X</button>';
+
+                    const newCell3 = newRow.insertCell(2);
+                    newCell3.innerHTML = "";
+
+                    const newCell4 = newRow.insertCell(3);
+                    newCell4.innerHTML = "";
+
+                    const newCell5 = newRow.insertCell(4);
+                    newCell5.innerHTML = "";
+
+                    const newCell6 = newRow.insertCell(5);
+                    newCell6.innerHTML = "";
+
+                    const newCell7 = newRow.insertCell(6);
+                    newCell7.innerHTML = "";
+
+                    const newCell8 = newRow.insertCell(7);
+                    newCell8.innerHTML = "";
+
+                    const newCell9 = newRow.insertCell(8);
+                    newCell9.innerHTML = "";
+
+                    adjustRowspan(codeCell, 1);
+
+                // Re-attach remove event listeners
+                    attachRemoveEventListeners4();
+                } else {
+                    console.error("Add button row not found.");
+                }
+            });
+
+            function attachRemoveEventListeners4() {
+                const removeButtons = document.querySelectorAll(".remove-row4");
+                removeButtons.forEach((button) => {
+                    button.removeEventListener("click", removeRow4);
+                    button.addEventListener("click", removeRow4);
+                });
+            }
+
+            function removeRow4(event) {
+                const row = event.target.closest("tr");
+                const table = document.getElementById("table_floor4").getElementsByTagName("tbody")[0];
+            //const codeCell = table.querySelector("td.bg-white");
+
+                row.remove();
+
+           // adjustRowspan(codeCell, -1);
+            }
+
+            function adjustRowspan(cell, adjustment) {
+                let currentRowspan = parseInt(cell.getAttribute("rowspan"), 10);
+                currentRowspan += adjustment;
+                cell.setAttribute("rowspan", currentRowspan);
+            }
+
+        // Initial setup
+            attachRemoveEventListeners();
+        </script>
+
+        {% comment %}
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+            // Function to update individual row calculations
+                function updateRow() {
+                    const row = this.closest("tr"); // Ensure you have a correct selector for the row
+                    if (!row) {
+                        console.error("Row not found.");
+                        return;
+                    }
+
+                // Select inputs
+                    const rateInput = row.querySelector('input[name="Contract_Marginamount[]"]');
+                    const unitInput = row.querySelector('input[name="Contract_Margin_unit[]"]');
+                    const reqInput = row.querySelector('input[name="Contract_Marginreqvalue[]"]');
+                    const basicValueInput = row.querySelector('input[name="Contract_Marginbasicvalue[]"]');
+                    const gstInput = row.querySelector('input[name="Contract_Margingst[]"]');
+                    const gstValueInput = row.querySelector('input[name="Contract_Margingstvalue[]"]');
+                    const subtotalInput = row.querySelector('input[name="Contract_Marginsubtotal[]"]');
+
+                // Perform calculations
+                    const rate = parseFloat(rateInput ? rateInput.value : 0) || 0;
+                    const reqValue = parseFloat(reqInput ? reqInput.value : 0) || 0;
+                    const basicValue = rate * (reqValue / 100); // Assuming basic value is calculated as rate * (reqValue / 100)
+                    const gst = parseFloat(gstInput ? gstInput.value : 0) || 0;
+                    const gstValue = gst; // Adjust GST calculation if needed
+                    const subtotal = basicValue + gstValue;
+
+                // Update row values
+                    if (basicValueInput) {
+                        basicValueInput.value = basicValue.toFixed(2);
+                    // Update the basic value cell display
+                        const basicValueCell = row.querySelector(".material-margin-basicvalue");
+                        if (basicValueCell) {
+                            basicValueCell.innerHTML = `₹ ${basicValue.toFixed(2)}<input type="hidden" name="Contract_Marginbasicvalue[]" value="${basicValue.toFixed(2)}">`;
+                        }
+                    }
+
+                    if (gstValueInput) {
+                        gstValueInput.value = gstValue.toFixed(2);
+                    // Update the GST value cell display
+                        const gstValueCell = row.querySelector(".material-margin-gstvalue");
+                        if (gstValueCell) {
+                            gstValueCell.innerHTML = `₹ ${gstValue.toFixed(2)}<input type="hidden" name="Contract_Margingstvalue[]" value="${gstValue.toFixed(2)}">`;
+                        }
+                    }
+
+                    if (subtotalInput) {
+                        subtotalInput.value = subtotal.toFixed(2);
+                    // Update the subtotal cell display
+                        const subtotalCell = row.querySelector(".material-margin-subtotal");
+                        if (subtotalCell) {
+                            subtotalCell.innerHTML = `₹ ${subtotal.toFixed(2)}<input type="hidden" name="Contract_Marginsubtotal[]" value="${subtotal.toFixed(2)}">`;
+                        }
+                    }
+
+                // Update the rate cell with both text and hidden input
+                    updateRateCell(row, rate);
+
+                // Update totals after calculation
+                    updateColumnTotals();
+
+
+                }
+
+                function updateRateCell(row,  totalBasicValue) {
+                    let rateCell = row.querySelector(".material-rate");
+                    if (rateCell) {
+                        rateCell.innerHTML = `₹ ${totalRate.toFixed(2)}<input type="hidden" name="Contract_Marginamount[]" value="${totalRate.toFixed(2)}">`;
+                    } else {
+                        console.error("Rate cell not found in the row:", row);
+                    }
+                }
+
+                function updateColumnTotals() {
+                    let totalRate = 0,
+                        totalUnit = 0,
+                        totalRequired = 0,
+                        totalBasicValue = 0,
+                        totalGst = 0,
+                        totalGstValue = 0,
+                        totalSubtotal = 0;
+
+                    const allRows = document.querySelectorAll("#table_floor4 .table-row");
+                    allRows.forEach((row) => {
+                    // Select inputs
+                        const rateInput = row.querySelector('input[name="Contract_Marginamount[]"]');
+                        const unitInput = row.querySelector('input[name="Contract_Margin_unit[]"]');
+                        const reqInput = row.querySelector('input[name="Contract_Marginreqvalue[]"]');
+                        const basicValueInput = row.querySelector('input[name="Contract_Marginbasicvalue[]"]');
+                        const gstInput = row.querySelector('input[name="Contract_Margingst[]"]');
+                        const gstValueInput = row.querySelector('input[name="Contract_Margingstvalue[]"]');
+                        const subtotalInput = row.querySelector('input[name="Contract_Marginsubtotal[]"]');
+
+                    // Validate inputs
+                        if (!rateInput || !unitInput || !reqInput || !basicValueInput || !gstInput || !gstValueInput || !subtotalInput) {
+                            console.error("One or more inputs are missing in the row:", row);
+                            return;
+                        }
+
+                    // Accumulate totals
+                        totalRate += parseFloat(rateInput.value) || 0;
+                        totalUnit += parseFloat(unitInput.value) || 0;
+                        totalRequired += parseFloat(reqInput.value) || 0;
+                        totalBasicValue += parseFloat(basicValueInput.value) || 0;
+                        totalGst += parseFloat(gstInput.value) || 0;
+                        totalGstValue += parseFloat(gstValueInput.value) || 0;
+                        totalSubtotal += parseFloat(subtotalInput.value) || 0;
+                    });
+
+                // Update the totals row
+                    const totalsRow = document.querySelector("#table_floor4 .table-row:last-child");
+                    if (totalsRow) {
+                    // Update the cell text and hidden inputs
+                        updateTotalsCell(totalsRow, totalRate, totalUnit, totalRequired, totalBasicValue, totalGst, totalGstValue, totalSubtotal);
+                    } else {
+                        console.error("Totals row not found.");
+                    }
+                }
+
+                function updateTotalsCell(row, totalRate, totalUnit, totalRequired, totalBasicValue, totalGst, totalGstValue, totalSubtotal) {
+                // Update rate total
+                    let rateCell = row.querySelector(".managment-ratetotal");
+                    if (rateCell) {
+                        rateCell.innerHTML = `₹ ${totalRate.toFixed(2)}<input type="hidden" name="margin_rate" value="${totalRate.toFixed(2)}">`;
+                    }
+                    let rateInput = row.querySelector('input[name="margin_rate"]');
+                    if (rateInput) {
+                        rateInput.value = totalRate.toFixed(2);
+                    }
+
+                // Update unit total
+                    let unitCell = row.querySelector(".managment-unit");
+                    if (unitCell) {
+                        unitCell.innerHTML = `${totalUnit.toFixed(2)}<input type="hidden" name="margin_unit" value="${totalUnit.toFixed(2)}">`;
+                    }
+                    let unitInput = row.querySelector('input[name="margin_unit"]');
+                    if (unitInput) {
+                        unitInput.value = totalUnit.toFixed(2);
+                    }
+
+                // Update required total
+                    let requiredCell = row.querySelector(".managment-required");
+                    if (requiredCell) {
+                        requiredCell.innerHTML = `${totalRequired.toFixed(2)}<input type="hidden" name="margin_required" value="${totalRequired.toFixed(2)}">`;
+                    }
+                    let requiredInput = row.querySelector('input[name="margin_required"]');
+                    if (requiredInput) {
+                        requiredInput.value = totalRequired.toFixed(2);
+                    }
+
+                // Update basic value total
+                    let basicValueCell = row.querySelector(".managment-basicvalue");
+                    if (basicValueCell) {
+                        basicValueCell.innerHTML = `₹ ${totalBasicValue.toFixed(2)}<input type="hidden" name="margin_basicvalue" value="${totalBasicValue.toFixed(2)}">`;
+                    }
+                    let basicValueInput = row.querySelector('input[name="margin_basicvalue"]');
+                    if (basicValueInput) {
+                        basicValueInput.value = totalBasicValue.toFixed(2);
+                    }
+
+                // Update GST total
+                    let gstCell = row.querySelector(".managment-gst");
+                    if (gstCell) {
+                        gstCell.innerHTML = `₹ ${totalGst.toFixed(2)}<input type="hidden" name="margin_gst" value="${totalGst.toFixed(2)}">`;
+                    }
+                    let gstInput = row.querySelector('input[name="margin_gst"]');
+                    if (gstInput) {
+                        gstInput.value = totalGst.toFixed(2);
+                    }
+
+                // Update GST value total
+                    let gstValueCell = row.querySelector(".managment-gstvalue");
+                    if (gstValueCell) {
+                        gstValueCell.innerHTML = `₹ ${totalGstValue.toFixed(2)}<input type="hidden" name="margin_gstvalue" value="${totalGstValue.toFixed(2)}">`;
+                    }
+                    let gstValueInput = row.querySelector('input[name="margin_gstvalue"]');
+                    if (gstValueInput) {
+                        gstValueInput.value = totalGstValue.toFixed(2);
+                    }
+
+                // Update subtotal total
+                    let subtotalCell = row.querySelector(".managment-subtotal");
+                    if (subtotalCell) {
+                        subtotalCell.innerHTML = `₹ ${totalSubtotal.toFixed(2)}<input type="hidden" name="margin_subtotal" value="${totalSubtotal.toFixed(2)}">`;
+                    }
+                    let subtotalInput = row.querySelector('input[name="margin_subtotal"]');
+                    if (subtotalInput) {
+                        subtotalInput.value = totalSubtotal.toFixed(2);
+                    }
+                }
+
+            // Add event listeners to input fields
+                document.querySelectorAll('input[name="Contract_Marginreqvalue[]"], input[name="Contract_Marginamount[]"], input[name="Contract_Margin_unit[]"]').forEach((input) => {
+                    input.addEventListener("input", updateRow);
+                    input.addEventListener("focus", updateRow);
+                });
+            });
+        </script>
+        {% endcomment %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+    // Get the select element and the textarea
+                const worktypeSelect = document.getElementById('worktypeSelect');
+                const noteTextarea = document.getElementById('noteTextarea');
+
+    // Add event listener for changes in the select element
+                worktypeSelect.addEventListener('change', function () {
+        // Get the selected option
+                    const selectedOption = worktypeSelect.options[worktypeSelect.selectedIndex];
+
+        // Get the description from the data attribute
+                    const description = selectedOption.getAttribute('data-description');
+
+        // Set the description to the textarea if it exists, otherwise clear it
+                    noteTextarea.value = description ? description : '';
+                });
+            });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl)
+                });
+            });
+        </script>
+{% comment %}
+<!-- Load CKEditor -->
+<!-- <script src="https://cdn.ckeditor.com/ckeditor5/38.0.0/classic/ckeditor.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const worktypeSelect = document.getElementById('worktypeSelect');
+        const noteTextarea = document.getElementById('noteTextarea');
+        let editorInstance;
+
+        // Initialize CKEditor
+        ClassicEditor
+            .create(noteTextarea)
+            .then(editor => {
+                editorInstance = editor; // Save the CKEditor instance
+
+                // Function to set editor styles
+                function setEditorStyles() {
+                    const editorElement = editor.ui.view.editable.element;
+                    editorElement.style.height = '4em'; // Set height
+                    editorElement.style.width = '100%'; // Set height
+                    editorElement.style.overflowY = 'auto'; // Enable vertical scroll
+                    editorElement.style.resize = 'none'; // Prevent resizing
+                }
+
+                // Set initial styles
+                setEditorStyles();
+
+                // Event listener for changes in the select element
+                worktypeSelect.addEventListener('change', function () {
+                    const selectedOption = worktypeSelect.options[worktypeSelect.selectedIndex];
+                    const description = selectedOption.getAttribute('data-description');
+
+                    // Set the description to the CKEditor content
+                    editorInstance.setData(description ? description : ''); // Update CKEditor content
+
+                    // Set editor styles again after setting data
+                    setEditorStyles();
+                });
+            })
+            .catch(error => {
+                console.error('CKEditor initialization failed:', error);
+            });
+    });
+
+</script> -->
+
+<!--
+<script>
+    // script for toggle button of management
+    document.addEventListener("DOMContentLoaded", function () {
+    const toggleRowsButton = document.getElementById("toggleRows");
+    const tableBody = document.getElementById("tableBody");
+    const toggleIcon = document.getElementById("toggleIcon");
+
+    // Get all rows in tbody except for the total row
+    const rows = document.querySelectorAll("#table_floor1 tbody .table-row");
+
+    // Initially hide the rows (except the total row in tfoot)
+    rows.forEach(row => {
+        row.style.display = "none"; // Start with rows hidden
+    });
+
+    // Toggle rows on button click
+    toggleRowsButton.addEventListener("click", function () {
+        const areRowsVisible = rows[0].style.display !== "none"; // Check if rows are currently visible
+        rows.forEach(row => {
+            row.style.display = areRowsVisible ? "none" : "table-row"; // Toggle visibility
+        });
+
+        // Toggle the plus/minus icon
+        toggleIcon.classList.toggle("bi-chevron-down", areRowsVisible);
+        toggleIcon.classList.toggle("bi-chevron-up", !areRowsVisible);
+    });
+});
+
+</script> -->
+        {% endcomment %}
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+    const toggleRowsButton = document.getElementById("toggleRows");
+    const toggleIcon = document.getElementById("toggleIcon");
+
+    // Get all rows in the main tbody (the one that needs toggling)
+    const rows = document.querySelectorAll("#tableBody .table-row");
+
+    // Initially hide the rows
+    rows.forEach(row => {
+        row.style.display = "none"; // Start with rows hidden
+    });
+
+    // Toggle rows on button click
+    toggleRowsButton.addEventListener("click", function () {
+        const areRowsVisible = rows[0].style.display !== "none"; // Check if rows are currently visible
+        rows.forEach(row => {
+            row.style.display = areRowsVisible ? "none" : "table-row"; // Toggle visibility
+        });
+
+        // Toggle the plus/minus icon
+        toggleIcon.classList.toggle("bi-chevron-down", areRowsVisible);
+        toggleIcon.classList.toggle("bi-chevron-up", !areRowsVisible);
+    });
+});
+
+</script>
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+    const toggleRowsButton4 = document.getElementById("toggleRows4");
+    // const tableBody4 = document.getElementById("tableBody4");
+    const toggleIcon4 = document.getElementById("toggleIcon4");
+
+    // Get all rows in tbody except for the total row
+    const rows4 = document.querySelectorAll("#tableBody4 .table-row");
+
+    // Initially hide the rows (except the total row in tfoot)
+    rows4.forEach(row => {
+        row.style.display = "none"; // Start with rows hidden
+    });
+
+    // Toggle rows on button click
+    toggleRowsButton4.addEventListener("click", function () {
+        const areRowsVisible = rows4[0].style.display !== "none"; // Check if rows are currently visible
+        rows4.forEach(row => {
+            row.style.display = areRowsVisible ? "none" : "table-row"; // Toggle visibility
+        });
+
+        // Toggle the plus/minus icon
+        toggleIcon4.classList.toggle("bi-chevron-down", areRowsVisible);
+        toggleIcon4.classList.toggle("bi-chevron-up", !areRowsVisible);
+    });
+});
+</script>
+
+
+<script src="{% static 'js/quill.min.js' %}"></script>
+<script src="{% static 'js/demo.quilljs.js' %}"></script>
+ <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const worktypeSelect = document.getElementById('worktypeSelect');
+    const subgroupSelect = document.getElementById('subgroupSelect');
+
+    function updateSubgroupOptions() {
+        const groupId = worktypeSelect.value;
+        // Only fetch subgroups if a group is selected
+        if (groupId) {
+            subgroupSelect.disabled = false;
+            const fetchUrl = `/materials/get-subgroups/${groupId}/`;
+
+            fetch(fetchUrl)
+                .then(response => response.json())
+                .then(data => {
+                    // Store the initially selected subgroup if one is selected
+                    const initiallySelectedSubgroup = subgroupSelect.value;
+
+                    // Clear existing options and add the default option
+                    subgroupSelect.innerHTML = '<option value="">Select Sub Group Name</option>';
+
+                    // Populate the dropdown with new options
+                    data.forEach(function (subgroup) {
+                        const option = document.createElement('option');
+                        option.value = subgroup.id;
+                        option.textContent = subgroup.name;
+
+                        // Check if this option should be selected
+                        if (subgroup.id == initiallySelectedSubgroup) {
+                            option.selected = true;
+                        }
+                        subgroupSelect.appendChild(option);
+                    });
+                });
+        } else {
+            subgroupSelect.disabled = true;
+            subgroupSelect.innerHTML = '<option value="">Select Sub Group Name</option>';
+        }
+    }
+
+    // Trigger subgroup update on group name change
+    worktypeSelect.addEventListener('change', updateSubgroupOptions);
+
+    // Trigger the update on page load if a group is already selected
+    updateSubgroupOptions();
+});
+        function formatToTwoDecimalPlaces(element) {
+            const value = parseFloat(element.value) || 0;
+            element.value = value.toFixed(3);
+        }
+
+        document.querySelectorAll('.ratio,.exratio').forEach(input => {
+            input.onblur = function() {
+                formatToTwoDecimalPlaces(this);
+                console.log('test')
+            };
+        });
+        function adjustEditorHeight() {
+            const toolbar = document.getElementsByClassName('ql-toolbar')[0];
+            const editor = document.getElementById('snow-editor');
+            if (toolbar && editor) {
+                editor.style.height = `${toolbar.offsetHeight}px`;
+            }
+        }
+        window.addEventListener('resize', adjustEditorHeight, true);
+        document.addEventListener('DOMContentLoaded', adjustEditorHeight);
+        </script>
+
+
+    </div>
+{% endblock body %}
+
+
+
+
+
+

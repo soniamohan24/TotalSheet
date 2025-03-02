@@ -1,0 +1,2102 @@
+{% extends "partials/project_topbar.html" %} {% load static %} {% block title %}BOQ{% endblock title %} {% block body %}
+<style>
+    #operation_product_body td {
+        background-color: #d3f4d3;
+    }
+  .form-control:focus {
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgb(0 103 255);
+  }
+  .form-control{
+  border:none;}
+  .form-select{
+   border:none;
+  }
+  thead tr th{
+    background-color: #5081BD ;
+    color: white !important;
+    border: none;
+  }
+    /* Add this to your CSS */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3); /* Slightly less opaque background */
+    display: none; /* Hide by default */
+    align-items: center;
+    justify-content: center;
+    z-index: 1000; /* Ensure it is on top of other content */
+}
+
+.loading-overlay.active {
+    display: flex; /* Show when active */
+}
+
+.spinner {
+    border: 8px solid rgba(0, 0, 0, 0.1);
+    border-left: 8px solid #3498db; /* Color of the spinner */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+    * {
+      font-family: "Inter", sans-serif;
+    }
+    a{
+      text-decoration: none !important;
+    }
+    .top-bar>div a:hover{
+      background-color: #f9f0f0 !important;
+    }
+    .quick-link{
+      background-color: #7bdc5b !important
+    }
+    .nav{
+      --bs-nav-link-color: #7d8590;
+    }
+    .nav-underline .nav-link.active, .nav-underline .show>.nav-link {
+      font-weight: 400;
+      color: rgb(var(--bs-link-color-rgb));
+      border-bottom-color: currentcolor;
+  }
+  .form-control:focus {
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgb(0 103 255);
+  }
+  thead tr th{
+    background-color: #4992f0 !important;
+    color: white !important;
+  }
+  th {
+    white-space: nowrap;
+}
+.material-symbols-rounded.fill{
+      font-variation-settings:
+      'FILL' 1,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24 !important
+}
+#toggleRows {
+    background-color: #4992f0 !important;
+    border: none;
+}
+#toggleRows1 {
+    background-color: #4992f0 !important;
+    border: none;
+}
+#toggleRows2 {
+    background-color: #4992f0 !important;
+    border: none;
+}
+#toggleRows3 {
+    background-color: #4992f0 !important;
+    border: none;
+}
+        .no-border {
+    border: none;
+}
+  </style>
+<div class="d-flex flex-column bg-white p-4 row-gap-3 rounded-4">
+  <div class="d-flex flex-column">
+    <span class="fw-medium fs-4"> Project Products </span>
+    <span class="fs-6 fw-medium text-body-secondary">Default Description of Rules.</span>
+  </div>
+
+  <div class="d-flex flex-column row-gap-5">
+    <div class="d-flex flex-column">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold">A</h5>
+        <!-- <div class="d-flex column-gap-3">
+          <button data-id="table_floor" data-target="#material_product_body" class="fw-medium c_btn fs-6 bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2">
+            <span class="material-symbols-rounded fs-4">collapse_all</span>
+            <span>Collapse Table</span>
+          </button>
+        </div> -->
+      </div>
+        <!-- Add this to your HTML -->
+<div id="loader" style="display: none;">Saving...</div>
+
+    <table class="table table-bordered mt-2" id="material_product">
+    <thead>
+        <tr class="fw-medium text-center">
+            <th class="text-start pl-1  pt-0 pb-0" style="width: 30px;">
+                <button id="toggleRows" class="btn btn-secondary pl-1 pt-0 pb-0">
+                    <i id="toggleIcon" class="bi bi-chevron-down" style="color: #fff; font-size: 1.5rem;  font-weight:bolder;"></i>
+                </button>
+                Material List
+            </th>
+            <th>Material - Filtered By Group</th>
+            <th class="d-flex justify-content-between align-items-center">
+                Base Price 
+                <button class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#warningModal">D</button> <!-- Adds left margin to the button -->
+            </th>
+            <th>Unit</th>
+            <th class="d-flex justify-content-between align-items-center">
+                GST (%)
+                <button class="btn btn-danger ms-2">D</button>
+            </th>
+            <th>GST Value</th>
+            <th>Sale Price</th>
+            <th>Brand Name</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="material_product_body">
+        {% if project_product %}
+                  {% for m in project_product %}
+                <tr class="table-row" data-pk="{{m.pk}}">
+                    <td>
+                        <select class="form-select material-group" name="material_group" data-section="group" value="{{ m.group }}">
+                            <option>select</option>
+                            {% for mg in material_group %}
+                                <option value="{{ mg.name }}" {% if m.group.name == mg.name %}selected{% endif %}>{{ mg.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-select material-name" name="material_name" data-section="name" value="{{ m.name }}">
+                            <option value="" disabled selected>select</option>
+                            {% for material in material %}
+                                <option value="{{ material.name }}" {% if m.name == material %}selected{% endif %}>{{ material.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td><input type="number" class="form-control base-price" name="base_price" data-section="price" value="{{ m.price }}"  /></td>
+                    <td>
+                        <select class="form-select unit" name="unit" value="{{ m.unit }}" data-section="unit">
+                             <option value="" disabled selected>select</option>
+                            {% for u in unit %}
+                                <option value="{{ u.pk }}" {% if m.unit == u %}selected{% endif %}>{{ u.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td><input type="text" class="form-control gst" name="gst" data-section="gst" value="{{ m.gst }}" readonly  /></td>
+                    <td><input type="text" class="form-control gst-value" name="gst_value" data-section="gst_value" value="{{ m.gst_value }}"  readonly /></td>
+                    <td><input type="text" class="form-control sale-price" name="sale_price" data-section="sale_price" value="{{ m.sale_price }}" readonly  /></td>
+                    <td>
+                        <select class="form-select brand" name="brand" data-section="brand" value="{{m.brand}}">
+                             <option value="" disabled selected>select</option>
+                            {% for b in brand %}
+                                <option value="{{ b.name }}" {% if m.brand == b %}selected{% endif %}>{{ b.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger delete-row">X</button>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr class="table-row" data-pk="new">
+                <td>
+                     <select class="form-select material-group" name="material_group" data-section="group" value="{{ m.group }}">
+                            <option value="" disabled selected>select</option>
+                            {% for mg in material_group %}
+                                <option value="{{ mg.name }}" {% if m.group.name == mg.name %}selected{% endif %}>{{ mg.name }}</option>
+                            {% endfor %}
+                        </select>
+                </td>
+                <td>
+                    <select class="form-select material-name" name="material_name" data-section="name"></select>
+                </td>
+                <td><input type="number" class="form-control base-price" name="base_price" data-section="price"  /></td>
+                <td>
+                    <select class="form-select unit" name="unit" data-section="unit">
+                        <option value="" disabled selected>select</option>
+                        {% for u in unit %}
+                            <option value="{{ u.pk }}">{{ u.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><input type="text" class="form-control gst" name="gst" data-section="gst"  readonly /></td>
+                <td><input type="text" class="form-control gst-value" name="gst_value" data-section="gst_value" readonly /></td>
+                <td><input type="text" class="form-control sale-price" name="sale_price" data-section="sale_price" readonly  /></td>
+                <td>
+                    <select class="form-select brand" name="brand" data-section="brand">
+                        <option value="" disabled selected>select</option>
+                        {% for b in brand %}
+                            <option value="{{ b.name }}">{{ b.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <button class="btn btn-danger delete-row1">X</button>
+                </td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
+<div class="d-flex column-gap-3 mt-4 justify-content-end ">
+    <button  class=" d-none fw-medium fs-6 ar_btn bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2 add-row"> <span class="material-symbols-rounded fs-4 float-right">add</span>
+          <span>Add Row</span></button>
+</div>
+ <div class="d-flex column-gap-3 mt-4 justify-content-start ">
+    <button  class="fw-medium fs-6 ar_btn bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2 add-product"> <span class="material-symbols-rounded fs-4 float-right">add</span>
+          <span>Add More Product</span></button>
+</div>
+<!-- Warning Modal for Base Price in A -->
+<div class="modal fade" id="warningModal" tabindex="-1" role="dialog" aria-labelledby="warningModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+        <div class="modal-content animated-modal">
+            <div class="modal-header border-0 justify-content-center">
+                <h5 class="modal-title text-warning text-center" id="warningModalLabel">Warning</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mt-3">Want to make changes in the value as per <strong>Material Master</strong>?</p>
+            </div>
+            <div class="modal-footer justify-content-center border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+</div>
+    <div class="d-flex flex-column">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold">B</h5>
+        <!-- <div class="d-flex column-gap-3">
+          <button data-id="table_floor" data-target="#execution_product_body" class="fw-medium c_btn fs-6 bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2">
+            <span class="material-symbols-rounded fs-4">collapse_all</span>
+            <span>Collapse Table</span>
+          </button>
+        </div> -->
+      </div>
+      <table class="table table-bordered mt-2" id="execution_table">
+        <thead>
+          <tr class="fw-medium text-center">
+            <th class="text-start pl-1  pt-0 pb-0" style="width: 30px;">
+                <button id="toggleRows1" class="btn btn-secondary pl-1 pt-0 pb-0">
+                    <i id="toggleIcon1" class="bi bi-chevron-down" style="color: #fff; font-size: 1.5rem;  font-weight:bolder;"></i>
+                </button>
+                Execution Team 
+            </th>
+            <th>Execution</th>
+            <th>Price</th>
+            <th>Unit</th>
+            <th>GST(%)</th>
+            <th>GST Value</th>
+            <th>Sale Price</th>
+            <th>Description</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="execution_product_body">
+        {% if exe_project_product %}
+                  {% for e in exe_project_product %}
+                <tr class="table-row1" data-pk="{{e.pk}}">
+                    <td>
+                        <select class="form-select execution-group" name="execution_group" data-section="group" value="{{ e.group }}">
+                             <option  disabled selected>select</option>
+                            {% for ex in execution_group %}
+                                <option value="{{ex.name}}" {% if e.group.name == ex.name %}selected{% endif %}>{{ ex.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-select execution-name" name="execution_name" data-section="name" value="{{ e.name }}">
+                            <option disabled selected>select</option>
+                            {% for execution in execution %}
+                                <option value="{{ execution.name }}" {% if e.name == execution %}selected{% endif %}>{{execution.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td><input type="text" class="form-control base-price" name="base_price" data-section="price" value="{{ e.price }}"  /></td>
+                    <td>
+                        <select class="form-select unit" name="unit" value="{{ e.unit }}" data-section="unit">
+                             <option disabled selected>select</option>
+                            {% for u in unit %}
+                                <option value="{{ u.pk }}" {% if e.unit == u %}selected{% endif %}>{{ u.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td><input type="text" class="form-control gst" name="gst" data-section="gst" value="{{ e.gst }}"  readonly /></td>
+                    <td><input type="text" class="form-control gst-value" name="gst_value" data-section="gst_value" value="{{ e.gst_value }}"  readonly /></td>
+                    <td><input type="text" class="form-control sale-price" name="sale_price" data-section="sale_price" value="{{ e.sale_price }}"  readonly /></td>
+                    <td>
+                        <textarea  class="form-control description" name="description" data-section="description" value="{{ e.description }}">{{ e.description }}</textarea>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger delete-row1">X</button>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr class="table-row1" data-pk="new">
+                <td>
+                    <select class="form-select execution-group" name="execution_group" data-section="group">
+                          <option  disabled selected>select</option>
+                        {% for e in execution_group %}
+                            <option value="{{ e.name }}">{{ e.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select class="form-select execution-name" name="execution_name" data-section="name"></select>
+                </td>
+                <td><input type="text" class="form-control base-price" name="base_price" data-section="price"/></td>
+                <td>
+                    <select class="form-select unit" name="unit" data-section="unit">
+                         <option  disabled selected>select</option>
+                        {% for u in unit %}
+                            <option value="{{ u.pk }}">{{ u.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><input type="text" class="form-control gst" name="gst" data-section="gst" readonly  /></td>
+                <td><input type="text" class="form-control gst-value" name="gst_value" data-section="gst_value" readonly  /></td>
+                <td><input type="text" class="form-control sale-price" name="sale_price" data-section="sale_price"  readonly /></td>
+                <td>
+                   <textarea  class="form-control description" name="description" data-section="description" value="{{ e.description }}"></textarea>
+                </td>
+                <td>
+                    <button class="btn btn-danger delete-row1">X</button>
+                </td>
+            </tr>
+        {% endif %}
+    </tbody>
+      </table>
+      <div class="d-flex column-gap-3 mt-4 justify-content-end ">
+        
+<!--        <button data-id="table_floor" class="fw-medium fs-6 dr_btn bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2">-->
+<!--          <span class="material-symbols-rounded fs-4">delete</span>-->
+<!--          <span>Delete Row</span>-->
+<!--        </button>-->
+      </div>
+         <button data-id="table_execution" class="d-none fw-medium fs-6 ar_btn bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2 add-row1 float-right">
+          <span class="material-symbols-rounded fs-4">add</span>
+          <span>Add Row</span>
+        </button>
+    </div>
+      <div class="d-flex column-gap-3 mt-4 justify-content-start ">
+    <button  class="fw-medium fs-6 ar_btn bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2 add-execution"> <span class="material-symbols-rounded fs-4 float-right">add</span>
+          <span>Add More Product</span></button>
+</div>
+    <div class="d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold">C</h5>
+          <!-- <div class="d-flex column-gap-3">
+            <button data-id="table_floor" data-target="#operation_product_body" class="fw-medium c_btn fs-6 bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2">
+              <span class="material-symbols-rounded fs-4">collapse_all</span>
+              <span>Collapse Table</span>
+            </button>
+          </div> -->
+        </div>
+        <table class="table table-bordered mt-2" id="contract_margin">
+          <thead>
+            <tr class="fw-medium text-center">
+            <th class="text-start pl-1  pt-0 pb-0" style="width: 30px;">
+                <button id="toggleRows2" class="btn btn-secondary pl-1 pt-0 pb-0">
+                    <i id="toggleIcon2" class="bi bi-chevron-down" style="color: #fff; font-size: 1.5rem;  font-weight:bolder;"></i>
+                </button>    
+                Management Expense
+            </th>
+              <th>Allow Me(%)</th>
+              <th>Unit</th>
+              <th>GST(%)</th>
+              <th>Description</th>
+                <th>Formula</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+            <tr  class="table-rowtotal" id="targetRow">
+
+              <td >Total</td>
+              <td class="total_allow_me"><input type="text" class="form-control allow_me" name="allow_me" data-section="allow_me" value="{{ total_margin_cost.allow_me  }}" readonly  /> </td>
+              <td><select class="form-select unit" name="unit" value="{{ total_margin_cost.unit }}" data-section="unit" readonly >
+                    <option  disabled selected>select</option>
+                            {% for u in unit %}
+                                <option value="{{ u.pk}}"    {% if total_margin_cost.unit == u or u.name == '%' %}selected{% endif %}>{{ u.name }}</option>
+                            {% endfor %}
+                        </select></td>
+              <td class="total_gst"><input type="text" class="form-control gst" name="gst" data-section="gst" value="{{ total_margin_cost.gst }}" readonly /></td>
+              <td> <textarea  class="form-control description" name="description" data-section="description" >{{total_margin_cost.description}}</textarea> </td>
+              <td>
+                  <select class="form-select formula" name="formula" data-section="formula" value="{{ total_margin_cost.formula }}" disabled>
+                    {% for f in formula %}
+                        <option value="{{ f.name }}"
+                            {% if  f.name == "SUM = A + B" %}selected{% endif %}>
+                            {{ f.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+              </td>
+                <td>
+<!--                    <button class="btn btn-danger delete-row3">X</button>-->
+                </td>
+            </tr>
+          <tbody id="operation_product_body" style="background-color:green;">
+        {% if operational_cost_product %}
+                  {% for o in operational_cost_product %}
+
+                <tr class="table-rowoper2" data-pk="{{o.pk}}">
+                    <td style="background-color:#d3f4d3;">
+                        <select class="form-select operational_cost" name="name" data-section="name"disabled readonly >
+                             <option  disabled selected>select</option>
+                            {% for op in operational_cost %}
+                                <option value="{{op.name}}" {% if o.name.name == op.name %}selected{% endif %}>{{ op.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+
+                    <td><input type="text" class="form-control allow_me" name="allow_me" data-section="allow_me" value="{{ o.allow_me  }}"  /></td>
+                    <td> <select class="form-select unit" name="unit" value="{{ o.unit }}" data-section="unit" disabled readonly>
+                          <option  disabled selected>select</option>
+                            {% for u in unit %}
+                                <option value="{{ u.pk }}" {% if o.unit == u %}selected{% endif %}>{{ u.name }}</option>
+                            {% endfor %}
+                        </select></td>
+                    <td><input type="text" class="form-control gst" name="gst" data-section="gst" value="{{ o.gst }}" readonly  /></td>
+                    <td>
+                        <textarea  class="form-control description" name="description" data-section="description" >{{o.description}}</textarea>
+                    </td>
+                    <td>
+                        <select class="form-select formula" name="formula"  data-section="formula" value="{{o.formula}}" disabled readonly>
+                    <option  disabled >select</option>
+                      {% for f in formula %}
+                                <option value="{{ f.name }}" {% if o.formula == f %}selected{% endif %} >{{ f.name }}</option>
+                            {% endfor %}</select>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger delete-row3">X</button>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr class="table-rowoper2" data-pk="new">
+                    <td>
+                        <select class="form-select operational_cost" name="name" data-section="name" value="{{ o.name }}" disabled readonly>
+                            <option  disabled selected>select</option>
+                            {% for name in operational_cost %}
+
+                                <option value="{{name.name}}" {% if o.name == name.name %}selected{% endif %}>{{ name.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+
+                    <td><input type="text" class="form-control allow_me" name="allow_me" data-section="allow_me" value="{{ o.allow_me  }}"  /></td>
+                    <td>
+                    <select class="form-select unit" name="unit" value="{{ o.unit }}" data-section="unit" disabled readonly>
+                          <option  disabled selected>select</option>
+                            {% for u in unit %}
+                                <option value="{{ u.pk }}" {% if o.unit == u %}selected{% endif %}>{{ u.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td><input type="text" class="form-control gst" name="gst" data-section="gst" value="{{ o.gst }}" readonly  /></td>
+                    <td>
+                        <textarea  class="form-control description" name="description" data-section="description" value="{{ e.description }}"></textarea>
+                    </td>
+                 <td>
+                        <select class="form-select formula" name="formula" value="{{ c.formula }}" data-section="formula"disabled readonly>
+                      {% for f in formula %}
+                                <option value="{{ f.name }}" {% if c.formula == f %}selected{% endif %}>{{f.name}}</option>
+                            {% endfor %}</select>
+
+                    </td>
+                    <td>
+                        <button class="btn btn-danger delete-row3">Delete</button>
+                    </td>
+                </tr>
+        {% endif %}
+          </tbody>
+        </table>
+        <div class="d-flex column-gap-3 justify-content-end ">
+          
+<!--          <button data-id="table_floor" class="fw-medium fs-6 dr_btn bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2">-->
+<!--            <span class="material-symbols-rounded fs-4">delete</span>-->
+<!--            <span>Delete Row</span>-->
+<!--          </button>-->
+        </div>
+         <button data-id="table_operations" id="add-row-button" class="d-none fw-medium fs-6 ar_btn bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2 float-right">
+            <span class="material-symbols-rounded fs-4">add</span>
+            <span>Add Row</span>
+          </button>
+      </div>
+      <div class="d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold">D</h5>
+          <!-- <div class="d-flex column-gap-3">
+            <button data-id="table_floor" data-target="#management_product_body" class="fw-medium c_btn fs-6 bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2">
+              <span class="material-symbols-rounded fs-4">collapse_all</span>
+              <span>Collapse Table</span>
+            </button>
+          </div> -->
+        </div>
+        <table class="table table-bordered mt-2" id="table_floor">
+          <thead>
+            <tr class="fw-medium text-center">
+            <th class="text-start pl-1  pt-0 pb-0" style="width: 30px;">
+                <button id="toggleRows3" class="btn btn-secondary pl-1 pt-0 pb-0">
+                    <i id="toggleIcon3" class="bi bi-chevron-down" style="color: #fff; font-size: 1.5rem;  font-weight:bolder;"></i>
+                </button>  
+                Management Profit
+            </th>
+              <th>Allow Me(%)</th>
+              <th>Unit</th>
+              <th>GST(%)</th>
+              <th>Description</th>
+              <th>Formula</th>
+              <th>Action  </th>
+            </tr>
+          </thead>
+          <tbody id="management_product_body">
+            {% if contract_margin_product %}
+                  {% for c in contract_margin_product%}
+                <tr class="table-rowcon2" data-pk="{{c.pk}}">
+                    <td>
+                        <select class="form-select management_cost" name="name" data-section="name" disabled  readonly>
+                            <option value="" disabled selected>Select</option>
+                            {% for co in contract_margin %}
+                                <option value="{{co.name}}" {% if c.name.name == co.name %}selected{% endif %}>{{ co.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+
+                    <td><input type="text" class="form-control allow_me" name="allow_me" data-section="allow_me" value="{{ c.allow_me  }}"  /></td>
+                    <td> <select class="form-select unit" name="unit" value="{{ c.unit }}" data-section="unit"disabled readonly>
+                            {% for u in unit %}
+                                <option value="{{ u.pk }}" {% if c.unit == u %}selected{% endif %}>{{ u.name }}</option>
+                            {% endfor %}
+                        </select></td>
+                    <td><input type="text" class="form-control gst" name="gst" data-section="gst" value="{{ c.gst }}" readonly  /></td>
+                    <td>
+                        <textarea  class="form-control description" name="description" data-section="description" value="{{ c.description }}" readonly>{{ c.description }}</textarea>
+                    </td>
+                    <td>
+                        <select class="form-select formula" name="formula" value="{{ c.formula }}" data-section="formula" disabled readonly>
+                      {% for f in formula %}
+                                <option value="{{ f.name }}" {% if c.formula == f %}selected{% endif %}>{{f.name}}</option>
+                            {% endfor %}</select>
+
+                    </td>
+                    <td>
+                        <button class="btn btn-danger delete-row4">X</button>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr class="table-rowcon2" data-pk="new">
+                    <td>
+                        <select class="form-select management_cost" name="name" data-section="name" value="{{ c.name }}"disabled  readonly>
+                            <option>select</option>
+                            {% for name in contract_margin %}
+
+                                <option value="{{name.name}}" {% if c.name == name.name %}selected{% endif %}>{{ name.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+
+                    <td><input type="text" class="form-control allow_me " name="allow_me" data-section="allow_me " value="{{c.allow_me }}"  /></td>
+                    <td>
+                    <select class="form-select unit" name="unit" value="{{ c.unit }}" data-section="unit" disabled readonly>
+                            {% for u in unit %}
+                                <option value="{{ u.pk }}" {% if c.unit == u %}selected{% endif %}>{{ u.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td><input type="text" class="form-control gst" name="gst" data-section="gst" value="{{ c.gst }}" readonly  /></td>
+                    <td>
+                        <textarea  class="form-control description" name="description" data-section="description" value="{{ c.description }}" readonly></textarea>
+                    </td>
+                 <td>
+                      <select class="form-select formula" name="formula" value="{{ c.formula }}" data-section="formula" disabled readonly  >
+                      {% for f in formula %}
+                                <option value="{{ f.name }}" {% if c.formula == f %}selected{% endif %}>{{ f.name }}</option>
+                            {% endfor %}</select>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger delete-row4">X</button>
+                    </td>
+                </tr>
+
+        {% endif %}
+          </tbody>
+        </table>
+           <div class="d-flex column-gap-3 justify-content-end ">
+          
+<!--          <button data-id="table_floor" class="fw-medium fs-6 dr_btn bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2">-->
+<!--            <span class="material-symbols-rounded fs-4">delete</span>-->
+<!--            <span>Delete Row</span>-->
+<!--          </button>-->
+        </div>
+          <button data-id="table_operations" id="add-row-button4" class="d-none fw-medium fs-6 ar_btn bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2 float-right">
+            <span class="material-symbols-rounded fs-4">add</span>
+            <span>Add Row</span>
+          </button>
+      </div>
+  </div>
+</div>
+<!-- script for material -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js" integrity="sha384-zOe5sHhP4VBkLrLE/H1IoCLVJPhuF9oVz7iU61Nqf0y8sb6AW25EUN6aIKYm39x" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-qWoUzO8qgsLDwXB3KtxKpHytNWnLfb6pew5y5iU/i5fGzQhgjhvR/tkpT2B8sq6" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+var projectPk = "{{ pk }}";
+let requestQueue = [];
+let isProcessingQueue = false;
+const debounceDelay = 300; // Debounce delay in milliseconds
+
+// Get references to the loader and the add-row button
+const loader = document.getElementById('loader');
+const addRowButton = document.querySelector('.add-row');
+
+document.addEventListener("DOMContentLoaded", function() {
+    addRowButton.addEventListener('click', function() {
+        if (isProcessingQueue || addRowButton.disabled) {
+            return; // Prevent adding a new row if saving is in progress
+        }
+        addNewRow();
+    });
+
+    document.getElementById('material_product_body').addEventListener('blur', function(event) {
+        const target = event.target;
+        if (target.tagName === 'INPUT' || target.tagName === 'SELECT') {
+            debouncedSendData(target);
+        }
+    }, true);
+    document.getElementById('material_product_body').addEventListener('input', function(event) {
+    const target = event.target;
+
+    // If the target is the base-price input, update GST and sale price in real-time
+    if (target.classList.contains('base-price')) {
+      if (isNaN(target.value) || target.value < 0) {
+            target.value = ''; // Clear invalid value
+            alert("Please enter a valid number greater than or equal to zero.");
+            return; // Exit if the input is not valid
+        }
+        const row = target.closest('.table-row');
+
+        if (row) {
+            // Calculate GST and total when base price is changed in real-time
+            calculateValues(row);
+
+            // You can optionally trigger a debounced save for real-time changes
+            const gstInput = row.querySelector('.gst-value');
+            const salePriceInput = row.querySelector('.sale-price');
+
+            debouncedSendData(gstInput);
+            debouncedSendData(salePriceInput);
+        }
+    }
+});
+
+    document.getElementById('material_product_body').addEventListener('change', function(event) {
+        const target = event.target;
+        if (target.name === 'material_group') {
+            debouncedLoadMaterialDetails(target);
+        } else if (target.name === 'material_name') {
+            debouncedUpdateMaterialFields(target);
+        }
+    });
+
+    document.getElementById('material_product_body').addEventListener('click', async function(event) {
+        if (event.target.classList.contains('delete-row')) {
+            let row = event.target.closest('.table-row');
+            let pk = row.dataset.pk;
+
+            if (pk !== 'new') {
+                try {
+                    const response = await $.ajax({
+                        url: '/client/delete-row/',  // Replace with your Django view URL for deletion
+                        method: 'POST',
+                        data: {
+                            'pk': pk,
+                            'csrfmiddlewaretoken': '{{ csrf_token }}'
+                        }
+                    });
+
+                    if (response.success) {
+                        row.remove();
+                        hideSelectedOptions();
+                    } else {
+                        alert(response.error);
+                    }
+                } catch (error) {
+                    console.error("AJAX Error:", error);
+                }
+            } else {
+                row.remove();
+                hideSelectedOptions();
+            }
+        }
+    });
+
+    hideSelectedOptions();
+});
+
+function addNewRow() {
+    // Disable the add-row button and show the loader
+    addRowButton.disabled = true;
+    loader.style.display = 'block';
+
+    let newRow = `
+        <tr class="table-row" data-pk="new">
+            <td>
+                <select class="form-select material-group" name="material_group" data-section="group">
+                    <option value="">Select</option>
+                    {% for mg in material_group %}
+                        <option value="{{ mg.name }}">{{ mg.name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select class="form-select material-name" name="material_name" data-section="name">
+                    <option value="">Select</option>
+                </select>
+            </td>
+            <td><input type="number" class="form-control base-price" name="base_price" data-section="price" /></td>
+            <td>
+                <select class="form-select unit" name="unit" data-section="unit">
+                    {% for u in unit %}
+                        <option value="{{ u.pk }}">{{ u.name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td><input type="text" class="form-control gst" name="gst" data-section="gst"  readonly/></td>
+            <td><input type="text" class="form-control gst-value" name="gst_value" data-section="gst_value" readonly/></td>
+            <td><input type="text" class="form-control sale-price" name="sale_price" data-section="sale_price"  readonly/></td>
+            <td>
+                <select class="form-select brand" name="brand" data-section="brand">
+                    {% for b in brand %}
+                        <option value="{{ b.name }}">{{ b.name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <button class="btn btn-danger delete-row">Delete</button>
+            </td>
+        </tr>
+    `;
+    document.getElementById('material_product_body').insertAdjacentHTML('beforeend', newRow);
+    hideSelectedOptions();
+
+    // Hide loader and enable the button after processing is complete
+    if (!isProcessingQueue) {
+        addRowButton.disabled = false;
+        loader.style.display = 'none';
+    }
+}
+
+function debouncedSendData(input) {
+    clearTimeout(input.dataset.timeout);
+    input.dataset.timeout = setTimeout(() => {
+        enqueueRequest(() => sendData(input));
+    }, debounceDelay);
+}
+
+async function sendData(input) {
+
+    const row = input.closest('.table-row');
+    if (!row) {
+
+        return; // Exit early if row is null
+    }
+
+
+    const section = input.dataset.section;
+    const pk = row.dataset.pk;
+    const value = input.value || ''; // Ensure value is an empty string if null
+
+    // Log to debug values
+    console.log(`Sending data for row with PK: ${pk}, Section: ${section}, Value: ${value}`);
+
+    try {
+        const response = await $.ajax({
+            url: '/client/dpro/0/',  // Replace with your Django view URL
+            method: 'POST',
+            data: {
+                'data': JSON.stringify({
+                    'pk': pk,
+                    'section': section,
+                    'value': value,
+                    'project_pk': projectPk,
+                }),
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            }
+        });
+
+        if (response.success) {
+            if (response.new_pk && pk === 'new') {
+                row.dataset.pk = response.new_pk;
+            }
+        } else {
+            console.error("Server Error:", response.error);
+            if (response.new_pk && pk === 'new') {
+                row.dataset.pk = response.new_pk;
+            }
+        }
+    } catch (error) {
+        console.error("AJAX Error:", error);
+    }
+}
+
+function enqueueRequest(request) {
+    requestQueue.push(request);
+    if (!isProcessingQueue) {
+        processQueue();
+    }
+}
+
+async function processQueue() {
+    isProcessingQueue = true;
+
+    while (requestQueue.length > 0) {
+        const request = requestQueue.shift();
+        await request();
+    }
+
+    // Hide loader and enable the button after all requests are processed
+    loader.style.display = 'none';
+    addRowButton.disabled = false;
+    isProcessingQueue = false;
+}
+
+function debouncedLoadMaterialDetails(selectElement) {
+    clearTimeout(selectElement.dataset.timeout);
+    selectElement.dataset.timeout = setTimeout(async () => {
+        await loadMaterialDetails(selectElement);
+    }, debounceDelay);
+}
+
+async function loadMaterialDetails(selectElement) {
+    const groupName = selectElement.value;
+    const row = selectElement.closest('.table-row');
+    if (!row) {
+        console.error("Row is null");
+        return;
+    }
+
+    const materialNameSelect = row.querySelector('.material-name');
+
+    try {
+        const response = await $.ajax({
+            url: '/client/load-materials/',  // Adjust this URL according to your URL configuration
+            method: 'GET',
+            data: { 'group': groupName }
+        });
+
+        if (response.error) {
+            console.error(response.error);
+            return;
+        }
+
+        materialNameSelect.innerHTML = '<option value="">Select</option>';
+        response.materials.forEach(material => {
+            materialNameSelect.innerHTML += `<option value="${material.name}">${material.name}</option>`;
+        });
+
+        await sendData(materialNameSelect);
+        hideSelectedOptions();
+    } catch (error) {
+        console.error("AJAX Error:", error);
+    }
+}
+
+function debouncedUpdateMaterialFields(selectElement) {
+    clearTimeout(selectElement.dataset.timeout);
+    selectElement.dataset.timeout = setTimeout(async () => {
+        await updateMaterialFields(selectElement);
+    }, debounceDelay);
+}
+
+async function updateMaterialFields(selectElement) {
+    const materialName = selectElement.value;
+
+    // Check if materialName is valid (not null, undefined, or empty string)
+    if (!materialName) {
+        console.warn("Material name is null, undefined, or empty. Skipping the request.");
+        return;
+    }
+
+    const row = selectElement.closest('.table-row');
+    if (!row) {
+        console.error("Row is null");
+        return;
+    }
+
+    const basePriceInput = row.querySelector('.base-price');
+    const gstInput = row.querySelector('.gst');
+    const brandSelect = row.querySelector('.brand');
+    const unitSelect = row.querySelector('.unit');
+
+    try {
+        const response = await $.ajax({
+            url: '/client/load-material-details/',  // Adjust this URL according to your URL configuration
+            method: 'GET',
+            data: { 'material_name': materialName }
+        });
+
+        if (response.error) {
+            console.error(response.error);
+            return;
+        }
+
+        // Update the form fields with the response data
+        basePriceInput.value = response.price || '';
+        gstInput.value = response.gst || '';
+        brandSelect.value = response.brand || '';
+        unitSelect.value = response.unit;
+
+        // Perform additional calculations
+        calculateValues(row);
+
+        // Trigger auto-save after updating values
+        await enqueueRequest(() => sendData(basePriceInput));
+        await enqueueRequest(() => sendData(gstInput));
+        await enqueueRequest(() => sendData(brandSelect));
+        await enqueueRequest(() => sendData(unitSelect));
+
+        // Update the dropdown options if necessary
+        hideSelectedOptions();
+    } catch (error) {
+        console.error("AJAX Error:", error);
+    }
+}
+
+
+function calculateValues(row) {
+    const basePrice = parseFloat(row.querySelector('.base-price').value) || 0;
+    const gstRate = parseFloat(row.querySelector('.gst').value) || 0;
+    const gstValueInput = row.querySelector('.gst-value');
+    const salePriceInput = row.querySelector('.sale-price');
+
+    const gstValue = (basePrice * gstRate) / 100;
+    const salePrice = basePrice + gstValue;
+
+    gstValueInput.value = gstValue.toFixed(2);
+    salePriceInput.value = salePrice.toFixed(2);
+
+    // Trigger auto-save after calculating values
+    enqueueRequest(() => sendData(gstValueInput));
+    enqueueRequest(() => sendData(salePriceInput));
+}
+
+function hideSelectedOptions() {
+    const selectedValues = new Set();
+
+    document.querySelectorAll('.material-name').forEach(select => {
+        if (select.value) {
+            selectedValues.add(select.value);
+        }
+    });
+
+    document.querySelectorAll('.material-name').forEach(select => {
+        const options = select.options;
+        for (let i = 0; i < options.length; i++) {
+            const option = options[i];
+            if (selectedValues.has(option.value) && option.value !== select.value) {
+                option.style.display = 'none';
+            } else {
+                option.style.display = 'block';
+            }
+        }
+    });
+}
+</script>
+
+<script>
+var projectPk = "{{ pk }}";
+let ajaxRequestQueue1 = [];
+let isQueueProcessing1 = false;
+let isSaveOperationInProgress = false;
+
+document.addEventListener("DOMContentLoaded", function() {
+    const addRowButton1 = document.querySelector('.add-row1');
+    addRowButton1.addEventListener('click', function() {
+        if (ajaxRequestQueue1.length > 0 || isSaveOperationInProgress) {
+            return;
+        }
+        addNewRow1();
+    });
+
+    document.getElementById('execution_product_body').addEventListener('blur', function(event) {
+        const target = event.target;
+        if (target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'TEXTAREA') {
+            debounce(() => send_Data(target), 300)();
+        }
+    }, true);
+
+    document.getElementById('execution_product_body').addEventListener('change', function(event) {
+        const target = event.target;
+        if (target.name === 'execution_group') {
+            loadExecutionDetails(target);
+        } else if (target.name === 'execution_name') {
+            updateExecutionFields(target);
+        }
+    });
+     document.getElementById('execution_product_body').addEventListener('input', function(event) {
+    const target = event.target;
+    console.log( target)
+    // If the target is the base-price input, update GST and sale price in real-time
+    if (target.classList.contains('base-price')) {
+      if (isNaN(target.value) || target.value < 0) {
+            target.value = ''; // Clear invalid value
+            alert("Please enter a valid number ");
+            return; // Exit if the input is not valid
+        }
+        const row = target.closest('.table-row1');
+
+        if (row) {
+            // Calculate GST and total when base price is changed in real-time
+            calculateValues1(row);
+
+            // You can optionally trigger a debounced save for real-time changes
+            const gstInput = row.querySelector('.gst-value');
+            const salePriceInput = row.querySelector('.sale-price');
+
+            debouncedSendData(gstInput);
+            debouncedSendData(salePriceInput);
+        }
+    }
+});
+    document.getElementById('execution_product_body').addEventListener('click', function(event) {
+        if (event.target.classList.contains('delete-row1')) {
+            const row = event.target.closest('.table-row1');
+            const pk = row.dataset.pk;
+
+            if (pk !== 'new') {
+                enqueueRequest(() => {
+                    return $.ajax({
+                        url: '/client/delete-exe-row/',
+                        method: 'POST',
+                        data: {
+                            'pk': pk,
+                            'csrfmiddlewaretoken': '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                row.remove();
+                                hideSelectedOptions1();
+                            } else {
+                                alert(response.error);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("AJAX Error:", error);
+                        }
+                    });
+                });
+            } else {
+                row.remove();
+                hideSelectedOptions1();
+            }
+        }
+    });
+});
+
+function debounce(func, delay) {
+    let timer;
+    return function(...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+function addNewRow1() {
+    if (isSaveOperationInProgress || ajaxRequestQueue1.length > 0) return;
+
+    isSaveOperationInProgress = true;
+
+    let newRow = `
+        <tr class="table-row1" data-pk="new">
+            <td>
+                <select class="form-select execution-group" name="execution_group" data-section="group">
+                    <option value="">Select</option>
+                    {% for ex in execution_group %}
+                    <option value="{{ ex.name }}">{{ ex.name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select class="form-select execution-name" name="execution_name" data-section="name">
+                    <option value="">Select</option>
+                </select>
+            </td>
+            <td><input type="text" class="form-control base-price" name="base_price" data-section="price" /></td>
+            <td>
+                <select class="form-select unit" name="unit" data-section="unit">
+                    {% for u in unit %}
+                    <option value="{{ u.pk }}">{{ u.name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td><input type="text" class="form-control gst" name="gst" data-section="gst" readonly /></td>
+            <td><input type="text" class="form-control gst-value" name="gst_value" data-section="gst_value" readonly /></td>
+            <td><input type="text" class="form-control sale-price" name="sale_price" data-section="sale_price" readonly /></td>
+            <td>
+                <textarea class="form-control description" name="description" data-section="description"></textarea>
+            </td>
+            <td>
+                <button class="btn btn-danger delete-row1">Delete</button>
+            </td>
+        </tr>
+    `;
+    document.getElementById('execution_product_body').insertAdjacentHTML('beforeend', newRow);
+
+    hideSelectedOptions1();
+    isSaveOperationInProgress = false;
+}
+
+function loadExecutionDetails(selectElement) {
+    const groupName = selectElement.value;
+    const row = selectElement.closest('.table-row1');
+    const executionNameSelect = row.querySelector('.execution-name');
+
+    enqueueRequest(() => {
+        return $.ajax({
+            url: '/client/load-exe-materials/',
+            method: 'GET',
+            data: { 'group': groupName },
+            success: function(response) {
+                if (response.error) {
+                    console.error(response.error);
+                    return;
+                }
+                executionNameSelect.innerHTML = '<option value="">Select</option>';
+                response.executions.forEach(execution => {
+                    executionNameSelect.innerHTML += `<option value="${execution.name}">${execution.name}</option>`;
+                });
+                hideSelectedOptions1();
+                send_Data(executionNameSelect);
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", error);
+            }
+        });
+    });
+}
+
+function updateExecutionFields(selectElement) {
+    const executionName = selectElement.value;
+    const row = selectElement.closest('.table-row1');
+    const basePriceInput = row.querySelector('.base-price');
+    const gstInput = row.querySelector('.gst');
+    const descriptionTextarea = row.querySelector('.description');
+    const unitSelect = row.querySelector('.unit');
+
+    enqueueRequest(() => {
+        return $.ajax({
+            url: '/client/load-execution-details/',
+            method: 'GET',
+            data: { 'execution_name': executionName },
+            success: function(response) {
+                if (response.error) {
+                    console.error(response.error);
+                    return;
+                }
+                basePriceInput.value = response.price || '';
+                gstInput.value = response.gst || '';
+                unitSelect.value =response.unit || ''
+                console.log( response.unit)
+                descriptionTextarea.value = response.description || '';
+                calculateValues1(row);
+                send_Data(basePriceInput);
+                send_Data(gstInput);
+                send_Data(descriptionTextarea);
+                send_Data(unitSelect);
+            },
+            error: function(xhr, status, error) {
+
+            }
+        });
+    });
+}
+
+function calculateValues1(row) {
+    const basePrice = parseFloat(row.querySelector('.base-price').value) || 0;
+    const gstRate = parseFloat(row.querySelector('.gst').value) || 0;
+    const gstValueInput = row.querySelector('.gst-value');
+    const salePriceInput = row.querySelector('.sale-price');
+
+    const gstValue = (basePrice * gstRate) / 100;
+    const salePrice = basePrice + gstValue;
+
+    gstValueInput.value = gstValue.toFixed(2);
+    salePriceInput.value = salePrice.toFixed(2);
+
+    send_Data(gstValueInput);
+    send_Data(salePriceInput);
+}
+
+function send_Data(input) {
+    const row = input.closest('.table-row1');
+    const section = input.dataset.section;
+    const pk = row.dataset.pk;
+    const value = input.value;
+
+    enqueueRequest(() => {
+        return $.ajax({
+            url: '/client/exe_save/',
+            method: 'POST',
+            data: {
+                'data': JSON.stringify({
+                    'pk': pk,
+                    'section': section,
+                    'value': value,
+                    'project_pk': projectPk,
+                }),
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    if (response.new_pk && pk === 'new') {
+                        row.dataset.pk = response.new_pk;
+                    }
+                } else {
+                    alert(response.error);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", error);
+            }
+        });
+    });
+}
+
+function enqueueRequest(request) {
+    ajaxRequestQueue1.push(request);
+    if (!isQueueProcessing1) {
+        processRequestQueue();
+    }
+}
+
+async function processRequestQueue() {
+    isQueueProcessing1 = true;
+
+    while (ajaxRequestQueue1.length > 0) {
+        const request = ajaxRequestQueue1.shift();
+        await request();
+    }
+
+    isQueueProcessing1 = false;
+}
+
+function hideSelectedOptions1() {
+    const selectedValues = new Set();
+
+    document.querySelectorAll('.execution-name').forEach(select => {
+        if (select.value) {
+            selectedValues.add(select.value);
+        }
+    });
+
+    document.querySelectorAll('.execution-name').forEach(select => {
+        const options = select.options;
+        for (let i = 0; i < options.length; i++) {
+            const option = options[i];
+            if (selectedValues.has(option.value) && option.value !== select.value) {
+                option.style.display = 'none';
+            } else {
+                option.style.display = 'block';
+            }
+        }
+    });
+}
+</script>
+
+
+
+
+<!-- script for operational cost -->
+<script>
+var projectPk = "{{ pk }}";
+var csrfToken = "{{ csrf_token }}"; // Get the CSRF token from Django template
+
+document.addEventListener('DOMContentLoaded', function() {
+    function totalMargin(section, value) {
+        const url = '/client/totalsave-operational-cost/';
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', url, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+        xhr.send(JSON.stringify({
+            section: section,
+            value: value,
+            pk: projectPk
+        }));
+    }
+
+    function debounce(func, delay) {
+        let timer;
+        return function(...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
+    const debouncedTotalMargin = debounce(function(section, value) {
+        totalMargin(section, value);
+    }, 500); // Adjust the delay as needed (in milliseconds)
+
+    // Add event listeners to input fields and selects
+    document.querySelectorAll('#targetRow .form-control, #targetRow .form-select, .table-rowoper2 .form-control, .table-rowoper2 .form-select').forEach(function(element) {
+            element.addEventListener('input', function() {
+                var section = this.getAttribute('data-section');
+                var value = this.value;
+                debouncedTotalMargin(section, value);
+            });
+    });
+});
+</script>
+
+
+
+<script>
+var projectPk = "{{ pk }}";
+let ajaxRequestQueue = [];
+let isQueueProcessing = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const addRowButton = document.getElementById('add-row-button');
+    const tableBody = document.getElementById('operation_product_body');
+
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    function enqueueRequest(request) {
+        ajaxRequestQueue.push(request);
+        if (!isQueueProcessing) {
+            processRequestQueue();
+        }
+    }
+
+    async function processRequestQueue() {
+        isQueueProcessing = true;
+
+        while (ajaxRequestQueue.length > 0) {
+            const request = ajaxRequestQueue.shift();
+            await request();
+        }
+
+        isQueueProcessing = false;
+        checkAddRowButton();
+    }
+
+    function checkAddRowButton() {
+        if (isQueueProcessing || ajaxRequestQueue.length > 0) {
+            addRowButton.disabled = true;
+        } else {
+            addRowButton.disabled = false;
+        }
+    }
+
+    // Add a new row
+    addRowButton.addEventListener('click', () => {
+        if (isQueueProcessing || ajaxRequestQueue.length > 0) {
+            return; // Prevent adding a new row if there are pending requests or saving is in progress
+        }
+
+        const newRow = document.createElement('tr');
+        newRow.classList.add('table-rowoper2');
+        newRow.dataset.pk = 'new';
+        newRow.innerHTML = `
+            <td>
+                <select class="form-select operational_cost" name="name" data-section="name">
+                    <option disabled selected>select</option>
+                    {% for name in operational_cost %}
+                        <option value="{{ name.name }}">{{ name.name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td><input type="text" class="form-control allow_me" name="allow_me" data-section="allow_me" /></td>
+            <td>
+                <select class="form-select unit" name="unit" data-section="unit">
+                    {% for u in unit %}
+                        <option value="{{ u.pk }}">{{ u.name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td><input type="text" class="form-control gst" name="gst" data-section="gst" /></td>
+            <td><textarea class="form-control description" name="description" data-section="description"></textarea></td>
+             <td>
+<select class="form-select formula" name="formula"  data-section="formula" value="{{o.formula}}">
+                    <option  disabled selected>select</option>
+                      {% for f in formula %}
+                                <option value="{{ f.name }}" {% if o.formula.name == f %}selected{% endif %} >{{ f.name }}</option>
+                            {% endfor %}</select>
+
+                    </td>
+            <td><button class="btn btn-danger delete-row3">Delete</button></td>
+        `;
+        tableBody.appendChild(newRow);
+        updateOptionsVisibility();
+    });
+
+    // Function to find the closest <tr> element
+    function findClosestTr(element) {
+        let currentElement = element;
+        while (currentElement && currentElement.tagName !== 'TR') {
+            currentElement = currentElement.parentElement;
+        }
+        return currentElement;
+    }
+    // Update totals
+    function updateTotal() {
+        const totalAllowMe = Array.from(tableBody.querySelectorAll('.allow_me'))
+            .reduce((total, input) => total + (parseFloat(input.value) || 0), 0);
+        const totalGst = Array.from(tableBody.querySelectorAll('.gst'))
+            .reduce((total, input) => total + (parseFloat(input.value) || 0), 0);
+
+        let allowMeInput = document.querySelector('.total_allow_me .allow_me');
+        if (!allowMeInput) {
+            // If input doesn't exist, create it
+            allowMeInput = document.createElement('input');
+            allowMeInput.type = 'text';
+            allowMeInput.className = 'form-control allow_me';
+            document.querySelector('.total_allow_me').appendChild(allowMeInput);
+        }
+        allowMeInput.value = totalAllowMe.toFixed(2);
+
+    // Update the value of the input in the total_gst cell
+    document.querySelector('.total_gst .gst').value = totalGst.toFixed(2);
+        console.log(`Totals updated - Allow Me: ${totalAllowMe.toFixed(2)}, GST: ${totalGst.toFixed(2)}%`); // Log the updated totals
+    }
+
+
+    function send_Data(input) {
+        const row = findClosestTr(input);
+        const section = input.dataset.section;
+        const pk = row.dataset.pk;
+        const value = input.value;
+
+        console.log(`send_Data called with pk: ${pk}, section: ${section}, value: ${value}`); // Log the data being sent
+
+        return new Promise((resolve, reject) => {
+            enqueueRequest(() => {
+                return $.ajax({
+                    url: '/client/save-operational-cost/',
+                    method: 'POST',
+                    data: {
+                        'data': JSON.stringify({
+                            'pk': pk,
+                            'section': section,
+                            'value': value,
+                            'project_pk': projectPk,
+                        }),
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        console.log('Response from save-operational-cost:', response); // Log the server response
+                        if (response.status === 'success') {
+                            if (response.new_pk && pk === 'new') {
+                                row.dataset.pk = response.new_pk;
+                            }
+                            console.log('inside');
+                            resolve(response);
+                        } else {
+                            // Log specific error details
+                            console.error(`Server Error: ${response.errors || 'Unknown error'}`);
+                            reject(`Server Error: ${response.errors || 'Unknown error'}`);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        // Log AJAX error details
+                        console.error("AJAX Error:", error);
+                        console.error("Response Text:", xhr.responseText);
+                        reject(`AJAX Error: ${error}`);
+                    }
+                });
+            });
+        });
+    }
+
+    // Load data when an operational cost is selected
+    async function loadData(selectElement) {
+        const selectedName = selectElement.value;
+        console.log(`loadData called with selectedName: ${selectedName}`); // Log the selected name
+        if (selectedName === '') return;
+        const url = `/client/get-operational-cost-data?value=${encodeURIComponent(selectedName)}`;
+
+        try {
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                const responseText = await response.text();
+                console.error(`Network response was not ok. Status: ${response.status}. Response: ${responseText}`);
+                return;
+            }
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                const row = findClosestTr(selectElement);
+
+                const costData = data.data[0];
+                console.log('Cost data:', costData);
+
+                const allowInput = row.querySelector('.allow_me');
+                const gstInput = row.querySelector('.gst');
+                const unitSelect = row.querySelector('.unit');
+                 const formula = row.querySelector('.formula');
+
+                allowInput.value = costData.allow_me;
+                gstInput.value = costData.gst;
+                unitSelect.value = costData.unit;
+                formula.value= costData.formula;
+
+
+                console.log('Cost data loaded successfully:', costData);
+
+                // Ensure pk is updated before sending other data
+                const pkUpdateResponse = await send_Data(selectElement);
+                if (pkUpdateResponse.status === 'success') {
+                    await Promise.all([
+                        send_Data(allowInput),
+                        send_Data(gstInput),
+                        send_Data(unitSelect)
+                    ]);
+
+                    // Update totals after loading data
+                    updateTotal();
+                    updateOptionsVisibility();
+                } else {
+                    console.error('Failed to update PK:', pkUpdateResponse.errors || 'Unknown error');
+                }
+            } else {
+                console.error('Error fetching operational cost data:', data.errors);
+            }
+        } catch (error) {
+            console.error('Fetch error:', error.message, error.stack);
+        }
+    }
+
+
+    // Update visibility of options in all dropdowns based on current selections
+    function updateOptionsVisibility() {
+        const selectedValues = new Set();
+        tableBody.querySelectorAll('.operational_cost').forEach(select => {
+            if (select.value) {
+                selectedValues.add(select.value);
+            }
+        });
+
+        tableBody.querySelectorAll('.operational_cost').forEach(select => {
+            const currentValue = select.value;
+            select.querySelectorAll('option').forEach(option => {
+                if (selectedValues.has(option.value) && option.value !== currentValue) {
+                    option.style.display = 'none';
+                } else {
+                    option.style.display = 'block';
+                }
+            });
+        });
+    }
+
+    // Event delegation for existing rows
+    tableBody.addEventListener('click', function(event) {
+        if (event.target.classList.contains('delete-row3')) {
+            deleteRow(event);
+        }
+    });
+
+    tableBody.addEventListener('change', debounce(function(event) {
+        if (event.target.classList.contains('operational_cost')) {
+            loadData(event.target); // Pass the select element to loadData
+            updateOptionsVisibility();
+        } else if (event.target.matches('input, textarea, select')) {
+            send_Data(event.target)  // Pass the input/select/textarea element to send_Data
+                .then(() => {
+                    updateTotal();  // Update totals when data is sent
+                    updateOptionsVisibility();  // Update options visibility
+                })
+                .catch(error => console.error('Error sending data:', error));
+        }
+    }, 500));
+
+    tableBody.addEventListener('focusout', debounce(function(event) {
+        if (event.target.matches('input, textarea')) {
+            send_Data(event.target)  // Pass the input/textarea element to send_Data
+                .then(() => {
+                    updateTotal();  // Update totals when data is sent
+                    updateOptionsVisibility();  // Update options visibility
+                })
+                .catch(error => console.error('Error sending data:', error));
+        }
+    }, 500));
+
+    // Initial total calculation
+    updateTotal();
+    updateOptionsVisibility();
+
+    // Function to delete a row
+    function deleteRow(event) {
+        const row = event.target.closest('.table-rowoper2');
+        const pk = row.dataset.pk;
+        console.log(pk);
+
+        if (pk !== 'new') {
+            $.ajax({
+                url: '/client/delete-operational-row/',  // Replace with your Django view URL for deletion
+                method: 'POST',
+                data: {
+                    'pk': pk,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    console.log(response);
+                    if (response.success) {
+                        row.remove();
+                    } else {
+                        alert(response.error);
+                    }
+                    updateTotal();
+                    updateOptionsVisibility();
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                }
+            });
+        } else {
+            // If it's a new row, simply remove from DOM
+            row.remove();
+            updateTotal();
+            updateOptionsVisibility();
+        }
+    }
+
+    // Check add row button state initially
+    checkAddRowButton();
+});
+</script>
+
+
+<!-- code for margin -->
+<script>
+var projectPk = "{{ pk }}";
+let marginRequestQueue = [];
+let isMarginProcessingQueue = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const addRowButton = document.getElementById('add-row-button4');
+    console.log(addRowButton,'gyuuu')
+    const tableBody = document.getElementById('management_product_body');
+
+    // Debounce function to limit the rate of AJAX calls
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    // Function to find the closest <tr> element
+    function findClosestTr(element) {
+        let currentElement = element;
+        while (currentElement && currentElement.tagName !== 'TR') {
+            currentElement = currentElement.parentElement;
+        }
+        return currentElement;
+    }
+
+    // Function to get selected values from the dropdowns
+    function getSelectedValues() {
+        return Array.from(tableBody.querySelectorAll('.management_cost')).map(select => select.value);
+    }
+
+    // Function to update dropdown options based on selected values
+    function updateDropdownOptions() {
+        const selectedValues = getSelectedValues();
+        const options = tableBody.querySelectorAll('.management_cost option');
+
+        options.forEach(option => {
+            if (selectedValues.includes(option.value) && !option.selected) {
+                option.style.display = 'none';
+            } else {
+                option.style.display = '';
+            }
+        });
+    }
+
+    // Function to send data to the server
+    function send_Data(input) {
+        return new Promise((resolve, reject) => {
+            const row = findClosestTr(input);
+            if (!row) return reject('No <tr> element found.');
+
+            const section = input.dataset.section;
+            const pk = row.dataset.pk;
+            const value = input.value;
+
+            console.log(`send_Data called with pk: ${pk}, section: ${section}, value: ${value}`);
+
+            marginRequestQueue.push(() => {
+                return $.ajax({
+                    url: '/client/save-management-cost/',
+                    method: 'POST',
+                    data: {
+                        'data': JSON.stringify({
+                            'pk': pk,
+                            'section': section,
+                            'value': value,
+                            'project_pk': projectPk,
+                        }),
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        console.log('Response from save-management-cost:', response);
+                        if (response.status === 'success') {
+                            if (response.new_pk && pk === 'new') {
+                                row.dataset.pk = response.new_pk;
+                            }
+                            resolve(response);
+                        } else {
+                            reject(response.errors || 'Unknown error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error:", error);
+                        reject(error);
+                    },
+                    complete: function() {
+                        isMarginProcessingQueue = false;
+                        processMarginQueue();
+                    }
+                });
+            });
+
+            if (!isMarginProcessingQueue) {
+                processMarginQueue();
+            }
+        });
+    }
+
+    // Function to process margin request queue
+    function processMarginQueue() {
+        if (marginRequestQueue.length > 0) {
+            isMarginProcessingQueue = true;
+            const request = marginRequestQueue.shift();
+            request();
+        } else {
+            isMarginProcessingQueue = false;
+        }
+    }
+
+    // Function to load data when a management cost is selected
+    async function loadData(selectedElement) {
+        const selectedName = selectedElement.value;
+        console.log(`loadData called with selectedName: ${selectedName}`);
+        if (selectedName === '') return;
+
+        try {
+            const response = await fetch(`/client/get-management-cost-data?value=${encodeURIComponent(selectedName)}`);
+            if (!response.ok) throw new Error('Network response was not ok.');
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                const row = findClosestTr(selectedElement);
+                if (!row) {
+                    console.error('No <tr> element found for the selectedElement.');
+                    return;
+                }
+
+                const costData = data.data[0];
+                console.log('Cost data:', costData);
+
+                const allowInput = row.querySelector('.allow_me');
+                const gstInput = row.querySelector('.gst');
+                const unitSelect = row.querySelector('.unit');
+                const formula = row.querySelector('.formula');
+
+
+                allowInput.value = costData.allow_me;
+                gstInput.value = costData.gst;
+                unitSelect.value = costData.unit;
+                formula.value= costData.formula;
+
+                console.log('Cost data loaded successfully:', costData);
+
+                // Ensure pk is updated before sending other data
+                const pkUpdateResponse = await send_Data(selectedElement);
+                if (pkUpdateResponse.status === 'success') {
+                    await send_Data(allowInput);
+                     await send_Data(formula);
+                    await send_Data(gstInput);
+                    await send_Data(unitSelect);
+
+
+                    // Update totals after loading data
+
+                } else {
+                    console.error('Failed to update PK:', pkUpdateResponse.errors || 'Unknown error');
+                }
+            } else {
+                console.error('Error fetching management cost data:', data.errors);
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+        }
+    }
+
+
+
+    // Event delegation for existing rows
+    tableBody.addEventListener('click', function(event) {
+        if (event.target.classList.contains('delete-row4')) {
+            deleteRow(event);
+        }
+    });
+
+    tableBody.addEventListener('change', function(event) {
+        if (event.target.classList.contains('management_cost')) {
+            updateDropdownOptions();
+            loadData(event.target);
+        } else if (event.target.matches('input, textarea, select')) {
+            debounce(() => {
+                send_Data(event.target)
+                    .then(() => updateTotal())
+                    .catch(error => console.error('Error sending data:', error));
+            }, 300)();
+        }
+    });
+
+    tableBody.addEventListener('focusout', function(event) {
+        if (event.target.matches('input, textarea')) {
+            debounce(() => {
+                send_Data(event.target)
+                    .then(() => updateTotal())
+                    .catch(error => console.error('Error sending data:', error));
+            }, 300)();
+        }
+    });
+
+
+
+    // Update dropdown options on page load
+    updateDropdownOptions();
+
+    // Add a new row
+    addRowButton.addEventListener('click', () => {
+        if (marginRequestQueue.length > 0 || isMarginProcessingQueue) {
+            addRowButton.disabled = true;
+        } else {
+            const newRow = document.createElement('tr');
+            newRow.classList.add('table-rowcon2');
+            newRow.dataset.pk = 'new';
+            newRow.innerHTML = `
+                <td>
+                    <select class="form-select management_cost" name="name" data-section="name">
+                        <option>select</option>
+                        {% for name in contract_margin %}
+                            <option value="{{name.name}}">{{ name.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><input type="text" class="form-control allow_me" name="allow_me" data-section="allow_me" /></td>
+                <td>
+                    <select class="form-select unit" name="unit" data-section="unit">
+                        {% for u in unit %}
+                            <option value="{{ u.pk }}">{{ u.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><input type="text" class="form-control gst" name="gst" data-section="gst" /></td>
+                <td><textarea class="form-control description" name="description" data-section="description"></textarea></td>
+                <td>
+                <select class="form-select formula" name="formula" value="{{ c.formula }}" data-section="formula">
+                      {% for f in formula %}
+                                <option value="{{ f.name }}" {% if c.formula == f %}selected{% endif %}>{{f.name}}</option>
+                            {% endfor %}</select></td>
+                <td><button class="btn btn-danger delete-row4">Delete</button></td>
+            `;
+            tableBody.appendChild(newRow);
+            updateDropdownOptions();
+        }
+    });
+
+    // Function to delete a row
+    function deleteRow(event) {
+        const row = event.target.closest('.table-rowcon2');
+        const pk = row.dataset.pk;
+        console.log('deletethis');
+
+        if (pk !== 'new') {
+            $.ajax({
+                url: '/client/delete-management-row/',
+                method: 'POST',
+                data: {
+                    'pk': pk,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    console.log(response);
+                    if (response.success) {
+                        row.remove();
+                        updateDropdownOptions();
+                    } else {
+                        alert(response.error);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                }
+            });
+        } else {
+            // If it's a new row, simply remove from DOM
+            row.remove();
+            updateDropdownOptions();
+        }
+    }
+});
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    // Get all collapse buttons
+    const collapseButtons = document.querySelectorAll('.c_btn');
+
+    collapseButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const targetBodyId = this.getAttribute('data-target');
+            const targetBody = document.querySelector(targetBodyId);
+
+            // Toggle visibility of the tbody
+            if (targetBody.style.display === 'none' || targetBody.style.display === '') {
+                targetBody.style.display = 'table-row-group'; // show the tbody
+            } else {
+                targetBody.style.display = 'none'; // hide the tbody
+            }
+        });
+    });
+});
+
+// Toggle for Project Products A
+document.addEventListener("DOMContentLoaded", function () {
+    const toggleRowsButton = document.getElementById("toggleRows");
+    const toggleIcon = document.getElementById("toggleIcon");
+ 
+    // Get all rows in the main tbody (the one that needs toggling)
+    const rows = document.querySelectorAll("#material_product_body .table-row");
+ 
+    // Initially hide the rows
+    rows.forEach(row => {
+        row.style.display = "none"; // Start with rows hidden
+    });
+    // Toggle rows on button click
+    toggleRowsButton.addEventListener("click", function () {
+        const areRowsVisible = rows[0].style.display !== "none"; // Check if rows are currently visible
+        rows.forEach(row => {
+            row.style.display = areRowsVisible ? "none" : "table-row"; // Toggle visibility
+        });
+ 
+        // Toggle the plus/minus icon
+        toggleIcon.classList.toggle("bi-chevron-down", areRowsVisible);
+        toggleIcon.classList.toggle("bi-chevron-up", !areRowsVisible);
+    });
+});
+ 
+// Toggle for Project Products B
+document.addEventListener("DOMContentLoaded", function () {
+    const toggleRowsButton = document.getElementById("toggleRows1");
+    const toggleIcon = document.getElementById("toggleIcon1");
+ 
+    // Get all rows in the main tbody (the one that needs toggling)
+    const rows = document.querySelectorAll("#execution_product_body .table-row1");
+ 
+    // Initially hide the rows
+    rows.forEach(row => {
+        row.style.display = "none"; // Start with rows hidden
+    });
+    // Toggle rows on button click
+    toggleRowsButton.addEventListener("click", function () {
+        const areRowsVisible = rows[0].style.display !== "none"; // Check if rows are currently visible
+        rows.forEach(row => {
+            row.style.display = areRowsVisible ? "none" : "table-row"; // Toggle visibility
+        });
+ 
+        // Toggle the plus/minus icon
+        toggleIcon.classList.toggle("bi-chevron-down", areRowsVisible);
+        toggleIcon.classList.toggle("bi-chevron-up", !areRowsVisible);
+    });
+});
+
+// Toggle for Project Products C
+document.addEventListener("DOMContentLoaded", function () {
+    const toggleRowsButton = document.getElementById("toggleRows2");
+    const toggleIcon = document.getElementById("toggleIcon2");
+ 
+    // Get all rows in the main tbody (the one that needs toggling)
+    const rows = document.querySelectorAll("#operation_product_body .table-rowoper2");
+ 
+    // Initially hide the rows
+    rows.forEach(row => {
+        row.style.display = "none"; // Start with rows hidden
+    });
+    // Toggle rows on button click
+    toggleRowsButton.addEventListener("click", function () {
+        const areRowsVisible = rows[0].style.display !== "none"; // Check if rows are currently visible
+        rows.forEach(row => {
+            row.style.display = areRowsVisible ? "none" : "table-row"; // Toggle visibility
+        });
+ 
+        // Toggle the plus/minus icon
+        toggleIcon.classList.toggle("bi-chevron-down", areRowsVisible);
+        toggleIcon.classList.toggle("bi-chevron-up", !areRowsVisible);
+    });
+});
+
+// Toggle for Project Products D
+document.addEventListener("DOMContentLoaded", function () {
+    const toggleRowsButton = document.getElementById("toggleRows3");
+    const toggleIcon = document.getElementById("toggleIcon3");
+ 
+    // Get all rows in the main tbody (the one that needs toggling)
+    const rows = document.querySelectorAll("#management_product_body .table-rowcon2");
+ 
+    // Initially hide the rows
+    rows.forEach(row => {
+        row.style.display = "none"; // Start with rows hidden
+    });
+    // Toggle rows on button click
+    toggleRowsButton.addEventListener("click", function () {
+        const areRowsVisible = rows[0].style.display !== "none"; // Check if rows are currently visible
+        rows.forEach(row => {
+            row.style.display = areRowsVisible ? "none" : "table-row"; // Toggle visibility
+        });
+ 
+        // Toggle the plus/minus icon
+        toggleIcon.classList.toggle("bi-chevron-down", areRowsVisible);
+        toggleIcon.classList.toggle("bi-chevron-up", !areRowsVisible);
+    });
+});
+
+</script>
+
+
+
+
+
+
+
+
+{% endblock body %}

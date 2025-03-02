@@ -1,0 +1,345 @@
+{% extends "partials/base.html" %} {% load static %} {% block title %}Project Information{% endblock title %} {% block body %}
+<div class="d-flex flex-column pt-5">
+    <span class="fs-3 fw-medium">Project Dashboard</span>
+    <div class="shadow-sm p-5 rounded-3 d-flex flex-column bg-white mt-3">
+        <div class="span fs-3 fw-medium">Project Name: {{ project.name }}</div>
+<span class="fs-6 fw-medium text-body-secondary">Project Type: {{ project.project_type }}</span>
+
+        {% if project.interior_project_photo %}
+            <!-- View Image Trigger (only shown if image exists) -->
+            <div class="mt-2">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal" class="text-primary">
+                    <i class="bi bi-image"></i> View Project Image
+                </a>
+            </div>
+
+            <!-- Image Modal -->
+            <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="imageModalLabel">Project Image</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <img src="{{ project.interior_project_photo.url }}" class="img-fluid rounded" alt="Project Image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Display a message or a placeholder if no image is associated -->
+            <div class="mt-3 text-muted">
+                <i class="ph ph-image"></i> No image available
+            </div>
+        {% endif %}
+
+        
+
+        <div class="d-flex flex-column flex-lg-row row-gap-3 justify-content-between align-items-start align-items-lg-center py-3"> 
+            <!-- Description Part -->
+            <div class="d-flex flex-column row-gap-3 mt-3 col col-lg-3">
+                <div class="d-flex flex-column">
+                    <span class="fs-6 fw-medium text-body-secondary">Description</span>
+                    <span class="fs-5">{{project.description|default_if_none:'Not Available'}}</span>
+                </div>
+                <div class="d-flex flex-column row-gap-1">
+                    <!-- Start Date -->
+                    <div class="d-flex align-items-center column-gap-2">
+                        <div class="d-flex align-items-center column-gap-1">
+                            <span class="p-2 rounded-circle bg-warning"></span>
+                            <span class="fs-6 fw-medium text-body-secondary">Start Date -</span>
+                        </div>
+                        <span class="fs-5">{{project.start_date|date:"F j, Y"}}</span>
+                    </div>
+                    <!-- End Date -->
+                    <div class="d-flex align-items-center column-gap-2">
+                        <div class="d-flex align-items-center column-gap-1">
+                            <span class="p-2 rounded-circle bg-success"></span>
+                            <span class="fs-6 fw-medium text-body-secondary">End Date -</span>
+                        </div>
+                        <span class="fs-5">{{project.end_date|date:"F j, Y"}}</span>
+                    </div>
+                    <!-- Place -->
+                    <div class="d-flex align-items-center column-gap-2">
+                        <span class="fs-6 fw-medium text-body-secondary">Place -</span>
+                        <span class="fs-5">{{project.place}}</span>
+                    </div>
+                    <!-- Pincode -->
+                    <div class="d-flex align-items-center column-gap-2">
+                        <span class="fs-6 fw-medium text-body-secondary">Pincode -</span>
+                        <span class="fs-5">{{project.pincode}}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Vertical Line -->
+            <div class="d-none d-lg-block vr" style="height: 100%; width: 1px; background-color: #ccc;"></div>
+        
+            <!-- Project Information -->
+            <div class="d-flex flex-column align-items-start row-gap-2 col col-lg-3">
+                <span class="d-flex align-items-center column-gap-3">
+                    <i class="ph fs-4 ph-map-pin-simple"></i>
+                    <span class="fs-5">{{project.place}}</span>
+                </span>
+                <span class="d-flex align-items-center column-gap-3">
+                    <i class="ph fs-4 ph-link"></i>
+                    {% if project.webside %}
+                    <a href="{{ project.webside }}" target="_blank" class="fs-5">Project Website</a>
+                    {% else %}
+                    <a href="#" class="fs-5">No Website Available</a>
+                    {% endif %}
+                </span>
+                <span class="d-flex align-items-center column-gap-3">
+                    <i class="ph fs-4 ph-navigation-arrow"></i>
+                    {% if project.location_link %}
+                    <a href="{{ project.location_link }}" target="_blank" class="fs-5">Map Link</a>
+                    {% else %}
+                    <span class="fs-5">No Map Available</span>
+                    {% endif %}
+                </span>
+                <span class="d-flex align-items-center column-gap-3">
+                    <i class="ph fs-4 ph-fediverse-logo"></i>
+                    {% if project.social_link %}
+                    <a href="{{project.social_link }}" target="_blank" class="fs-5">Social Link</a>
+                    {% else %}
+                    <span class="fs-5">No Social Link Available</span>
+                    {% endif %}
+                </span>
+                <span class="d-flex align-items-center column-gap-3">
+                    <i class="ph fs-4 ph-map-pin-simple-line"></i>
+                    <span class="fs-5">{{project.pincode}}</span>
+                </span>
+            </div>
+        
+            <!-- Vertical Line -->
+            <div class="d-none d-lg-block vr" style="height: 100%; width: 1px; background-color: #ccc;"></div>
+        
+            <!-- Client Information -->
+            <div class="col col-lg-3">
+                <span class="fs-4 fw-medium">{{ project.client.full_name }}</span><br>
+                <span class="d-flex align-items-center text-body-secondary column-gap-3">Client Information</span>
+                <div class="d-flex flex-column fs-6 row-gap-2 mt-2">
+                    <span class="d-flex align-items-center column-gap-3 mt-2">
+                        <i class="ph fs-4 ph-phone"></i>
+                        <a href="tel:{{ project.client.user.phone_number }}">Phone: {{ project.client.user.phone_number }}</a>
+                    </span>
+                    <span class="d-flex align-items-center column-gap-3">
+                        <i class="ph fs-4 ph-envelope-simple"></i>
+                        <a href="mailto:{{ project.client.user.email }}">Email: {{ project.client.user.email }}</a>
+                    </span>
+                    <span class="d-flex align-items-center column-gap-3">
+                        <i class="ph fs-4 ph-fediverse-logo"></i>
+                        <button type="button" class="btn p-0 fs-6 link-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Social Links</button>
+                    </span>
+                    <span class="d-flex align-items-center column-gap-3">
+                        <i class="ph fs-4 ph-navigation-arrow"></i>
+                        <a href="{{ project.location_link }}" target="_blank" class="fs-6">Map Link</a>
+                    </span>
+                </div>
+            </div>
+        
+            <!-- Vertical Line -->
+            <div class="d-none d-lg-block vr" style="height: 100%; width: 1px; background-color: #ccc;"></div>
+        
+            <!-- Project Files -->
+            <div class="col col-lg-3">
+                <span class="fs-4 fw-medium">Project Files</span>
+                <div class="d-flex flex-column row-gap-3 mt-3 column-gap-3">
+                    <div class="d-flex column-gap-4">
+                        <div class="d-flex flex-column">    
+                            <span class="fs-6 fw-medium text-body-secondary"> Interior Photos</span>
+                            {% if project.interior_project_photo %}
+                            <a href="{{ project.interior_project_photo.url }}" target="_blank" class="btn mt-1 btn-outline-primary d-flex align-items-center justify-content-center column-gap-1 fs-5">
+                                <i class="ph fs-4 ph-eye"></i>View
+                            </a>
+                            {% else %}
+                            <span class="text-body-secondary">No photo available</span>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="fs-6 fw-medium text-body-secondary">Exterior Photos</span>
+                            {% if project.exterior_project_photo %}
+                            <a href="{{ project.exterior_project_photo.url }}" target="_blank" class="btn mt-1 btn-outline-primary d-flex align-items-center justify-content-center column-gap-1 fs-5">
+                                <i class="ph fs-4 ph-eye"></i>View
+                            </a>
+                            {% else %}
+                            <span class="text-body-secondary">No photo available</span>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="fs-6 fw-medium text-body-secondary">Brochures</span>
+                            {% if project.project_brocher %}
+                            <a href="{{ project.project_brocher.url }}" target="_blank" class="btn mt-1 btn-outline-primary d-flex align-items-center justify-content-center column-gap-1 fs-5">
+                                <i class="ph fs-4 ph-eye"></i>View
+                            </a>
+                            {% else %}
+                            <span class="text-body-secondary">No brochure available</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="d-flex column-gap-4">
+                        <div class="d-flex flex-column">
+                            <span class="fs-6 fw-medium text-body-secondary"> Licenses</span>
+                            {% if project.building_license_no %}
+                            <a href="{{ project.building_license_no.url }}" target="_blank" class="btn mt-1 btn-outline-primary d-flex align-items-center justify-content-center column-gap-1 fs-5">
+                                <i class="ph fs-4 ph-eye"></i>View
+                            </a>
+                            {% else %}
+                            <span class="text-body-secondary">No license available</span>
+                            {% endif %}
+                        </div>
+                         <div class="d-flex flex-column">
+                            <span class="fs-6 fw-medium text-body-secondary">Drawings</span>
+                             {% if project.drawings %}
+                            <a href="{{ project.drawings.url }}" target="_blank" class="btn mt-1 btn-outline-primary d-flex align-items-center justify-content-center column-gap-1 fs-5">
+                                <i class="ph fs-4 ph-eye"></i>View
+                            </a>
+                            {% else %}
+                            <span class="text-body-secondary">No Drawings available</span>
+                            {% endif %}
+                        </div>
+                         <div class="d-flex flex-column">
+                            <span class="fs-6 fw-medium text-body-secondary">Documents</span>
+                             {% if project.documents %}
+                            <a href="{{ project.documents.url }}" target="_blank" class="btn mt-1 btn-outline-primary d-flex align-items-center justify-content-center column-gap-1 fs-5">
+                                <i class="ph fs-4 ph-eye"></i>View
+                            </a>
+                            {% else %}
+                            <span class="text-body-secondary">No Documents available</span>
+                            {% endif %}
+                        </div>
+<!--                        <div class="d-flex flex-column">-->
+<!--                            <span class="fs-6 fw-medium text-body-secondary">Electrical Photos</span>-->
+<!--                            {% if project.electrical_photo %}-->
+<!--                            <a href="{{ project.electrical_photo.url }}" target="_blank" class="btn mt-1 btn-outline-primary d-flex align-items-center justify-content-center column-gap-1 fs-5">-->
+<!--                                <i class="ph fs-4 ph-eye"></i>View-->
+<!--                            </a>-->
+<!--                            {% else %}-->
+<!--                            <span class="text-body-secondary">No photo available</span>-->
+<!--                            {% endif %}-->
+<!--                        </div>-->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="border bottom-border w-100 mt-3"></div>
+        <span class="fs-4 mt-3 fw-medium text-body-secondary text-center">Project Apps</span>
+        <div class="d-flex fs-5 justify-content-center column-gap-3 mt-3 w-100">
+            <a href="{% url 'profile:dpro' pk=project.pk %}" class="d-flex justify-content-center column-gap-3 quick-link rounded-pill shadow-sm border align-items-center p-2 px-3">
+                <i class="ph ph-coda-logo"></i>
+                <span class="fw-medium"> Manage Products</span>
+            </a>
+             <a href="{% url 'boq:boq' pk=project.pk %}" class="d-flex justify-content-center column-gap-3 quick-link rounded-pill shadow-sm border align-items-center p-2 px-3"
+                >
+                <i class="ph ph-invoice"></i>
+                <span class="fw-medium">Create new BOQ</span>
+            </a>
+<!--            <a href="{% url 'project:project_information' pk=project.pk %}" class="d-flex justify-content-center column-gap-3 quick-link rounded-pill shadow-sm border align-items-center p-2 px-3"-->
+<!--                data-bs-toggle="modal" data-bs-target="#boqModal">-->
+<!--                <i class="ph ph-invoice"></i>-->
+<!--                <span class="fw-medium">Create new BOQ</span>-->
+<!--            </a>-->
+            <a href="{% url 'code:specification' %}" class="d-flex justify-content-center column-gap-3 quick-link rounded-pill shadow-sm border align-items-center p-2 px-3">
+                <i class="ph ph-tree-structure"></i>
+                <span class="fw-medium">View CODES</span>
+            </a>
+            <!-- <a href="{% url 'report:report' pk=project.pk %}" class="d-flex justify-content-center column-gap-3 quick-link rounded-pill shadow-sm border align-items-center p-2 px-3">
+                <i class="ph ph-chart-scatter"></i>
+                <span class="fw-medium">Report</span>
+            </a> -->
+        </div>
+    </div>
+
+
+    <!-- Modal for entering BOQ name
+    <div class="modal fade" id="boqModal" tabindex="-1" aria-labelledby="boqModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="boqModalLabel">Enter BOQ Name</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="boqForm" method="get" action="{% url 'project:project_information' pk=pk %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="boqName" class="form-label">BOQ Name</label>
+                            <input type="text" class="form-control" name="boq_name" id="boqName" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div> -->
+    
+
+
+    <div class="row gx-1 d-flex align-items-stretch">
+    
+        <!-- Second Grid: Table with headers (5 columns) -->
+        <div class="col-lg-6 shadow-sm p-2 rounded-4 bg-white mt-3">
+            <span class="fs-4 fw-medium">BOQ List</span><br>
+            <table class="table table-bordered mt-3">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Value</th>
+                        <th scope="col">Last Updated</th>
+                        <th scope="col">Assigned to</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for boq in projects_boq %}
+                    <tr>
+                        <td>{{boq.boq_name}}</td>
+                        <td>Example Value 1</td>
+                        <td>October 10, 2024</td>
+                        <td>October 10, 2024</td>
+                        <td>October 10, 2024</td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td>Example Name 2</td>
+                        <td>Example Value 2</td>
+                        <td>October 10, 2024</td>
+                        <td>shravan@gmail.com(dummy data)</td>
+                        <td>...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    
+        <!-- Third Grid: Project Hard Costs (5 columns) -->
+        <div class="col-lg-6 shadow-sm p-2 rounded-4 bg-white mt-3">
+            <span class="fs-4 fw-medium">Project Hard Costs</span>
+            <div class="d-flex justify-content-between mt-3">
+                <span class="fs-6 fw-medium text-body-secondary">Labour Costs</span>
+                <span class="fs-6 fw-medium">$1,000</span>
+            </div>
+            <div class="d-flex justify-content-between mt-2">
+                <span class="fs-6 fw-medium text-body-secondary">Material Costs</span>
+                <span class="fs-6 fw-medium">$1,000</span>
+            </div>
+            <div class="d-flex justify-content-between mt-2">
+                <span class="fs-6 fw-medium text-body-secondary">Other Costs</span>
+                <span class="fs-6 fw-medium">$1,000</span>
+            </div>
+            <div class="border bottom-border w-100 my-3"></div>
+            <div class="d-flex justify-content-between text-success mt-3">
+                <span class="fs-6 fw-semibold">Total Costs</span>
+                <span class="fs-6 fw-semibold">$3,000</span>
+            </div>
+        </div>
+    </div>
+    
+    
+</div>
+{% endblock %}

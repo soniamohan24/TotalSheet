@@ -1,0 +1,255 @@
+
+{% extends "partials/admin_base.html" %}
+{% block title %} Brand{% endblock %}
+
+{% block content %}
+
+
+<div class="container p-5">
+ <div class="row justify-content-between fs-5 align-items-center ">
+        <div class="row">
+            <span class="fs-4 mx-1 fw-semibold">Brands</span>
+            <span class="fs-6 mx-1 text-body-tertiary">Manage your Brand here</span>
+        </div>
+</div>
+<!-- Add Button -->
+<div class="row">
+    <div class="col">
+<button type="button" class="btn btn-primary mt-3 mb-3" data-bs-toggle="modal" data-bs-target="#addbrandModal">Add Brand</button>
+        </div>
+         {% include 'administrator/search.html' with model_name='brand' %}
+</div>
+
+<!-- {{ model_name|capfirst }} Table -->
+    <div class="table-container">
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Logo</th>
+            <th style="text-align:left;"> <a href="?sort=name&order={% if current_sort_order == 'asc' and current_sort_field == 'name' %}desc{% else %}asc{% endif %}&group={{ selected_group }}"
+               class="sort-link" style="text-decorator:none;color:white;">
+                Name
+                {% if current_sort_field == 'name' %}
+                    {% if current_sort_order == 'asc' %}
+                        <i class="fas fa-arrow-up"></i>
+                    {% else %}
+                        <i class="fas fa-arrow-down"></i>
+                    {% endif %}
+                {% else %}
+                    <i class="fas fa-arrows-v"></i>  <!-- Default indicator for no sorting -->
+                {% endif %}
+            </a></th>
+            <th style="text-align:left;">Total Products {% for item in items %}  {% if forloop.first %}
+       ({{ item.total_count }})
+    {% endif %}{% endfor %}</th>
+            <th style="text-align:center;">Actions</th>
+        </tr>
+    </thead>
+    <tbody id="{{ model_name }}TableBody">
+        {% for item in items %}
+        <tr id="row-{{ item.id }}">
+            <td>{{ forloop.counter|add:start_index }}</td>
+            <td>{% if item.logo %}
+                <img src="{{ item.logo.url }}" alt="{{ item.name }}" class="img-fluid" style="max-width: 50px;">
+                {% else %}
+                <p>No logo available</p>
+                {% endif %}<br>
+                <!-- Remove Logo Button -->
+<!--            <form action="{% url 'administrator:remove-logo' pk=item.id %}" method="post" style="display:inline;">-->
+<!--                {% csrf_token %}-->
+<!--                <button type="submit" class="btn btn-outline-danger btn-sm ms-2" title="Remove Logo">-->
+<!--                    <i class="fas fa-trash-alt"></i> &lt;!&ndash; Font Awesome trash icon &ndash;&gt;-->
+<!--                </button>-->
+<!--            </form>-->
+
+            </td>
+            <td style="text-align:left;">{% if  item.website_url %}
+                <a href="{{item.website_url}}" target="_blank" >{{ item.name }}</a>
+                {% else %}
+                 <a href="#" target="_blank" >{{ item.name }}</a>
+                {% endif %}
+            </td>
+
+             <td style="text-align:left;">{{item.material_count}}</a></td>
+             <td style="text-align:center;">
+                <div class="dropdown">
+                    <!-- Button with 3 dots --> 
+                    <button class="btn btn-secondary btn-sm three-dots-btn" type="button" id="dropdownMenuButton-{{ item.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                        ...
+                    </button>
+            
+                    <!-- Dropdown Menu for Edit and Delete -->
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{ item.id }}">
+                        <!-- Edit Button -->
+                        <li>
+                            <button type="button" class="dropdown-item btn btn-sm" data-bs-toggle="modal" data-bs-target="#editbrandModal-{{ item.id }}">
+                                Edit
+                            </button>
+                        </li>
+            
+                        {% if item.is_referenced %}
+                            <!-- Delete Button (Disabled) -->
+                            <li>
+                                <form action="" method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item btn btn-sm" disabled>Delete</button>
+                                </form>
+                            </li>
+                        {% else %}
+                            <!-- Delete Button (Enabled) -->
+                            <li>
+                                <form id="deleteForm" action="{% url 'administrator:dynamic-delete' model_name='brand' pk=item.pk %}" method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="button" class="dropdown-item btn btn-sm delete-btn" data-url="{% url 'administrator:dynamic-delete' model_name='brand' pk=item.pk %}">
+                                        Delete
+                                    </button>
+                                </form>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </td>
+            
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+<!-- Pagination Controls -->
+{% include 'administrator/pagination.html' %}
+
+<!-- Add Brand Modal -->
+<div class="modal fade" id="addbrandModal" tabindex="-1" role="dialog" aria-labelledby="addBrandModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addBrandModalLabel">Add Brand</h5>
+            </div>
+            <form action="{% url 'administrator:dynamic-create' model_name='brand' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <!-- Name Field -->
+                    <div class="form-group">
+                        <label for="brandName">Enter Name</label>
+                        <input type="text" name="name" id="brandName" class="form-control" required>
+                    </div>
+
+                    <!-- Logo Field -->
+                    <div class="form-group mt-3">
+                        <label for="brandLogo">Upload Logo</label>
+                        <input type="file" name="logo" id="brandLogo" class="form-control-file">
+                    </div>
+
+                    <!-- URL Field -->
+                    <div class="form-group mt-3">
+                        <label for="brandWebsite">Enter Website URL</label>
+                        <input type="url" name="website_url" id="brandWebsite" class="form-control" placeholder="https://example.com">
+                    </div>                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Edit {{ model_name|capfirst }} Modals -->
+{% for item in items %}
+<div class="modal fade" id="editbrandModal-{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="edit{{ model_name|capfirst }}ModalLabel-{{ item.id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="edit{{ model_name|capfirst }}ModalLabel-{{ item.id }}">Edit {{ model_name|capfirst }}</h5>
+<!--                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">-->
+<!--                    <span aria-hidden="true">&times;</span>-->
+<!--                </button>-->
+            </div>
+            <form action="{% url 'administrator:dynamic-update' model_name='brand' pk=item.id %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                      <div class="form-group ">
+                    <!-- Include your form fields here dynamically -->
+                    <label>Enter Name</label>
+                    <input type="text" name="name" value="{{ item.name }}" class="form-control">
+                </div>
+                          <!-- Logo Field -->
+                    <div class="form-group mt-3 d-flex">
+                        <label for="brandLogo">Upload Logo</label>
+                        <input type="file" name="logo" id="brandLogo" class="form-control-file">
+                        <div  id="logo-{{item.pk}}">
+                        {% if item.logo %}
+                            <img src="{{ item.logo.url }}" alt="{{ item.name }}" class="img-thumbnail mt-2" style="max-width: 100px;">
+
+                         <button class="btn btn-outline-danger btn-sm ms-2" type="button"title="Remove Logo" onclick="removeLogo({{ item.id }})">
+                            <i class="fas fa-trash-alt"></i> <!-- Font Awesome trash icon -->
+                        </button>
+                        {% endif %}
+                       </div>
+                    </div>
+
+                    <!-- Website URL Field -->
+                    <div class="form-group mt-3">
+                        <label for="brandWebsite">Enter Website URL</label>
+                        <input type="url" name="website_url" id="brandWebsite" value="{{ item.website_url }}" class="form-control" >
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+    <script>
+function removeLogo(itemId) {
+    const url = "{% url 'administrator:remove-logo' pk=0 %}".replace('0', itemId);  // Dynamic URL
+
+    fetch(url, {
+        method: 'POST', // or 'DELETE', 'PUT', etc., depending on what the view expects
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}', // CSRF token for security
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => {
+        if (response.ok) {
+
+            const logoElement = document.getElementById(`logo-${itemId}`);
+            if (logoElement) {
+                logoElement.remove();  // Remove logo from the page dynamically
+            }
+        } else {
+            // Handle error
+
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+document.getElementById('brandWebsite').addEventListener('blur', function () {
+    let inputValue = this.value.trim();
+
+    // Check if the URL starts with 'http' or 'https', if not prepend 'https://www.'
+    if (inputValue && !/^https?:\/\//i.test(inputValue)) {
+        this.value = 'https://www.' + inputValue;
+    } else if (inputValue && inputValue.startsWith('http://')) {
+        // Replace http:// with https://www.
+        this.value = inputValue.replace(/^http:\/\//i, 'https://www.');
+    } else if (inputValue && inputValue.startsWith('https://') && !inputValue.includes('www.')) {
+        // Add 'www.' if it's missing
+        const splitUrl = inputValue.split('https://');
+        this.value = 'https://www.' + splitUrl[1];
+    }
+});
+
+</script>
+{% endblock %}
+</div>

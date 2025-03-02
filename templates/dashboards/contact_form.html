@@ -1,0 +1,223 @@
+{% extends "partials/base.html" %}
+{% block title %}BOQ{% endblock title %}
+{% block body %}
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            text-align: center;
+
+
+        }
+        h5 {
+            margin-bottom: 2px;
+            text-align: center;
+            color: #007bff;
+
+        }
+        .form-wrapper {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .left-form, .right-form {
+            width: calc(50% - 10px);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="url"],
+        input[type="file"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        input[type="url"]:focus,
+        input[type="file"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .btn-submit {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #0056b3;
+        }
+
+        .form-group label span {
+            font-weight: normal;
+            font-size: 0.8rem;
+            color: #777;
+        }
+
+        @media (max-width: 768px) {
+            .form-wrapper {
+                flex-direction: column;
+            }
+
+            .left-form, .right-form {
+                width: 100%;
+            }
+        }
+    </style>
+    <!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Contact Form</title>
+            <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS file -->
+        </head>
+        <body>
+            <div class="container">
+                <h2 class="fs-4 fw-medium">Contact Information</h2>
+
+                <div class="form-wrapper">
+                    <div class="left-form">
+                        <h5 class="fs-5 fw-medium text-center">Personal Details</h5><br>
+                        <div class="form-group">
+                            <label for="firstName">First Name </label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="midName">Middle Name</label>
+                            <input type="text" id="midName" name="midName">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" id="lastName" name="lastName">
+                        </div>
+                        <div class="form-group">
+                            <label for="mobileNo">Mobile No </label>
+                            <input type="tel" id="mobileNo" name="mobileNo" pattern="[0-9]{10}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email ID </label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="address">Address</label>
+                            <textarea id="address" name="address"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="panNo">PAN No </label>
+                            <input type="text" id="panNo" name="panNo">
+                        </div>
+                        <div class="form-group">
+                            <label for="profession">Profession</label>
+                            <select id="profession" name="profession">
+                                <option value="choose">Choose</option>
+                                <option value="teacher">Teacher</option>
+                                <option value="doctor">Doctor</option>
+                                <option value="engineer">Engineer</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="right-form">
+                        <h5 class="fs-5 fw-medium">Office Details</h5><br>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="companyName">Company Name</label>
+                                <input type="text" id="companyName" name="companyName">
+                            </div>
+                            <div class="form-group">
+                                <label for="cinNo">CIN No </label>
+                                <input type="text" id="cinNo" name="cinNo">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="gstNo">GST No </label>
+                                <input type="text" id="gstNo" name="gstNo">
+                            </div>
+                            <div class="form-group">
+                                <label for="pdfUpload">Upload PDF for GST</label>
+                                <input type="file" id="pdfUpload" name="pdfUpload">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="landlineNo">Landline No</label>
+                                <input type="tel" id="landlineNo" name="landlineNo">
+                            </div>
+                            <div class="form-group">
+                                <label for="officeMobileNo">Mobile No </label>
+                                <input type="tel" id="officeMobileNo" name="officeMobileNo" pattern="[0-9]{10}">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="officeEmail">Email ID </label>
+                                <input type="email" id="officeEmail" name="officeEmail">
+                            </div>
+                            <div class="form-group">
+                                <label for="website">Website</label>
+                                <input type="url" id="website" name="website">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="officeAddress">Office Address</label>
+                                <textarea id="officeAddress" name="officeAddress"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="locationLink">Location Link</label>
+                                <input type="url" id="locationLink" name="locationLink">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="socialLink">Social Link</label>
+                                <input type="url" id="socialLink" name="socialLink">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="fw-medium fs-6 bg-white border border-2 rounded-3  d-flex align-items-center column-gap-2 p-2">Submit</button>
+            </div>
+        </body>
+    </html>
+
+{% endblock %}

@@ -1,0 +1,139 @@
+<div id="{{obj.key}}_div" data-order="{{table.order}}" class="d-flex flex-column row-gap-2 bg-white rounded-4 p-4 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div class="">
+                <div class="input-group">
+                    <span class="input-group-text" id="basic-addon1">Table Name</span>
+                    <input type="text" class="form-control table-name" name="table-heading-name" data-model="Finishing" data-value="{{obj.key}}" value="{{obj.rows.0.table_heading_name}}" />
+                </div>
+            </div>
+            <div class="d-flex justify-content-end">
+                <div class="d-flex column-gap-3">
+                    <button data-main-table="{{obj.key}}" data-secondary-table="gst_{{obj.key}}"  class="fw-medium c_btn fs-6 bg-white border border-2 rounded-3 d-flex align-items-center column-gap-2 p-2">
+                        <span class="material-symbols-rounded fs-4">collapse_all</span>
+                        <span>Collapse Table</span>
+                    </button>
+                    <button data-id="gst_{{obj.key}}" class="fw-medium gst_btn fs-6 bg-white border border-2 rounded-3 d-flex align-items-center column-gap-2 p-2">
+                        <span class="material-symbols-rounded fs-4">collapse_all</span>
+                        <span>GST ON/OFF</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex column-gap-2 overflow-auto">
+            <table class="table table-bordered col-9 table-c" id="{{obj.key}}">
+                <thead>
+                    <tr class="fw-medium text-center">
+                        <th>C</th>
+                        <th></th>
+                        <th></th>
+                        <th>FREE CODE</th>
+                        <th>WORK DETAIL</th>
+                        <th>ADD BASIC PRICE</th>
+                        <th>ADD GST</th>
+                        <th>QUANTITY</th>
+                        <th>UNITS</th>
+                        <th>FULL RATE</th>
+                        <th>FULL AMOUNT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in obj.rows %}
+                        <tr class="table-row">
+                              <td></td>
+                            <input type="hidden" id="csrf_token" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+                            <input type="hidden" class="pk_row" name="pk_row_product" id="pk_ Finishing" value="{{product.pk}}" />
+
+                            <td>
+                                <div class="table-row-buttons  column-gap-3 d-flex">
+
+                                    <button data-table-type="finishing" data-direction="above" class="add-row-btn ar_btn btn d-flex  rounded-3 d-flex align-items-center column-gap-1 p-1 btn btn-primary">
+                                            <span class="fs-5" style="color:white">+</span><span class="fs-5 " style="color:white;">↑</span>
+                                        </button>
+                                        <button data-table-type="finishing" data-direction="below" class="add-row-btn ar_btn   d-flex border rounded-3 d-flex align-items-center column-gap-1 p-1 btn btn-primary">
+                                            <span class="fs-5" style="color:white">+</span><span class="fs-5 " style="color:white;">&darr;</span>
+                                        </button>
+
+                                        <button data-pk="{{product.pk}}" onclick="deleteRow(this, 'Finishing','{{product.pk}}')"  data-table-type="finishing" class="del-row-btn btn d-flex   rounded-3 d-flex align-items-center column-gap-2 p-2 btn btn-danger">
+                                        <span class="material-symbols-rounded fs-4" style="color:white;">delete</span>
+
+                                    </button>
+                                </div>
+                            </td>
+                            {% if forloop.counter == 1 %}
+                                <td class="bg-white" rowspan="{{obj.rows|length}}"><textarea name="basic_form_description" data-model="Finishing" data-field="description" class="form-control">{{ product.description|default_if_none:'' }}</textarea></td>
+                            {% endif %}
+                            <td><input type="text" name="basicform_code" id="basicform_code_{{product.pk}}" data-model="Finishing" data-field="free_code" value="{{ product.free_code|default_if_none:'' }}" class="form-control" /></td>
+                            <td><textarea name="basicform_workdetails" class="form-control" data-model="Finishing" data-field="work_detail">{{ product.work_detail|default_if_none:'' }}</textarea></td>
+                            <td><input type="text" name="basicform_basicrate" id="basicform_basicrate_{{product.pk}}" data-model="Finishing" data-field="basic_rate" value="{{ product.basic_rate|default_if_none:'0' }}" class="form-control" /></td>
+                            <td>
+                                <select name="basicform_gst" id="basicform_gst_{{product.pk}}" class="form-select" data-model="Finishing" data-field="gst" value="{{ product.gst|default_if_none:'0' }}" required>
+                                    <option value="" disabled selected>Select</option>
+                                    {% for gst in gsts %} <option value="{{ gst.id }}" {% if gst.id == product.gst.id %}selected{% endif %}>{{ gst.rate }}</option> {% endfor %}
+                                </select>
+                            </td>
+                            <td><input type="text" name="basicform_quantity" id="basicform_quantity_{{product.pk}}" data-model="Finishing" data-field="quantity" value="{{ product.quantity|default_if_none:'0' }}" class="form-control" /></td>
+                            <td>
+                                <select name="basicform_unit" class="form-select" id="basicform_unit_{{product.pk}}" data-model="Finishing" data-field="unit" value="{{ product.unit|default_if_none:'' }}" required>
+                                    <option value="" disabled selected>Select</option>
+                                    {% for unit in units %}
+                                        <option value="{{ unit.id }}" {% if unit.id == product.unit.id %}selected{% endif %}>{{ unit.name }}</option> {% endfor %}
+                                </select>
+                            </td>
+                            <td><input type="text" name="basicform_fullrate" id="basicform_fullrate_{{product.pk}}" data-model="Finishing" data-field="full_rate" disabled value="{{ product.full_rate|default_if_none:'0' }}" class="form-control" /></td>
+                            <td><input type="text" name="basicform_fullamount" id="basicform_fullamount_{{product.pk}}" class="form-control" data-model="Finishing" disabled data-field="full_amount" value="{{ product.full_amount|default_if_none:'0' }}" /></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tbody>
+                    <tr class="table-row1 bg-primary-subtle disabled" id="totalcolum-finishing">
+                        <td class="disabled" colspan="10">Total</td>
+                        <td>
+                            <input type="text" class="form-control bg-primary-subtle total-amount" disabled value="" readonly />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="table table-bordered" id="gst_{{obj.key}}">
+                <thead>
+                    <tr style="height:20px !important;">
+                        <th>BASIC AMOUNT</th>
+                        <th>GST APPLIED</th>
+                        <th>GST AMOUNT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in obj.rows %}
+                        <tr class="disabled" >
+                            <td><input type="text" name="bf_totalbasicamount" disabled id="bf_totalbasicamount_{{product.pk}}" data-model="Finishing" data-field="basic_amount" value="{{ product.basic_amount|default_if_none:'0'}}" class="form-control" /></td>
+                            <td>
+                                <input name="bf_gst" id="bf_gst_{{product.pk}}" disabled  data-model="Finishing" class="form-control" data-field="gst_applied" value="{{ product.gst_applied|default_if_none:'0'}}" />
+                            </td>
+                            <td><input type="text" name="bf_gstamount" disabled  id="bf_gstamount_{{product.pk}}" data-model="Finishing" data-field="gst_amount" value="{{ product.gst_amount|default_if_none:'0'}}" class="form-control" /></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tbody>
+                    {% for product in obj.total %}
+                        <tr class="bg-primary-subtle">
+                            <input type="hidden" name="mainTable" value="{{obj.key}}">
+
+                            <td><input type="text" disabled class="form-control bg-primary-subtle total-basic-amount" /></td>
+                            <td><input type="text" disabled class="form-control bg-primary-subtle total-gst" /></td>
+                            <td><input type="text" disabled class="form-control bg-primary-subtle total-gst-amount" /></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex column-gap-3">
+            <button data-id="{{obj.key}}" class="fw-medium dp_btn fs-6 bg-white border border-2 rounded-3 d-flex align-items-center column-gap-2 p-2">
+                <span class="material-symbols-rounded fs-4">tab_duplicate</span>
+                <span>Duplicate Table</span>
+            </button>
+        </div>
+</div>
+<div class="d-flex column-gap-2 align-items-center">
+    <div class="border-bottom w-100 flex-1"></div>
+    <button type="button" data-id="{{obj.key}}_div" data-order="{{table.order}}" class="btn btn-primary col-1" data-bs-toggle="modal" data-bs-target="#addTable">Add Table</button>
+    <div class="border-bottom w-100 flex-1"></div>
+</div>

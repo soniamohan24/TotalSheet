@@ -1,0 +1,68 @@
+{% extends "partials/signup_base.html" %}
+{% load static %}
+{% block title %} Client Login{% endblock title %}
+{% block body %}
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="d-flex flex-column row-gap-2 p-5 col-10 col-md-6 col-lg-4 col-xl-3 bg-white border border-3 border-white rounded-4 shadow-sm" style="background:url({% static 'img/login_wrapper_bg.png' %}); background-position:center;">
+        <div class="text-center">
+            <img src="{% static 'img/Icon.png' %}" alt="" width=45>
+        </div>
+        <span class="fs-4 text-center fw-medium">Welcome back</span>
+        <span class="fs-6 text-center text-body-secondary">Please enter your details to login.</span>
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+        <form id="loginForm" action="{% url 'accounts:login' %}" class="mt-2" method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="email" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Email</label>
+                <input type="email" class="form-control" id="email" placeholder="Enter your email..."  name="username" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label text-body-secondary mb-0 fs-6 fw-medium">Password</label>
+                <input type="password" class="form-control" id="password" autocomplete placeholder="*******" name="password" required>
+            </div>
+            <div class="d-flex justify-content-between align-items-center my-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" name="rememberme" id="remember">
+                    <label class="form-check-label" for="flexCheckDefault">
+                        Remember Me
+                    </label>
+                </div>
+                <a href="{% url 'accounts:forgot-password' %}" class="text-black">Forgot password?</a>
+            </div>
+             <div class="mb-3" style="font-size:14px;">
+               <label class=""  >Don't have any account? </label>
+            <a href="{% url 'accounts:register' %}" class="text-center fs-6s" style="text-decoration:none;text-align:center;"> Register Now</a>
+                </div>
+            <button type="submit" class="btn w-100 shadow-sm btn-primary py-2 justify-content-center d-flex align-items-center column-gap-1">Login<span class="material-symbols-outlined">arrow_forward</span></button>
+        </form>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Load saved email and password from localStorage if available
+        if (localStorage.getItem("rememberMe") === "true") {
+            document.getElementById("email").value = localStorage.getItem("email");
+            document.getElementById("password").value = localStorage.getItem("password");
+            document.getElementById("remember").checked = true;
+        }
+
+        // Save email and password to localStorage if "Remember Me" is checked
+        document.getElementById("loginForm").addEventListener("submit", function () {
+            const rememberMe = document.getElementById("remember").checked;
+            if (rememberMe) {
+                localStorage.setItem("rememberMe", "true");
+                localStorage.setItem("email", document.getElementById("email").value);
+                localStorage.setItem("password", document.getElementById("password").value);
+            } else {
+                localStorage.removeItem("rememberMe");
+                localStorage.removeItem("email");
+                localStorage.removeItem("password");
+            }
+        });
+    });
+</script>
+{% endblock body %}

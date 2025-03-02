@@ -1,0 +1,92 @@
+<div class="d-flex flex-column row-gap-2 bg-white rounded-4 p-4 shadow-sm">
+    <div class="d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold">ABSTRACT FORM</h5>
+        <div class="d-flex column-gap-3">
+            <button data-main-table="table_lead" data-secondary-table="gst_lead"  class="fw-medium c_btn fs-6 bg-white border border-2 rounded-3 d-flex align-items-center column-gap-2 p-2">
+                <span class="material-symbols-rounded fs-4">collapse_all</span>
+                <span>Collapse Table</span>
+            </button>
+            <button data-id="gst_lead" class="fw-medium gst_btn fs-6 bg-white border border-2 rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 p-2">
+                <span class="material-symbols-rounded fs-4">collapse_all</span>
+                <span>GST ON/OFF</span>
+            </button>
+        </div>
+    </div>
+    <div class="d-flex column-gap-2 overflow-auto">
+        <table class="table table-bordered col-9" id="table_lead">
+            <thead>
+                <tr class="fw-medium text-center">
+                    <th>AF</th>
+                    <th>ABSTRACT FORM</th>
+                    <th>IMPORT FORM NAME</th>
+                    <th>WORK DETAIL</th>
+                    <th>VALUE EXCLUDING GST</th>
+                    <th>RATIO-OWV</th>
+                    <th>ADD GST</th>
+                    <th>FULL AMOUNT</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj in obj.rows %}
+                    <tr class="table-row " data-table-key="{{obj.table_name}}">
+                         <td class="disabled"></td>
+                        <input type="hidden" class="pk_row"  id="pk_{{ obj.id }}" value="{{ obj.id }}" />
+                        <td class="bg-whitedisabled " rowspan="1"><textarea name="abstract_form_description" data-model="AbstractForm" data-field="form_name" class="form-control">{{obj.table_heading_name|default_if_none:""}}</textarea></td>
+                        <td><input type="text " data-model="AbstractForm" data-field="form_name" name="abstract_form_workvalue" id="abstract_form_workvalue_{{obj.pk}}" class="form-control disabled" value="{{obj.form_name}}"  readonly/></td>
+                        <td><input type="text " data-model="AbstractForm" data-field="work_detail" name="abstract_form_workdetail" id="abstract_form_workdetail_{{obj.pk}}" value="{{obj.work_detail|default_if_none:""}}" class="form-control disabled" readonly/></td>
+                        <td><input type="text " data-model="AbstractForm" data-field="value_excluding_gst"  name="abstract_form_excludinggst" id="abstract_form_excludinggst_{{obj.pk}}" value="{{obj.value_excluding_gst|default_if_none:"0"}}"readonly class="form-control " /></td>
+                        <td ><input type="text" data-model="AbstractForm" data-field="ratio" name="abstract_form_ratio" id="abstract_form_ratio_{{obj.pk}}" class="form-control disabled" value="{{obj.ratio|default_if_none:"1.00"}}" /></td>
+                        <td>
+                            <select name="abstract_form_gst"  id="abstract_form_gst_{{obj.pk}}"data-model="AbstractForm" data-field="gst" class="form-select" required>
+                                <option value="0">0</option>
+                                {% for gst in gsts %}
+                                    <option value="{{ gst.id }}" {% if obj.gst.id == gst.id %}selected{% endif %}>{{ gst.rate }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><input type="text" data-model="AbstractForm" data-field="full_amount" name="abstract_form_fullamount" id="abstract_form_fullamount_{{obj}}" value="{{obj.full_amount|default_if_none:"0"}}" class="form-control" /></td>
+                    </tr>
+                {% endfor %}
+                {% for obj in obj.total %}
+                    <tr class="table-row disabled">
+                        <input type="hidden" name="pk_row" value="{{obj.pk}}">
+                        <td colspan=2></td>
+                        <td colspan=2></td>
+                        <td><input type="text" disabled class="form-control total-value-off-gst" value=></td>
+                        <td><input type="text" disabled class="form-control total-ratio"></td>
+                        <td></td>
+                        <td><input type="text" disabled class="form-control total-full-amount"></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <table class="table table-bordered" id="gst_lead">
+            <thead>
+                <tr style="height:20px !important;">
+                    <th>BASIC AMOUNT</th>
+                    <th>GST APPLIED</th>
+                    <th>GST AMOUNT</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj in obj.rows %}
+                    <tr class="disabled">
+                        <td><input type="text" data-model="AbstractForm" data-field="basic_amount" name="af_totalbasicamount" id="af_totalbasicamount_{{obj.pk}}" value="{{obj.basic_amount|default_if_none:"0"}}"  class="form-control" /></td>
+                        <td><input type="text" data-model="AbstractForm" data-field="gst_applied" name="af_gst" id="af_gst_{{obj.pk}}" class="form-control" value="{{obj.gst_applied|default_if_none:"0"}}" /></td>
+                        <td><input type="text" data-model="AbstractForm" data-field="gst_amount" name="af_gstamount" id="af_gstamount_{{obj.pk}}" value="{{obj.gst_amount|default_if_none:"0"}}" class="form-control" /></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tbody>
+                {% for obj in obj.total %}
+                    <tr class="bg-primary-subtle">
+                        <input type="hidden" name="mainTable" value="{{key}}">
+                        <td><input type="text" disabled id="af_totalbasicamount" class="form-control bg-primary-subtle total-basic-amount" data-model="AbstractForm" data-field="basic_amount" value="{{ obj.basic_amount|default_if_none:'0'}}" /></td>
+                        <td><input type="text" disabled id="af_gst" class="form-control bg-primary-subtle total-gst" data-model="AbstractForm" data-field="gst_applied" value="{{ obj.gst_applied|default_if_none:'0'}}" /></td>
+                        <td><input type="text" disabled id="af_gstamount" data-model="AbstractForm" data-field="v" value="{{ obj.gst_amount|default_if_none:'0'}}" class="form-control bg-primary-subtle total-gst-amount" /></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,177 @@
+{% extends "partials/base.html" %} {% load static %} {% block title %}Home{% endblock title %}
+{% block body %}
+    <div class="mt-5 d-flex flex-column container">
+        <div class="d-flex flex-column justify-content-center align-items-center row-gap-2">
+            <img src="{% if profile.profile_photo %}{{ profile.profile_photo.url }}{% endif %}" alt="Profile" class="rounded-circle" width="100" height="100">
+            <span class="fs-3 fw-medium">Charles Paterson</span>
+            <div class="d-flex fs-5 justify-content-center column-gap-3 mt-3 w-100">
+                <a href="" class="d-flex justify-content-center column-gap-3 quick-link rounded-pill shadow-sm border align-items-center p-2 px-3">
+                    <i class="ph ph-phone"></i>
+                    <span class="fw-medium"> Phone</span>
+                </a>
+                <a href="" class="d-flex justify-content-center column-gap-3 quick-link rounded-pill shadow-sm border align-items-center p-2 px-3">
+                    <i class="ph ph-envelope-simple"></i>
+                    <span class="fw-medium">Email</span>
+                </a>
+                <a href="" class="d-flex justify-content-center column-gap-3 quick-link rounded-pill shadow-sm border align-items-center p-2 px-3">
+                    <i class="ph ph-fediverse-logo"></i>
+                    <span class="fw-medium">Social</span>
+                </a>
+                <a href="" class="d-flex justify-content-center column-gap-3 quick-link rounded-pill shadow-sm border align-items-center p-2 px-3">
+                    <i class="ph ph-navigation-arrow"></i>
+                    <span class="fw-medium">Map Link</span>
+                </a>
+            </div>
+            <div class="d-flex column-gap-2 mt-2">
+                <a href="" class="d-flex justify-content-center column-gap-3 quick-link rounded-pill shadow-sm border align-items-center p-2 px-3">
+                    <i class="ph ph-user-circle-plus"></i>
+                    <span class="fw-medium">Invite to Project</span>
+                </a>
+                <a href="" class="d-flex justify-content-center column-gap-3 quick-link rounded-pill shadow-sm border align-items-center p-2 px-3">
+                    <i class="ph ph-share-network"></i>
+                    <span class="fw-medium">Share Profile</span>
+                </a>
+            </div>
+        </div>
+        <div class="d-flex flex-column bg-white rounded-3 shadow-sm mt-3">
+            <div class="p-3">
+                <span class="fs-5 fw-semibold">About</span>
+            </div>
+            <div class="w-100 border-bottom"></div>
+            <div class="p-3">
+                Experienced Construction Project Manager with a background in civil engineering, specializing in project planning, site supervision, and cost estimation. Proven track record in delivering complex construction projects on time and within budget while ensuring strict adherence to safety and quality standards.
+            </div>
+        </div>
+        <div class="d-flex flex-column bg-white rounded-3 shadow-sm mt-3">
+            <div class="p-3">
+                <span class="fs-5 fw-semibold">Work History</span>
+            </div>
+            <div class="w-100 border-bottom"></div>
+            <div class="p-3">
+                Experienced Construction Project Manager with a background in civil engineering, specializing in project planning, site supervision, and cost estimation. Proven track record in delivering complex construction projects on time and within budget while ensuring strict adherence to safety and quality standards.
+            </div>
+        </div>
+        <div class="d-flex flex-column bg-white rounded-3 shadow-sm mt-3">
+            <div class="p-3">
+                <span class="fs-5 fw-semibold">Previous Work Place</span>
+            </div>
+            <div class="w-100 border-bottom"></div>
+            <div class="p-3 d-flex column-gap-5">
+                <div class="d-flex flex-column row-gap-2">
+                    <span class="fs-6 text-body-secondary">Company Name</span>
+                    <span class="fs-6 text-body-secondary">Reference Name</span>
+                    <span class="fs-6 text-body-secondary">Contact Number</span>
+                    <span class="fs-6 text-body-secondary">Work Duration</span>
+                </div>
+                <div class="d-flex flex-column row-gap-2">
+                    <span class="fs-6">Company A</span>
+                    <span class="fs-6">Alison</span>
+                    <span class="fs-6">+123456789</span>
+                    <span class="fs-6">2 Years</span>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex flex-column bg-white rounded-3 shadow-sm mt-3">
+            <div class="p-3">
+                <span class="fs-5 fw-semibold">Workplace Choice</span>
+            </div>
+            <div class="w-100 border-bottom"></div>
+            <div class="p-3 d-flex column-gap-5">
+                <div class="d-flex flex-column row-gap-2">
+                    <span class="fs-6 text-body-secondary">Place of Work</span>
+                    <span class="fs-6 mt-2 text-body-secondary">Passport Number</span>
+                    <span class="fs-6 mt-3 text-body-secondary">Medical Report</span>
+                </div>
+                <div class="d-flex flex-column row-gap-2">
+                    <span class="fs-6">National, International</span>
+                    <button class="btn border">Request Access</button>
+                    <button class="btn border">Request Access</button>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex flex-column bg-white rounded-3 shadow-sm mt-3">
+            <div class="p-3">
+                <span class="fs-5 fw-semibold">Work Choice</span>
+            </div>
+            <div class="w-100 border-bottom"></div>
+            <div class="p-3 d-flex column-gap-5">
+                <div class="d-flex flex-column row-gap-2">
+                    <span class="fs-6 text-body-secondary">Pay Choice</span>
+                    <span class="fs-6 text-body-secondary">Salary Per Hour</span>
+                    <span class="fs-6 text-body-secondary">Salary Per Day</span>
+                    <span class="fs-6 text-body-secondary">Salary Per Month</span>
+                </div>
+                <div class="d-flex flex-column row-gap-2">
+                    <span class="fs-6">Monthly</span>
+                    <span class="fs-6">Rs. 1000</span>
+                    <span class="fs-6">Rs. 1000</span>
+                    <span class="fs-6">Rs. 1000</span>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex flex-column bg-white rounded-3 shadow-sm mt-3">
+            <div class="p-3">
+                <span class="fs-5 fw-semibold">Physical Disabilites</span>
+            </div>
+            <div class="w-100 border-bottom"></div>
+            <div class="p-3 d-flex column-gap-5">
+                <div class="d-flex flex-column row-gap-2">
+                    <span class="fs-6 text-body-secondary">Fitness</span>
+                    <span class="fs-6 text-body-secondary">Work Challenges</span>
+                    <span class="fs-6 text-body-secondary">Vision</span>
+                </div>
+                <div class="d-flex flex-column row-gap-2">
+                    <span class="fs-6">Sensory Impairment</span>
+                    <span class="fs-6">None</span>
+                    <span class="fs-6">Short Sightedness</span>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex flex-column bg-white rounded-3 shadow-sm mt-3">
+            <div class="p-3">
+                <span class="fs-5 fw-semibold">Insurance Information</span>
+            </div>
+            <div class="w-100 border-bottom"></div>
+            <div class="p-3 d-flex column-gap-5">
+                <div class="d-flex flex-column row-gap-2">
+                    <span class="fs-6 mt-2 text-body-secondary">Insurance Number</span>
+                    <span class="fs-6 mt-2 text-body-secondary">Valid Upto</span>
+                </div>
+                <div class="d-flex flex-column row-gap-2">
+                    <button class="btn border">Request Access</button>
+                    <span class="fs-6">23rd July, 2025</span>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex flex-column bg-white rounded-3 shadow-sm my-3">
+            <div class="p-3">
+                <span class="fs-5 fw-semibold">Vehicle Information</span>
+            </div>
+            <div class="w-100 border-bottom"></div>
+            <div class="p-3 d-flex column-gap-5">
+                <div class="d-flex flex-column row-gap-2">
+                    <span class="fs-6 text-body-secondary">Vehicle Type</span>
+                    <span class="fs-6 text-body-secondary">Model</span>
+                    <span class="fs-6 text-body-secondary">Rate Per Kilometer</span>
+                    <span class="fs-6 text-body-secondary">Rate Per Hour</span>
+                    <span class="fs-6 text-body-secondary">Rate Per Day</span>
+                    <span class="fs-6 text-body-secondary">Registration Year</span>
+                    <span class="fs-6 text-body-secondary">Registration Number</span>
+                    <span class="fs-6 mt-2 text-body-secondary">Insurance Number</span>
+                    <span class="fs-6 mt-2 text-body-secondary">Insurance Valid Upto</span>
+                </div>
+                <div class="d-flex flex-column row-gap-2">
+                    <span class="fs-6">6-Wheeler</span>
+                    <span class="fs-6">Vehicle Model</span>
+                    <span class="fs-6">Rs. 1000</span>
+                    <span class="fs-6">Rs. 1000</span>
+                    <span class="fs-6">Rs. 1000</span>
+                    <span class="fs-6">2020</span>
+                    <span class="fs-6">123456789</span>
+                    <button class="btn border">Request Access</button>
+                    <span class="fs-6">23rd July, 2025</span>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock body %}

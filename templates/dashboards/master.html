@@ -1,0 +1,289 @@
+{% extends "partials/base.html" %} {% load static %} {% block title %}BOQ{% endblock title %} {% block body %}
+
+    <style>
+        .master-table div{
+            flex-grow: 1;
+        }
+        .form-control:focus {
+            color: var(--bs-body-color);
+            background-color: var(--bs-body-bg);
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 .25rem rgb(0 103 255);
+        }
+    </style>
+    <!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Master Table</title>
+    <!-- Add any necessary CSS links or stylesheets here -->
+            <style>
+        /* Example styling for input fields and buttons */
+                .form-control {
+                    width: 100%;
+                    padding: 8px;
+                    margin: 4px 0;
+                }
+
+                .section-container {
+                    margin-bottom: 20px;
+                }
+
+                .add-button {
+                    margin-top: 10px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="d-flex flex-column bg-white p-4 row-gap-3 rounded-4">
+                <div class="d-flex flex-column">
+                    <span class="fw-medium fs-4">
+                        Master Table
+                    </span>
+                    <span class="fs-6 fw-medium text-body-secondary">Manage all your groups below.</span>
+                </div>
+
+                <div class="d-flex flex-column row-gap-5">
+                    <div class="d-flex master-table align-items-start column-gap-4 w-100">
+                        <div class="section-container d-flex flex-column">
+                            <div class="bg-body-secondary p-2 border">
+                                <span class="text-secondary fw-medium">UNITS</span>
+                            </div>
+                            <div class="section-content">
+                        <!-- Initial input row for Units -->
+                                <div class="input-row d-flex flex-column align-items-center border">
+                                    {% for u in unit %}
+                                        <input type="text" class="form-control border-0" name="units[]" placeholder="Enter Unit" value="{{u.name}}" data-pk="{{u.pk}}" data-section="units">
+                                    {% endfor %}
+                                    <input type="text" class="form-control border-0" name="units[]" placeholder="Enter Unit" data-pk="new" data-section="units" >
+                                </div>
+                            </div>
+                            <button class="add-button fw-medium fs-6 ar_btn bg-white border rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 mt-3 p-2" data-section="units">
+                                <span class="material-symbols-rounded fs-4">add</span>
+                                <span>Add Unit</span>
+                            </button>
+                        </div>
+
+                        <div class="section-container d-flex flex-column">
+                            <div class="bg-body-secondary p-2 border">
+                                <span class="text-secondary fw-medium">MATERIALS GROUP</span>
+                            </div>
+                            <div class="section-content">
+                        <!-- Initial input row for Materials Group -->
+                                <div class="input-row d-flex flex-column align-items-center border">
+                                    {% for m in materialgroup %}
+                                        <input type="text" class="form-control border-0" name="materials[]" placeholder="Enter MaterialGroup" value="{{m.name}}" data-pk="{{m.pk}}" data-section="materials">
+                                    {% endfor %}
+                                    <input type="text" class="form-control border-0" name="materials[]" placeholder="Enter MaterialGroup" data-pk="new" data-section="materials">
+                                </div>
+                            </div>
+                            <button class="add-button fw-medium fs-6 ar_btn bg-white border rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 mt-3 p-2" data-section="materials">
+                                <span class="material-symbols-rounded fs-4">add</span>
+                                <span>Add Material Group</span>
+                            </button>
+                        </div>
+                        <div class="section-container d-flex flex-column">
+                            <div class="bg-body-secondary p-2 border">
+                                <span class="text-secondary fw-medium">EXECUTION GROUP</span>
+                            </div>
+                            <div class="section-content">
+                        <!-- Initial input row for Materials Group -->
+                                <div class="input-row d-flex flex-column align-items-center border">
+                                    {% for e in executiongroup %}
+                                        <input type="text" class="form-control border-0" name="executiongroup[]" placeholder="Enter ExecutionGroup" value="{{e.name}}" data-pk="{{e.pk}}" data-section="executiongroup">
+                                    {% endfor %}
+                                    <input type="text" class="form-control border-0" name="executiongroup[]" placeholder="Enter ExecutionGroup" data-pk="new" data-section="executiongroup">
+                                </div>
+                            </div>
+                            <button class="add-button fw-medium fs-6 ar_btn bg-white border rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 mt-3 p-2" data-section="executiongroup">
+                                <span class="material-symbols-rounded fs-4">add</span>
+                                <span>Add Material Group</span>
+                            </button>
+                        </div>
+
+                        <div class="section-container d-flex flex-column">
+                            <div class="bg-body-secondary p-2 border">
+                                <span class="text-secondary fw-medium">WORK GROUP NAME</span>
+                            </div>
+                            <div class="section-content">
+                        <!-- Initial input row for Work Group Name -->
+                                <div class="input-row d-flex flex-column align-items-center border">
+                                    {% for w in workgroup %}
+                                        <input type="text" class="form-control border-0" name="work_groups[]" placeholder="Enter Work Group" value="{{w.name}}" data-pk="{{w.pk}}"data-section="work_groups" >
+                                    {% endfor %}
+                                    <input type="text" class="form-control border-0" name="work_groups[]" placeholder="Enter Work Group" data-pk="new" data-section="work_groups" >
+                                </div>
+                            </div>
+                            <button class="add-button fw-medium fs-6 ar_btn bg-white border rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 mt-3 p-2" data-section="work_groups">
+                                <span class="material-symbols-rounded fs-4">add</span>
+                                <span>Add Work Group</span>
+                            </button>
+                        </div>
+
+                        <div class="section-container d-flex flex-column">
+                            <div class="bg-body-secondary p-2 border">
+                                <span class="text-secondary fw-medium">PROFESSION</span>
+                            </div>
+                            <div class="section-content">
+                        <!-- Initial input row for Profession -->
+                                <div class="input-row d-flex flex-column align-items-center border">
+                                    {% for p in profession %}
+                                        <input type="text" class="form-control border-0" name="professions[]" placeholder="Enter Profession" value="{{p.name}}" data-pk="{{p.pk}}" data-section="professions">
+                                    {% endfor %}
+                                    <input type="text" class="form-control border-0" name="professions[]" placeholder="Enter Profession" data-pk="new" data-section="professions">
+                                </div></div>
+                            <button class="add-button fw-medium fs-6 ar_btn bg-white border rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 mt-3 p-2" data-section="professions">
+                                <span class="material-symbols-rounded fs-4">add</span>
+                                <span>Add Profession</span>
+                            </button>
+                        </div>
+
+                        <div class="section-container d-flex flex-column">
+                            <div class="bg-body-secondary p-2 border">
+                                <span class="text-secondary fw-medium">BUSINESS TYPE</span>
+                            </div>
+                            <div class="section-content">
+                        <!-- Initial input row for Business Type -->
+                                <div class="input-row d-flex flex-column align-items-center border">
+                                    {% for b in  business_type %}
+                                        <input type="text" class="form-control border-0" name="business_types[]" placeholder="Enter Business Type" data-pk="{{b.pk}}" data-section="business_types" value="{{b.name}}">
+                                    {% endfor %}
+                                    <input type="text" class="form-control border-0" name="business_types[]" placeholder="Enter Business Type" data-pk="new" data-section="business_types">
+                                </div></div>
+                            <button class="add-button fw-medium fs-6 ar_btn bg-white border rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 mt-3 p-2" data-section="business_types">
+                                <span class="material-symbols-rounded fs-4">add</span>
+                                <span>Add Business Type</span>
+                            </button>
+                        </div>
+
+                        <div class="section-container d-flex flex-column">
+                            <div class="bg-body-secondary p-2 border">
+                                <span class="text-secondary fw-medium">BRAND NAME</span>
+                            </div>
+                            <div class="section-content">
+                        <!-- Initial input row for Brand Name -->
+
+                                <div class="input-row d-flex flex-column align-items-center border">
+                                    {% for b in brand %}
+                                        <input type="text" class="form-control border-0" name="brands[]" placeholder="Enter Brand Name" data-pk="{{b.pk}}" data-section="brands" value="{{b.name}}">
+                                    {% endfor %}
+                                    <input type="text" class="form-control border-0" name="brands[]" placeholder="Enter Brand Name" data-pk="new" data-section="brands">
+                                </div></div>
+                            <button class="add-button fw-medium fs-6 ar_btn bg-white border rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 mt-3 p-2" data-section="brands">
+                                <span class="material-symbols-rounded fs-4">add</span>
+                                <span>Add Brand</span>
+                            </button>
+                        </div>
+
+<!--                <div class="section-container d-flex flex-column">-->
+<!--                    <div class="bg-body-secondary p-2 border">-->
+<!--                        <span class="text-secondary fw-medium">BRAND LOGO</span>-->
+<!--                    </div>-->
+<!--                    <div class="section-content">-->
+<!--                        &lt;!&ndash; Initial input row for Brand Logo &ndash;&gt;-->
+<!--                        <div class="input-row d-flex align-items-center border">-->
+<!--                            <input type="text" class="form-control border-0" name="brand_logos[]" placeholder="Enter Brand Logo URL">-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <button class="add-button fw-medium fs-6 ar_btn bg-white border rounded-3 material-symbols-rounded d-flex align-items-center column-gap-2 mt-3 p-2" data-section="brand_logos">-->
+<!--                        <span class="material-symbols-rounded fs-4">add</span>-->
+<!--                        <span>Add Brand Logo</span>-->
+<!--                    </button>-->
+<!--                </div>-->
+                    </div>
+                </div>
+            </div>
+
+    <!-- Add JavaScript code here -->
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+        // Function to add new input row for any section
+                    document.querySelectorAll('.add-button').forEach(function(button) {
+                        button.addEventListener('click', function() {
+                            let section = this.getAttribute('data-section');
+                            let sectionContent = this.closest('.section-container').querySelector('.section-content');
+                            let newInputRow = document.createElement('div');
+                            newInputRow.classList.add('input-row', 'd-flex', 'align-items-center', 'border');
+
+                // Create the input element
+                            let newInput = document.createElement('input');
+                            newInput.type = 'text';
+                            newInput.classList.add('form-control', 'border-0');
+                            newInput.name = section + '[]';  // Append [] for array handling in form submission
+                            newInput.dataset.pk = 'new';  // Use dataset for data-pk attribute
+                            newInput.dataset.section = section;  // Set data-section attribute
+                            newInput.placeholder = 'Enter ' + section.charAt(0).toUpperCase() + section.slice(1);  // Example placeholder
+
+                // Append the input element to the new input row
+                            newInputRow.appendChild(newInput);
+
+                // Append the new input row to the section content
+                            sectionContent.appendChild(newInputRow);
+
+                // Bind event listener to new input field for AJAX
+                            bindInputEvent(newInput);
+                        });
+                    });
+
+        // Event listener for blur and pressing Enter key
+                    function bindInputEvent(input) {
+                        input.addEventListener("blur", function(event) {
+                            sendData(this.dataset.section, this.value, this.dataset.pk,this);
+                        });
+
+                        input.addEventListener("keyup", function(event) {
+                            if (event.key === 'Enter') {
+                                sendData(this.dataset.section, this.value, this.dataset.pk,this);
+                            }
+                        });
+                    }
+
+        // Function to handle sending data via AJAX
+                    function sendData(section, value, pk,inputElement) {
+                        $.ajax({
+                            url: "/client/master/",  // Replace with your actual Django view URL
+                            method: "POST",
+                            data: {
+                                section: section,
+                                value: value,
+                                pk: pk,
+                                csrfmiddlewaretoken: "{{ csrf_token }}"
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    console.log("Data saved successfully:", response);
+                        // Update the data-pk attribute if a new item was added
+                                    if (response.new_pk && pk === 'new') {
+                                        $(`.form-control[data-section='${section}'][data-pk='new']`).attr("data-pk", response.new_pk);
+                                    }
+                                } else {
+                                    alert(response.error);
+                    // Remove the input row if there's a duplicate error
+                                    if (response.error === 'Duplicate entry') {
+                                        $(inputElement).val('');
+                                    } else {
+                        // Clear the input field if there's another type of error
+                                        $(inputElement).val('');
+                                    }
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error("AJAX Error:", error);
+                            }
+                        });
+                    }
+
+        // Attach event listeners to existing .form-control elements
+                    document.querySelectorAll('.form-control').forEach(function(input) {
+                        bindInputEvent(input);
+                    });
+                });
+            </script>
+
+
+
+        </body>
+    </html>
+
+{% endblock body %}

@@ -1,0 +1,38 @@
+.table>:not(caption)>*>* {
+    background-color: transparent;
+    text-align: center;
+    font-size: 12px;
+}
+thead tr{
+    background-color: #fff !important;
+}
+tr th{
+    color: #4a657e !important;
+}
+table tr:nth-child(odd) {
+    background-color: #D6E3BC;
+}
+table tr:nth-child(even) {
+    background-color: #FFFFFF;
+}
+#table_wall, #table_prod, #table_floor, #table_other, #table_lead{
+    counter-reset: Serial;
+}
+#table_wall tr td:first-child:before,
+#table_prod tr td:first-child:before,
+#table_floor tr td:first-child:before,
+#table_other tr td:first-child:before,
+#table_lead tr td:first-child:before{
+    counter-increment: Serial;
+    content:counter(Serial);
+}
+.table-bordered > thead > tr > th,
+.table-bordered > tbody > tr > th,
+.table-bordered > tfoot > tr > th,
+.table-bordered > thead > tr > td,
+.table-bordered > tbody > tr > td,
+.table-bordered > tfoot > tr > td {
+border: 1px solid #dddddd;
+border-right-width:0px;
+border-left-width:0px;
+}

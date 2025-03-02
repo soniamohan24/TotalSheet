@@ -1,0 +1,98 @@
+{% extends "partials/admin_base.html" %}
+{% block title %}
+    Dashboard
+{% endblock title %}
+{% block content %}
+    <style>
+        .insight{
+            column-gap: 10px;
+            row-gap: 10px;
+        }
+        .insight div{
+            width: calc(100% / 4 - 10px) ;
+        }
+        .insight div span.fs-1{
+            color: #2f80ed;
+        }
+    </style>
+    <div class="d-flex flex-column">
+        <span class="fs-4 mx-4 fw-semibold">Welcome, Admin</span>
+        <div class="presentation-line my-3"></div>
+        <span class="fs-4 mx-4 fw-semibold">Quick Links</span>
+        <div class="d-flex column-gap-3 mt-2 px-4">
+            <a href="{% url 'administrator:user_management'%}" class="bg-white rounded-pill d-flex align-items-center column-gap-3 p-3">
+                <i class="ph ph-users fs-4"></i>
+                <span class="fs-6 fw-medium">Manage Users</span>
+            </a>
+            <a href="{% url 'administrator:user_management'%}" class="bg-white rounded-pill d-flex align-items-center column-gap-3 p-3">
+                <i class="ph ph-user-plus fs-4"></i>
+                <span class="fs-6 fw-medium">Add New User</span>
+            </a>
+<!--        <a href="" class="bg-white rounded-pill d-flex align-items-center column-gap-3 p-3">-->
+<!--            <i class="ph ph-plus fs-4"></i>-->
+<!--            <span class="fs-6 fw-medium">Add Master Item</span>-->
+<!--        </a>-->
+        </div>
+        <div class="d-flex flex-wrap insight px-4 mt-5">
+            <div class="bg-white d-flex align-items-start flex-column p-4 rounded-4">
+                <span class="rounded-4 bg-body-secondary p-3">
+                    <i class="ph ph-users fs-4"></i>
+                </span>
+                <span class="fs-6 mt-4 fw-medium">Total Users</span>
+                <span class="fs-1 float-right fw-bold">{{ total_users }}</span>
+            </div>
+            <div class="bg-white d-flex align-items-start flex-column p-4 rounded-4">
+                <span class="rounded-4 bg-body-secondary p-3">
+                    <i class="ph ph-user fs-4"></i>
+                </span>
+                <span class="fs-6 mt-4 fw-medium">Total Clients</span>
+                <span class="fs-1 float-right fw-bold">{{total_clients}}</span>
+            </div>
+            <div class="bg-white d-flex align-items-start flex-column p-4 rounded-4">
+                <span class="rounded-4 bg-body-secondary p-3">
+                    <i class="ph ph-code fs-4"></i>
+                </span>
+                <span class="fs-6 mt-4 fw-medium">Total Codes</span>
+                <span class="fs-1 float-right fw-bold">{{ total_codes }}</span>
+            </div>
+            <div class="bg-white d-flex align-items-start flex-column p-4 rounded-4">
+                <span class="rounded-4 bg-body-secondary p-3">
+                    <i class="ph ph-invoice fs-4"></i>
+                </span>
+                <span class="fs-6 mt-4 fw-medium">Total BOQ Created</span>
+                <span class="fs-1 float-right fw-bold">{{ total_boq_created }}</span>
+            </div>
+            <div class="bg-white d-flex align-items-start flex-column p-4 rounded-4">
+                <span class="rounded-4 bg-body-secondary p-3">
+                    <i class="ph ph-kanban fs-4"></i>
+                </span>
+                <span class="fs-6 mt-4 fw-medium">Total Projects</span>
+                <span class="fs-1 float-right fw-bold">{{ total_projects }}</span>
+            </div>
+            <div class="bg-white d-flex align-items-start flex-column p-4 rounded-4">
+                <span class="rounded-4 bg-body-secondary p-3">
+                    <i class="ph ph-buildings fs-4"></i>
+                </span>
+                <span class="fs-6 mt-4 fw-medium">Total Registered Brands</span>
+                <span class="fs-1 float-right fw-bold">{{ total_brands }}</span>
+            </div>
+            <div class="bg-white d-flex align-items-start flex-column p-4 rounded-4">
+                <span class="rounded-4 bg-body-secondary p-3">
+                    <i class="ph ph-suitcase-simple fs-4"></i>
+                </span>
+                <span class="fs-6 mt-4 fw-medium">Total Job Seekers</span>
+                <span class="fs-1 float-right fw-bold">{{ total_job_seekers }}</span>
+            </div>
+            <div class="bg-white d-flex align-items-start flex-column p-4 rounded-4">
+                <span class="rounded-4 bg-body-secondary p-3">
+                    <i class="ph ph-user-check fs-4"></i>
+                </span>
+                <span class="fs-6 mt-4 fw-medium">Total Business Profile</span>
+                <span class="fs-1 float-right fw-bold">{{ total_business_profiles }}</span>
+            </div>
+        </div>
+
+
+        <div class="presentation-line my-3"></div>
+    </div>
+{% endblock content %}

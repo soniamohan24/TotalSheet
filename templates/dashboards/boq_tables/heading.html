@@ -1,0 +1,32 @@
+<div class="d-flex flex-column row-gap-2 bg-white rounded-4 p-4 shadow-sm">
+ <div class="row">
+<div class="col-4">
+Boq Name :
+</div>
+ <div class="col-8">
+  <div class="row">
+<div class="col">
+
+                            <div class=" input-group">
+                                <span class="input-group-text">Basic Value ₹</span>
+                                <input type="text" class="form-control" style="text-align: right;" name="basic_value" value="{{boq.basic_value|floatformat:2}}" readonly />
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="input-group">
+                                <span class="input-group-text">GST %</span>
+                                <input type="text" class="form-control" style="text-align: right;" name="gst" value="{{boq.gst_per|floatformat:2}}" readonly />
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="input-group">
+                                <span class="input-group-text">GST Value ₹</span>
+                                <input type="text" class="form-control" style="text-align: right;" name="gst_value" value="{{boq.gst_value|floatformat:2}}" readonly />
+                            </div>
+                        </div>
+   </div>
+</div>
+</div>
+</div>

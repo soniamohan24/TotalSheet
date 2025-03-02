@@ -1,0 +1,259 @@
+
+{% extends "partials/admin_base.html" %}
+{% block title %} operationalcost{% endblock %}
+
+{% block content %}
+    <div class="container p-5">
+
+        <div class="row justify-content-between fs-5 align-items-center  ">
+            <div class="row">
+                <div class="col">
+                    <span class="fs-4 mx-1 fw-semibold">Operational Cost</span><br>
+                    <span class="fs-6 mx-1 text-body-tertiary">Manage your Operational Cost here</span>
+                </div>
+                {% include 'administrator/search.html' with model_name='operationalcost' %}
+            </div>
+        </div>
+<!-- Add Button -->
+<!--<button type="button" class="btn btn-primary mt-3 mb-3" data-bs-toggle="modal" data-bs-target="#addoperationalcostModal">Add Operational Cost</button>-->
+
+<!-- {{ model_name|capfirst }} Table -->
+<!--<table class="table table-striped">-->
+<!--    <thead>-->
+<!--        <tr>-->
+<!--            <th>ID</th>-->
+<!--            <th>Name</th>-->
+<!--            <th>GST</th>-->
+<!--            <th>Allow Me</th>-->
+<!--            <th>Unit</th>-->
+<!--            <th>Actions</th>-->
+<!--        </tr>-->
+<!--    </thead>-->
+<!--    <tbody id="{{ model_name }}TableBody">-->
+<!--        {% for item in items %}-->
+<!--        <tr id="row-{{ item.id }}">-->
+<!--            <td>{{ forloop.counter|add:start_index }}</td>-->
+<!--            <td>{{ item.name }}</td>-->
+<!--            <td>{{ item.gst.rate }}</td>-->
+<!--             <td>{{ item.allow_me }}</td>-->
+<!--            <td>{{ item.unit.name }}</td>-->
+
+<!--            <td>-->
+<!--                &lt;!&ndash; Edit Button &ndash;&gt;-->
+<!--                <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editoperationalcostModal-{{ item.id }}">Edit</button>-->
+
+<!--                &lt;!&ndash; Delete Form &ndash;&gt;-->
+<!--                <form action="{% url 'administrator:dynamic-delete' model_name='operationalcost' pk=item.pk %}" method="post" style="display:inline;">-->
+<!--                    {% csrf_token %}-->
+<!--                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>-->
+<!--                </form>-->
+<!--            </td>-->
+<!--        </tr>-->
+<!--        {% endfor %}-->
+<!--    </tbody>-->
+<!--</table>-->
+        <table class="table table-striped mt-2">
+            <thead>
+                <tr style="background-color:black; color:white;">
+            <!-- Form with fields in the table header -->
+                    <form action="{% url 'administrator:dynamic-create' model_name='operationalcost' %}" method="post" class="w-100">
+                        {% csrf_token %}
+                        <tr>
+                            <th>
+                            <th>
+                                <input type="text" name="name" class="form-control form-control-sm" placeholder="Name" required>
+                            </th>
+                        </th>
+                            <th>
+                                <select name="gst" class="form-control form-control-sm" required>
+                                    <option value="">Select GST</option>
+                                    {% for gst in gsts %}
+                                        <option value="{{ gst.id }}">{{ gst.rate }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th>
+                                <input type="text" name="allow_me" class="form-control form-control-sm" placeholder="Allow Me" required>
+                            </th>
+                            
+                            <th>
+                                <select name="formula" class="form-control form-control-sm" required>
+                                    <option value="">Select Formula</option>
+                                    {% for formula in formula %}
+                                        <option value="{{ formula.id }}">{{ formula.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th>
+                                <button type="submit" class="btn btn-success btn-sm">Save</button>
+                            </th>
+                        </tr>
+                    </form>
+                </tr>
+                <tr>
+                    <th>ID</th>
+                    <th style="text-align: left;">Name</th>
+                    <th style="text-align:left;">Tax</th>
+                    <th style="text-align:left;">Allow Me</th>
+                    <th style="text-align:left;">Formula</th>
+                    <th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="{{ model_name }}TableBody">
+                {% for item in items %}
+                    <tr id="row-{{ item.id }}">
+                        <td>{{ forloop.counter|add:start_index }}</td>
+                        <td style="text-align:left;">{{ item.name }}</td>
+                        <td style="text-align:left;">{{ item.gst.rate|floatformat:2 }}%</td>
+                        <td style="text-align:left;">{{ item.allow_me|floatformat:2 }}%</td>
+                        <td style="text-align:left;">{{ item.formula }}</td>
+                        <td style="text-align:center;">
+                            <div class="dropdown">
+                                <!-- Button with 3 dots -->
+                                <button class="btn btn-secondary btn-sm three-dots-btn" type="button" id="dropdownMenuButton-{{ item.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    ...
+                                </button>
+                        
+                                <!-- Dropdown Menu for Add/Edit Subgroup, Edit, and Delete -->
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{ item.id }}">
+                                    
+                        
+                                    <!-- Edit -->
+                                    <li>
+                                        <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editoperationalcostModal-{{ item.id }}">
+                                            Edit
+                                        </button>
+                                    </li>
+                        
+                                    <!-- Delete -->
+                                    <li>
+                                        {% if item.is_referenced %}
+                                            <form action="" method="post" style="display:inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="dropdown-item" disabled>Delete</button>
+                                            </form>
+                                        {% else %}
+                                            <form id="deleteForm" action="{% url 'administrator:dynamic-delete' model_name='operationalcost' pk=item.pk %}" method="post" style="display:inline;">
+                                                {% csrf_token %}
+                                                <button type="button" class="dropdown-item delete-btn" data-url="{% url 'administrator:dynamic-delete' model_name='operationalcost' pk=item.pk %}">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                        
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tbody>
+            <td>Total</td>
+             <td></td>
+             <td></td>
+             <td style="text-align:left;"> {{total_allow_me|floatformat:2}}%</td>
+            <td></td>
+            <td></td>
+            </tbody>
+        </table>
+
+
+<!-- Pagination Controls -->
+        {% include 'administrator/pagination.html' %}
+
+<!-- Add {{ model_name|capfirst }} Modal -->
+
+<!-- Add Operational Cost Modal -->
+        <div class="modal fade" id="addoperationalcostModal" tabindex="-1" role="dialog" aria-labelledby="addoperationalcostModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addoperationalcostModalLabel">Add Operational Cost</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="{% url 'administrator:dynamic-create' model_name='operationalcost' %}" method="post">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                    <!-- Include your form fields here dynamically -->
+                            <label>Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                            <label>GST</label>
+                            <select name="gst" class="form-control" required>
+                                {% for gst in gsts %}
+                                    <option value="{{ gst.id }}">{{ gst.rate }}</option>
+                                {% endfor %}
+                            </select>
+                            <label>Allow Me</label>
+                            <input type="text" name="allow_me" class="form-control">
+                            <label>Unit</label>
+                            <select name="unit" class="form-control" required>
+                                {% for unit in units %}
+                                    <option value="{{ unit.id }}">{{ unit.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+
+<!-- Edit {{ model_name|capfirst }} Modals -->
+<!-- Edit operationalcost Modals -->
+
+        {% for item in items %}
+            <div class="modal fade" id="editoperationalcostModal-{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="editoperationalcostModalLabel-{{ item.id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editoperationalcostModalLabel-{{ item.id }}">Edit Operational Cost</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{% url 'administrator:dynamic-update' model_name='operationalcost' pk=item.id %}" method="post">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                    <!-- Include your form fields here dynamically -->
+                                <label>Name</label>
+                                <input type="text" name="name" value="{{ item.name }}" class="form-control" required>
+                                <label>GST</label>
+                                <select name="gst" class="form-control" required>
+                                    {% for gst in gsts %}
+                                        <option value="{{ gst.id }}" {% if item.gst.id == gst.id %}selected{% endif %}>{{ gst.rate }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label>Allow Me</label>
+                                <input type="text" name="allow_me" value="{{ item.allow_me }}" class="form-control">
+                                <label class="d-none">Unit</label>
+                                <select name="unit" class="form-control d-none" required>
+                                    {% for unit in units %}
+                                        <option value="{{ unit.id }}" {% if item.unit.id == unit.id %}selected{% endif %}>{{ unit.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label>Formula</label>
+                                <select name="formula" class="form-control form-control-sm" required>
+                                    {% for formula in formula %}
+                                        <option value="{{ formula.id }}" {% if item.formula.id == formula.id %}selected{% endif %}>
+                                            {{ formula.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Save changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
+        {% endfor %}
+{% endblock %}
+</div>

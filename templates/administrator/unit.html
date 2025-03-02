@@ -1,0 +1,234 @@
+
+{% extends "partials/admin_base.html" %}
+{% block title %} UNIT{% endblock %}
+
+{% block content %}
+    <style>
+        .description {
+            white-space: pre-wrap;   /* Preserve line breaks but allow wrapping */
+            overflow-wrap: break-word; /* Break long words */
+            word-wrap: break-word;   /* Break long words in older browsers */
+            overflow-x: hidden;      /* Hide any accidental horizontal overflow */
+        }
+        .description-container {
+            position: relative;
+        }
+
+        .description {
+            max-height: 100px; /* Change this value to set how many lines you want to show */
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .description.expanded {
+            max-height: none; /* Removes the restriction on height when expanded */
+        }
+
+    </style>
+    <div class="container p-5">
+
+        <div class="row justify-content-between fs-5 align-items-center  ">
+            <div class="row">
+                <span class="fs-4 mx-1 fw-semibold">Units</span>
+                <span class="fs-6 mx-1 text-body-tertiary">Manage your Units here</span>
+            </div>
+        </div>
+<!-- Add Button -->
+        <div class="row">
+            <div class="col">
+                <button type="button" class="btn btn-primary mt-3 mb-3" data-bs-toggle="modal" data-bs-target="#addunitModal">Add Unit</button>
+            </div> {% include 'administrator/search.html' with model_name='unit' %}</div>
+<!-- {{ model_name|capfirst }} Table -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th><a href="?sort=name&order={% if current_sort_order == 'asc' and current_sort_field == 'name' %}desc{% else %}asc{% endif %}&group={{ selected_group }}"
+                           class="sort-link" style="text-decorator:none;color:white;">
+                        Unit
+                        {% if current_sort_field == 'name' %}
+                            {% if current_sort_order == 'asc' %}
+                                <i class="fas fa-arrow-up"></i>
+                            {% else %}
+                                <i class="fas fa-arrow-down"></i>
+                            {% endif %}
+                        {% else %}
+                            <i class="fas fa-arrows-v"></i>  <!-- Default indicator for no sorting -->
+                        {% endif %}
+                    </a></th>
+                    <th style="text-align:left;">Unit Name</th>
+                    <th style="text-align:center;">Code Unit</th>
+                    <th style="text-align:left;">Description</th>
+                    <th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="{{ model_name }}TableBody">
+                {% for item in items %}
+                    <tr id="row-{{ item.id }}">
+                        <td>{{ forloop.counter|add:start_index }}</td>
+                        <td>{{ item.name }}</td>
+                        <td style="text-align:left;">{{ item.unit_name }}</td>
+                        <td style="text-align:center;">
+                            <input type="checkbox" disabled {% if item.engineer_field %}checked{% endif %}>
+                        </td>
+                        <td style="text-align:left;">
+                            {% if item.description|safe|length > 0 %}
+                                <!-- Display only the first 5-6 words -->
+                                <p>
+                                    {{ item.description|safe|truncatewords:10 }}
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#descriptionModal-{{ item.id }}">View More</a>
+                                </p>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:center;">
+                            <div class="dropdown">
+                                <!-- Button with 3 dots (no dropdown arrow) -->
+                                <button class="btn btn-secondary btn-sm three-dots-btn" type="button" id="dropdownMenuButton-{{ item.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    ...
+                                </button>
+                        
+                                <!-- Dropdown Menu for Edit and Delete -->
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{ item.id }}">
+                                    <!-- Edit Button -->
+                                    <li>
+                                        <button type="button" class="dropdown-item btn btn-sm" data-bs-toggle="modal" data-bs-target="#editunitModal-{{ item.id }}">
+                                            Edit
+                                        </button>
+                                    </li>
+                        
+                                    {% if item.is_referenced %}
+                                        <li>
+                                            <form action="" method="post" style="display:inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="dropdown-item btn btn-sm" disabled>Delete</button>
+                                            </form>
+                                        </li>
+                                    {% else %}
+                                        <!-- Delete Form -->
+                                        <li>
+                                            <form id="deleteForm" action="{% url 'administrator:dynamic-delete' model_name='unit' pk=item.pk %}" method="post" style="display:inline;">
+                                                {% csrf_token %}
+                                                <button type="button" class="dropdown-item btn btn-sm delete-btn" data-url="{% url 'administrator:dynamic-delete' model_name='unit' pk=item.pk %}">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </td>
+                                                
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+<!-- Description Modals -->
+{% for item in items %}
+<div class="modal fade" id="descriptionModal-{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="descriptionModalLabel-{{ item.id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content bg-light">
+            <div class="modal-body p-4">
+                <h5 class="fw-bold text-primary mb-3"><u>Description</u></h5>
+                {% if item.description %}
+                <div class="description-container">
+                    <pre class="description text-dark" style="white-space: pre-wrap; font-family: 'Arial', sans-serif; font-size: 1rem;" id="description-{{ item.id }}">{{ item.description|safe }}</pre>
+                    <button class="btn btn-primary mt-3 load-more" id="load-more-{{ item.id }}">View More</button>
+                </div>
+                {% else %}
+                <p class="text-danger">No Description Found</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+    
+
+
+
+<!-- Pagination Controls -->
+        {% include 'administrator/pagination.html' %}
+
+<!-- Add {{ model_name|capfirst }} Modal -->
+<div class="modal fade" id="addunitModal" tabindex="-1" role="dialog" aria-labelledby="add{{ model_name|capfirst }}ModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="add{{ model_name|capfirst }}ModalLabel">Add Unit</h5>
+            </div>
+            <form action="{% url 'administrator:dynamic-create' model_name='unit' %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <!-- Include your form fields here dynamically -->
+                    <div>
+                        <label>Enter Name</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div>
+                        <label>Enter Unit Name</label>
+                        <input type="text" name="unit_name" class="form-control" required>
+                    </div>
+                    <div class="form-check mt-3">
+                        <input type="checkbox" name="engineer_field" class="form-check-input" id="isActiveCheckbox">
+                        <label class="form-check-label" for="isActiveCheckbox">Active</label>
+                    </div>
+                    <div>
+                        <label>Description</label>
+                        <textarea class="form-control" id="noteTextarea-add" style="height: 4em; overflow-y: auto; resize: none;" placeholder="Write description here" name="description">{{ item.description|safe|truncatewords:10 }}</textarea>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+        
+
+<!-- Edit {{ model_name|capfirst }} Modals -->
+{% for item in items %}
+<div class="modal fade" id="editunitModal-{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="edit{{ model_name|capfirst }}ModalLabel-{{ item.id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="edit{{ model_name|capfirst }}ModalLabel-{{ item.id }}">Edit {{ model_name|capfirst }}</h5>
+            </div>
+            <form action="{% url 'administrator:dynamic-update' model_name='unit' pk=item.id %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <!-- Include your form fields here dynamically -->
+                    <label>Enter Name</label>
+                    <input type="text" name="name" value="{{ item.name }}" class="form-control" required>
+
+                    <div>
+                        <label>Enter Unit Name</label>
+                        <input type="text" name="unit_name" value="{{ item.unit_name }}" class="form-control" required>
+                    </div>
+
+                    <div>
+                        <label>Code Unit</label>
+                        <input type="checkbox" name="engineer_field" {% if item.engineer_field %}checked{% endif %}>
+                    </div>
+
+                    <div>
+                        <label>Description</label>
+                        <textarea name="description" id="noteTextarea-edit-{{ item.id }}" class="form-control" style="height: 150px;">{{ item.description|safe }}</textarea>
+                    </div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+</div>

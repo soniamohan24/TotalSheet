@@ -1,0 +1,242 @@
+
+{% extends "partials/admin_base.html" %}
+{% block title %} Industries{% endblock %}
+
+{% block content %}
+<div class="container p-5">
+ <div class="row justify-content-between fs-5 align-items-center  ">
+        <div class="row">
+            <span class="fs-4 mx-1 fw-semibold">Work Groups</span>
+            <span class="fs-6 mx-1 text-body-tertiary">Manage your Work Groups here</span>
+        </div>
+</div>
+<!-- Add Button -->
+    <div class="row">
+    <div class="col">
+<button type="button" class="btn btn-primary mt-3 mb-3" data-bs-toggle="modal" data-bs-target="#addindustryModal">Add WorkGroup</button>
+</div>
+            {% include 'administrator/search.html' with model_name='industry' %}
+        </div>
+<!-- {{ model_name|capfirst }} Table -->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th style="text-align:left; width: 300px;">Workgroup Name</th>
+            <th style="text-align:left;">Sub Groups</th>
+            <th style="text-align:center;">Actions</th>
+        </tr>
+    </thead>
+    <tbody id="{{ model_name }}TableBody">
+        {% for item in items %}
+        <tr id="row-{{ item.id }}">
+            <td>{{ forloop.counter|add:start_index }}</td>
+            <td style="text-align:left;">{{ item.name }}</td>
+            <td style="text-align:left;" class="subgroup-list ">
+                {% if item.workgroup_sub_groups.all %}
+                    {% if item.workgroup_sub_groups.all %}
+                        {% for sub in item.workgroup_sub_groups.all %}
+                            {{ sub.name }},
+                        {% endfor %}
+                    {% else %}
+                            <li>No subgroups available</li>
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td style="text-align:center;">
+                <div class="dropdown">
+                    <!-- Button with 3 dots -->
+                    <button class="btn btn-secondary btn-sm three-dots-btn" type="button" id="dropdownMenuButton-{{ item.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                        ...
+                    </button>
+            
+                    <!-- Dropdown Menu for Add/Edit Subgroup, Edit, and Delete -->
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{ item.id }}">
+                        <!-- Add/Edit Subgroup Button -->
+                        <li>
+                            <button type="button" class="dropdown-item btn btn-sm" data-bs-toggle="modal" data-bs-target="#addSubGroupModal-{{ item.id }}">
+                                Add/Edit Subgroup
+                            </button>
+                        </li>
+            
+                        <!-- Edit Button -->
+                        <li>
+                            <button type="button" class="dropdown-item btn btn-sm" data-bs-toggle="modal" data-bs-target="#editindustryModal-{{ item.id }}">
+                                Edit
+                            </button>
+                        </li>
+            
+                        <!-- Delete Form -->
+                        <li>
+                            <form id="deleteForm" action="{% url 'administrator:dynamic-delete' model_name='industry' pk=item.pk %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="button" class="dropdown-item btn btn-sm delete-btn" data-url="{% url 'administrator:dynamic-delete' model_name='industry' pk=item.pk %}">
+                                    Delete
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% include 'administrator/pagination.html' %}
+
+<!-- Add {{ model_name|capfirst }} Modal -->
+<div class="modal fade" id="addindustryModal" tabindex="-1" role="dialog" aria-labelledby="add{{ model_name|capfirst }}ModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="add{{ model_name|capfirst }}ModalLabel">Add Workgroup</h5>
+<!--                <button type="button" class="close float-end"  data-bs-dismiss="modal" aria-label="Close">-->
+<!--                    <span aria-hidden="true">&times;</span>-->
+<!--                </button>-->
+            </div>
+            <form action="{% url 'administrator:dynamic-create' model_name='industry' %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <!-- Include your form fields here dynamically -->
+                    <div>
+                    <label>Enter Name</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+                </div> </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit {{ model_name|capfirst }} Modals -->
+{% for item in items %}
+<div class="modal fade" id="editindustryModal-{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="edit{{ model_name|capfirst }}ModalLabel-{{ item.id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="edit{{ model_name|capfirst }}ModalLabel-{{ item.id }}">Edit Workgroup</h5>
+<!--                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">-->
+<!--                    <span aria-hidden="true">&times;</span>-->
+<!--                </button>-->
+            </div>
+            <form action="{% url 'administrator:dynamic-update' model_name='industry' pk=item.id %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <!-- Include your form fields here dynamically -->
+                    <label>Enter Name</label>
+                    <input type="text" name="name" value="{{ item.name}}" class="form-control" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% for item in items %}
+    <!-- Add/Edit Sub Group Modal for each item -->
+    <div class="modal fade" id="addSubGroupModal-{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="addSubGroupModalLabel-{{ item.id }}" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSubGroupModalLabel-{{ item.id }}">Manage Sub Groups for {{ item.name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" id="subGroupForm-{{ item.id }}" action="{% url 'administrator:workgroup_subgroups' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="pk" value="{{ item.id }}">
+                    <div class="modal-body">
+                        <!-- Subgroups List -->
+                        <div id="subGroupFields-{{ item.id }}">
+                            {% for subgroup in item.workgroup_sub_groups.all %}
+                                <div class="input-group mb-3">
+                                    <input type="hidden" name="sub_group_ids[]" value="{{ subgroup.id }}">
+                                    <input type="text" name="sub_group_names[]" class="form-control" value="{{ subgroup.name }}" placeholder="Sub Group Name">
+                                    <button type="button" class="btn btn-danger" onclick="removeField(this, '{{ subgroup.id }}')">Remove</button>
+
+                                </div>
+
+
+                            {% empty %}
+                                <!-- If no subgroups, show an empty field for adding -->
+                                <div class="input-group mb-3">
+                                    <input type="text" name="sub_group_names[]" class="form-control" placeholder="Sub Group Name">
+<!--                                    <button type="button" class="btn btn-outline-secondary" onclick="addField('{{ item.id }}')">Add More</button>-->
+                                </div>
+                            {% endfor %}
+                            <button type="button" class="btn btn-outline-secondary" onclick="addField('{{ item.id }}')">Add More</button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+<script>
+    function addField(itemId) {
+        const container = document.getElementById(`subGroupFields-${itemId}`);
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'input-group mb-3';
+        inputGroup.innerHTML = `
+            <input type="text" name="sub_group_names[]" class="form-control" placeholder="Sub Group Name">
+            <button type="button" class="btn btn-outline-secondary" onclick="addField('${itemId}')">Add More</button>
+        `;
+        container.appendChild(inputGroup);
+    }
+    </script>
+    
+    
+    <script>
+        function addField(itemId) {
+            var container = document.getElementById('subGroupFields-' + itemId);
+            if (container) {
+                var newField = document.createElement('div');
+                newField.className = 'input-group mb-3';
+    
+                var newInput = document.createElement('input');
+                newInput.type = 'text';
+                newInput.name = 'sub_group_names[]';
+                newInput.className = 'form-control';
+                newInput.placeholder = 'Sub Group Name';
+    
+                var removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'btn btn-danger';
+                removeButton.textContent = 'Remove';
+                removeButton.onclick = function() {
+                    newField.remove();
+                };
+    
+                newField.appendChild(newInput);
+                newField.appendChild(removeButton);
+    
+                // Insert new field before the "Add More" button
+                var addMoreButton = container.querySelector('.btn-outline-secondary');
+                container.insertBefore(newField, addMoreButton);
+            }
+        }
+    
+        function removeField(button, id) {
+            // Optionally handle server-side removal of the subgroup via AJAX
+            var confirmed = confirm('Are you sure you want to remove this sub group?');
+            if (confirmed) {
+                // If it's an existing subgroup, you can add logic here to mark it for deletion
+                // Remove the field from the DOM
+                button.closest('.input-group').remove();
+            }
+        }
+    </script>
+{% endblock %}
+</div>

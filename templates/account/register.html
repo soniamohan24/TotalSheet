@@ -1,0 +1,449 @@
+{% extends "partials/signup_base.html" %}
+{% load static %}
+{% block title %} Register{% endblock title %}
+{% block body %}
+<style>
+    .otp-field {
+        display: flex;
+    }
+
+    .otp-field input {
+        width: 30%;
+        font-size: 32px;
+        padding: px;
+        text-align: center;
+        border-radius: 5px;
+        margin: 2px;
+        border: 1px solid #2d7eea;
+        background: #f9f9f9;
+        font-weight: bold;
+        color: #55525c;
+        outline: none;
+        transition: all 0.1s;
+    }
+
+    .otp-field input:focus {
+        border: 2px solid #a527ff;
+        box-shadow: 0 0 2px 2px #a527ff6a;
+    }
+
+    .disabled {
+        opacity: 0.5;
+    }
+
+    .space {
+        margin-right: 1rem !important;
+    }
+    .form-check{
+        padding-left: 0 !important
+    }
+    .form-check-label{
+        cursor: pointer;
+    }
+    .form-check-input:checked + .form-check-label{
+        border-color: #0d6efd;
+        color: #0d6efd;
+    }
+
+</style>
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<body>
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="d-flex flex-column row-gap-2 p-5 col-10 col-md-6 col-lg-4 col-xl-3 bg-white border border-3 border-white rounded-4 shadow-sm" style="background:url({% static 'img/login_wrapper_bg.png' %}); background-position:center;">
+        <div class="text-center">
+            <img src="{% static 'img/Icon.png' %}" alt="" width=45 >
+        </div>
+        <span class="fs-4 text-center fw-medium">Welcome</span>
+        <span class="fs-6 text-center text-body-secondary" id="messageText">Please enter your WhatsApp Number and Email Address to proceed...!</span>
+        <div id="error" class="alert alert-danger d-none" role="alert">{{error}}</div>
+        <form id="loginForm">
+            {% csrf_token %}
+            <div class="scene-1">
+                <div class="mb-3">
+                    <label for="number" class="form-label text-body-secondary fs-6 mb-0 fw-medium">WhatsApp Number</label>
+                   <input type="text" class="form-control" id="number" placeholder="Enter your Number..." maxlength="10" pattern="\d{1,10}"  name="phone_number" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Email ID</label>
+                    <input type="email" class="form-control" id="email" placeholder="Enter your Email ID..." name="email" required>
+                    <div id="emailError" class="d-none text-danger"></div>
+                </div>
+                <div class="mb-3">
+                <label class="form-check-label" >Already have an account?</label>
+            <a href="{% url 'accounts:login' %}" class="" style="text-decoration:none;"> Login</a>
+                </div>
+            </div>
+
+
+            <div class="scene-2 my-4 d-none">
+                <div id="infoAlert" class="alert alert-primary d-none" role="alert"></div>
+                <div class="d-flex justify-content-center align-items-center">
+                    <span class="fs-6">Didn't receive code? </span>
+                    <button class="btn p-0 link-primary text-decoration-none" id="resendCode"> Resend Code</button>
+                </div>
+                <div class="otp-field">
+                    <input type="text" maxlength="1" />
+                    <input type="text" maxlength="1" />
+                    <input class="space" type="text" maxlength="1" />
+                    <input type="text" maxlength="1" />
+                    <input type="text" maxlength="1" />
+                    <input type="text" maxlength="1" />
+                </div>
+<!--                 <div class="text-center mt-3">-->
+<!--        <button type="button" id="resendOtp" class="btn btn-link">Resend OTP</button>-->
+<!--    </div>-->
+            </div>
+            <div class="scene-3 d-none">
+                <div class="mb-3">
+                    <label for="password" class="form-label text-body-secondary fs-6 mb-0 fw-medium"   >Password</label>
+                    <div class="input-group">
+                    <input type="password" class="form-control" id="password" placeholder="Enter your Password..."   pattern="^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$"
+           title="Password must be at least 8 characters, include at least one uppercase letter, one digit, and one special character." name="password" required>
+                     <button type="button" id="togglePassword" class="btn btn-outline-secondary">
+                <i class="material-symbols-outlined">visibility</i>
+            </button> </div>
+                     <div id="passwordError" class="text-danger d-none"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="confirm_password" class="form-label text-body-secondary fs-6 mb-0 fw-medium">Confirm Password</label>
+                     <div class="input-group">
+                    <input type="password" class="form-control" id="confirm_password"  placeholder="Enter your Password again..." name="confirm_password" required>
+                <button type="button" id="toggleConfirmPassword" class="btn btn-outline-secondary">
+                <i class="material-symbols-outlined">visibility</i>
+            </button> </div>
+                </div>
+            </div>
+            <div class="scene-4 d-flex column-gap-3 mb-3 d-none">
+                <div class="form-check col">
+                    <input class="form-check-input d-none" type="radio" checked name="type" id="seeker" value="jobseeker">
+                    <label class="d-flex flex-column row-gap-3 align-items-center p-4 border form-check-label rounded-3" for="seeker">
+                        <i class="ph fs-4 ph-user"></i>
+                        <span class="fs-6 text-center">Job Profile</span>
+                    </label>
+                </div>
+                <div class="form-check col">
+                    <input class="form-check-input d-none" type="radio" name="type" id="business" value="business">
+                    <label class="d-flex flex-column row-gap-3 align-items-center p-4 border form-check-label rounded-3" for="business">
+                        <i class="ph fs-4 ph-briefcase"></i>
+                        <span class="fs-6 text-center">Business Profile</span>
+                    </label>
+                </div>
+            </div>
+            <button type="button" id="continue" class="btn w-100 shadow-sm btn-primary py-2 justify-content-center d-flex align-items-center column-gap-1">Continue<span class="material-symbols-outlined">arrow_forward</span></button>
+        </form>
+    </div>
+</div>
+<script>
+    document.getElementById("email").addEventListener("blur", function() {
+        const email = this.value;
+        const emailError = document.getElementById("emailError");
+
+        // Regular expression for validating email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email) && email.length > 0) {
+            emailError.textContent = "Invalid email format. Please enter a valid email address.";
+            emailError.classList.remove('d-none');
+        } else {
+            // Clear error message if the email is valid or the input is empty
+            emailError.textContent = "";
+            emailError.classList.add('d-none');
+        }
+    });
+
+    let scene = 1;
+
+    $("#continue").click(function () {
+
+        if (scene == 1) {
+            let number = $("#number").val();
+            let email = $("#email").val();
+            // Validate number format (10 digits)
+        if (!(/^\d{10}$/.test(number))) {
+            $("#error").text("Invalid phone number format. Please enter a 10-digit number.").removeClass('d-none');
+            return;
+        }
+
+            if (!number || !email) {
+                let errorMessage = ""; // Initialize an empty error message
+
+                if (!number && !email) {
+                    errorMessage = "Both phone number and email fields are required.";
+                } else if (!number) {
+                    errorMessage = "Phone number field is required.";
+                } else if (!email) {
+                    errorMessage = "Email field is required.";
+                }
+
+                $("#error").text(errorMessage).removeClass('d-none');
+                return;
+            }
+
+            $.ajax({
+                url: "{% url 'accounts:request_otp' %}",
+                method: "POST",
+                data: {
+                    phone_number: number,
+                    email: email,
+                    csrfmiddlewaretoken: "{{ csrf_token }}"
+                },
+                success: function (response) {
+                    if (response.success) {
+                        scene = 2;
+                        $(".scene-1").addClass('d-none');
+                        $(".scene-2").removeClass('d-none');
+                        $("#messageText").text("Please enter the code sent to your Phone Number/Email Address.");
+                        $("#error").addClass('d-none');
+                    } else {
+                        $("#error").text(response.errors.email).removeClass('d-none');
+                    }
+                }
+            });
+
+        } else if (scene == 2) {
+            let otp = "";
+            $(".otp-field input").each(function () {
+                otp += $(this).val();
+            });
+
+            if (otp.length != 6) {
+                $("#error").text("Invalid OTP.").removeClass('d-none');
+                return;
+            }
+
+            $.ajax({
+                url: "{% url 'accounts:verify_otp' %}",
+                method: "POST",
+                data: {
+                    otp: otp,
+                    csrfmiddlewaretoken: "{{ csrf_token }}"
+                },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        scene = 3;
+                        $(".scene-2").addClass('d-none');
+                        $(".scene-3").removeClass('d-none');
+                        $("#messageText").text("Please enter your password.");
+                        $("#error").addClass('d-none');
+                    } else {
+                        $("#error").text(response.errors ? JSON.stringify(response.errors) : response.message).removeClass('d-none');
+                        inputs.forEach((input) => {
+                            input.classList.remove("disabled");
+                            input.removeAttribute("disabled");
+                        });
+                    }
+                }
+            });
+
+        } else if (scene == 3) {
+            let password = $("#password").val();
+            let confirm_password = $("#confirm_password").val();
+
+            if (!password || !confirm_password || password !== confirm_password) {
+                $("#error").text("Passwords do not match..!").removeClass('d-none');
+                return;
+            }
+
+            $.ajax({
+                url: "{% url 'accounts:set_password' %}",
+                method: "POST",
+                data: {
+                    password: password,
+                    confirm_password: confirm_password,
+                    csrfmiddlewaretoken: "{{ csrf_token }}"
+                },
+                success: function (response) {
+                    if (response.success) {
+                        scene = 4;
+                        $(".scene-3").addClass('d-none');
+                        $(".scene-4").removeClass('d-none');
+                        $("#messageText").text("Please select your profile type.");
+                        $("#error").addClass('d-none');
+                    } else {
+                        $("#error").text(response.errors ? JSON.stringify(response.errors) : response.message).removeClass('d-none');
+                    }
+                }
+            });
+
+        } else if (scene == 4) {
+            // Handle scene 4 actions
+            let type = $("input[name='type']:checked").val();
+            if (!type) {
+                $("#error").text("Please select a profile type.").removeClass('d-none');
+                return;
+            }
+
+            $.ajax({
+                url: "{% url 'accounts:complete_registration' %}",
+                method: "POST",
+                data: {
+                    type: type,
+                    csrfmiddlewaretoken: "{{ csrf_token }}"
+                },
+                success: function (response) {
+                    console.log(response)
+                    if (response.success) {
+                        window.location.href = "{% url 'profile:dashboard' %}"; // Redirect on success
+                    } else {
+                        $("#error").text(response.errors ? JSON.stringify(response.errors) : response.message).removeClass('d-none');
+                    }
+                }
+            });
+        }
+    });
+
+    $('#resendCode').on('click', function(){
+    const email = $("#email").val(); // Get email value
+    const number = $("#number").val(); // Get number value
+
+    const $button = $(this); // Store a reference to the button
+
+    // Disable the button and start the countdown
+    $button.prop('disabled', true); // Disable the button
+    let countdown = 60; // 1 minute countdown
+
+    $button.text(`${countdown}`); // Initial message
+
+    const timer = setInterval(function() {
+        countdown--; // Decrease countdown first
+        $button.text(`Resend in ${countdown}`); // Update the button text with countdown
+
+        if (countdown <= 0) {
+            clearInterval(timer); // Stop the timer
+            $button.text("Resend Code"); // Reset button text
+            $button.prop('disabled', false); // Re-enable the button
+        }
+    }, 1000); // Set interval to 1 second
+
+
+
+        $.ajax({
+            url: "{% url 'accounts:resend_otp' %}",
+            method: "POST",
+            data: {
+                email: email,
+                number: number,
+                csrfmiddlewaretoken: "{{ csrf_token }}"
+            },
+            success: function (response) {
+                $("#infoAlert").text("Code has been resent").removeClass('d-none');
+                setTimeout(function() {
+                    $('#infoAlert').fadeOut('fast');
+                }, 5000);
+            }
+        });
+    })
+
+
+
+    const inputs = document.querySelectorAll(".otp-field input");
+
+    inputs.forEach((input, index) => {
+        input.dataset.index = index;
+        input.addEventListener("keyup", handleOtp);
+        input.addEventListener("paste", handleOnPasteOtp);
+    });
+
+    function handleOtp(e) {
+        const input = e.target;
+        let value = input.value;
+        let isValidInput = value.match(/[0-9a-z]/gi);
+        input.value = "";
+        input.value = isValidInput ? value[0] : "";
+
+        let fieldIndex = input.dataset.index;
+        if (fieldIndex < inputs.length - 1 && isValidInput) {
+            input.nextElementSibling.focus();
+        }
+
+        if (e.key === "Backspace" && fieldIndex > 0) {
+            input.previousElementSibling.focus();
+        }
+
+        if (fieldIndex == inputs.length - 1 && isValidInput) {
+            submit();
+        }
+    }
+
+    function handleOnPasteOtp(e) {
+        const data = e.clipboardData.getData("text");
+        const value = data.split("");
+        if (value.length === inputs.length) {
+            inputs.forEach((input, index) => (input.value = value[index]));
+            submit();
+        }
+    }
+
+    function submit() {
+        console.log("Submitting OTP...");
+        let otp = "";
+        inputs.forEach((input) => {
+            otp += input.value;
+            input.disabled = true;
+            input.classList.add("disabled");
+        });
+        console.log("OTP submitted:", otp);
+    }
+</script>
+
+<script>
+document.getElementById('number').addEventListener('input', function() {
+    // Remove any non-numeric characters
+    this.value = this.value.replace(/\D/g, '').slice(0, 10);
+});
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var passwordInput = document.getElementById("password");
+        var errorDiv = document.getElementById("passwordError");
+
+        // Validate password function
+        function validatePassword(password) {
+            var minLength = password.length >= 8; // Ensure at least 8 characters
+            var hasUpperCase = /[A-Z]/.test(password); // Check for uppercase letter
+            var hasDigit = /\d/.test(password); // Check for digit
+            var hasSpecialChar = /[@$!%*?&#]/.test(password); // Check for special character
+
+            return minLength && hasUpperCase && hasDigit && hasSpecialChar; // Return true if all conditions are met
+        }
+
+        // Show error message function
+        function showError(message) {
+            errorDiv.classList.remove("d-none");
+            errorDiv.textContent = message;
+        }
+
+        // Hide error message function
+        function hideError() {
+            errorDiv.classList.add("d-none");
+            errorDiv.textContent = "";
+        }
+
+        // Add an event listener for real-time validation as the user types
+        passwordInput.addEventListener("input", function() {
+            var password = passwordInput.value;
+
+            if (validatePassword(password)) {
+                hideError(); // Hide error if password is valid
+            } else {
+                showError("Password must be at least 8 characters long, contain at least one uppercase letter, one digit, and one special character.");
+            }
+        });
+
+        // Optionally, add form submission validation
+        document.getElementById("your-form-id").addEventListener("submit", function(event) {
+            var password = passwordInput.value;
+            if (!validatePassword(password)) {
+                event.preventDefault(); // Prevent form submission if password is invalid
+                showError("Password must be at least 8 characters long, contain at least one uppercase letter, one digit, and one special character.");
+            }
+        });
+    });
+</script>
+
+</body>
+
+
+{% endblock body %}

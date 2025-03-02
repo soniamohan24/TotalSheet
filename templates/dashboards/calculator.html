@@ -1,0 +1,478 @@
+{% extends "partials/base.html" %} {% load static %} {% block title %}Calculator{% endblock title %} {% block body %}
+    <link rel="stylesheet" href="{% static 'css/table.css' %}" />
+    <style>
+        .calculator-section {
+            display: none; /* Hidden by default */
+        }
+        .back-button {
+            display: none; /* Hidden by default */
+        }
+        .shadow-card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .form-label {
+            font-weight: bold;
+        }
+        .input-group-text {
+            width: 60px;
+            text-align: center;
+        }
+    </style>
+    <div class="rounded-4 p-4 d-flex flex-column row-gap-5">
+        <div class="container mt-4">
+            <div class="row row-cols-2 row-cols-md-4 g-4" id="cardContainer">
+            <!-- Concrete Site Mix Card -->
+                <div class="col" onclick="showCalculator('concrete')">
+                    <div class="card h-100 flex-column rounded-4 w-100 shadow-sm bg-white">
+                        <div class="card-body text-center">
+                            <img src="{% static 'img/concrete_image.png' %}" class="card-img-top" alt="Blocks">
+                            <p class="card-text mt-2">Concrete Site Mix</p>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- TOR STEEL WEIGHT Card -->
+                <div class="col" onclick="showCalculator('torSteelWeight')">
+                    <div class="card h-100 flex-column rounded-4 w-100 shadow-sm bg-white">
+                        <img src="{% static 'img/login_background.png' %}" class="card-img-top" alt="TOR Steel Weight">
+                        <div class="card-body text-center">
+                            <p class="card-text">TOR Steel Weight</p>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Bricks Card -->
+                <div class="col" onclick="showCalculator('wall_plastering')">
+                    <div class="card h-100 flex-column rounded-4 w-100 shadow-sm bg-white">
+                        <img src="{% static 'img/login_background.png' %}" class="card-img-top" alt="Bricks">
+                        <div class="card-body text-center">
+                            <p class="card-text">wall plastering</p>
+                        </div>
+                    </div>
+                </div>
+            <!-- Repeat for other cards -->
+            </div>
+
+        <!-- Back Button -->
+            <button id="backButton" class="btn btn-secondary mb-4 back-button" onclick="hideCalculator()">Back</button>
+
+        <!-- Calculator Input Section -->
+            <div id="concrete" class="calculator-section mt-4" style="display: none;">
+                <h2 class="text-center" id="calculatorTitle">Concrete Site Mix Calculator</h2>
+                <div class="shadow-card p-4">
+                <!-- Dimension Inputs (Length, Width, Height) -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="length" class="form-label">Length (m)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="length" placeholder="Enter length" required>
+                                <span class="input-group-text">m</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="width" class="form-label">Width (m)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="width" placeholder="Enter width" required>
+                                <span class="input-group-text">m</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="height" class="form-label">Height (m)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="height" placeholder="Enter height" required>
+                                <span class="input-group-text">m</span>
+                            </div>
+                        </div>
+                    </div>
+
+                <!-- Wet Mix and Wastage Inputs -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="wetMix" class="form-label">Wet Mix (%)</label>
+                            <input type="number" class="form-control" id="wetMix" placeholder="Enter wet mix percentage" value="0.0" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="wastage" class="form-label">Wastage (%)</label>
+                            <input type="number" class="form-control" id="wastage" placeholder="Enter wastage percentage" value="0.0" required>
+                        </div>
+                    </div>
+
+                <!-- Quantity Display -->
+                    <div class="mb-3">
+                        <h4 class="text-center">Quantity: <span id="quantity">0.00</span> m</h4>
+                    </div>
+
+                <!-- Cement, GGBS, Sand, Jelly Inputs -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="cement" class="form-label">Cement (kg)</label>
+                            <input type="number" class="form-control" id="cement" placeholder="Enter cement weight" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="ggbs" class="form-label">GGBS (kg)</label>
+                            <input type="number" class="form-control" id="ggbs" placeholder="Enter GGBS weight" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sand" class="form-label">Sand (kg)</label>
+                            <input type="number" class="form-control" id="sand" placeholder="Enter sand weight" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="jelly" class="form-label">Jelly (kg)</label>
+                            <input type="number" class="form-control" id="jelly" placeholder="Enter jelly weight" required>
+                        </div>
+                    </div>
+
+                <!-- Calculation Results -->
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <h5>Cement</h5>
+                            <p><span id="cementBags">0.00</span> Bags</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h5>GGBS</h5>
+                            <p><span id="ggbsBags">0.00</span> Bags</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h5>Sand</h5>
+                            <p><span id="sandM3">0.00</span> m³</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h5>Jelly</h5>
+                            <p><span id="jellyM3">0.00</span> m³</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- TOR Steel Weight Calculator Section -->
+            <div id="torSteelWeight" class="calculator-section mt-4" style="display: none;">
+                <h2 class="text-center" id="calculatorTitle">TOR Steel Weight Calculator</h2>
+                <div class="shadow-card p-4">
+                <!-- TOR Options -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="torOption" class="form-label">TOR Option (mm)</label>
+                            <select class="form-select" id="torOption">
+                                <option value="6">6mm</option>
+                                <option value="8">8mm</option>
+                                <option value="10">10mm</option>
+                                <option value="12">12mm</option>
+                                <option value="16">16mm</option>
+                                <option value="20">20mm</option>
+                                <option value="25">25mm</option>
+                                <option value="30">30mm</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="meter" class="form-label">Meter</label>
+                            <input type="number" class="form-control" id="meter" placeholder="Enter meter">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="nos" class="form-label">Nos</label>
+                            <input type="number" class="form-control" id="nos" placeholder="Enter nos">
+                        </div>
+                    </div>
+
+                <!-- Calculation Result -->
+                    <div class="mb-3">
+                        <h4 class="text-center">Weight: <span id="torWeight">0.00</span> kg</h4>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Calculator Input Section -->
+            <div id="wall_plastering" class="calculator-section mt-4" style="display: none;">
+                <h2 class="text-center" id="calculatorTitle">Wall Plastering</h2>
+                <div class="shadow-card p-4">
+                <!-- Dimension Inputs (Length, Width, Height) -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="length" class="form-label">Length (m)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="wall_length" placeholder="Enter Length" required>
+                                <span class="input-group-text">m</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="width" class="form-label">Height (m)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="wall_height" placeholder="Enter Height" required>
+                                <span class="input-group-text">m</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="wall_thikness" class="form-label">Thikness (m)</label>
+                            <select class="form-select" id="wall_thikness">
+                                <option value="6">6mm</option>
+                                <option value="8">8mm</option>
+                                <option value="10">10mm</option>
+                                <option value="12">12mm</option>
+                                <option value="16">16mm</option>
+                                <option value="20">20mm</option>
+                                <option value="25">25mm</option>
+                                <option value="30">30mm</option>
+                            </select>
+                        </div>
+                    </div>
+
+                <!-- Quantity Display -->
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-center">
+                        <!-- Empty column for spacing or other content -->
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h4 class="text-center">Quantity: <span id="wall_quantity">0.00</span> m²</h4>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h4 class="text-center"><span id="total_thikness">0.00</span> m</h4>
+                        </div>
+                    </div>
+
+
+                <!-- Wet Mix and Wastage Inputs -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="wetMix" class="form-label">Wet Mix (%)</label>
+                            <input type="number" class="form-control" id="wall_wetMix" placeholder="Enter wet mix percentage" value="0.0" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="wastage" class="form-label">Join Filling (%)</label>
+                            <input type="number" class="form-control" id="wall_filling" placeholder="Enter wastage percentage" value="0.0" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="wetMix" class="form-label">Wastage (%)</label>
+                            <input type="number" class="form-control" id="wall_wastage" placeholder="Enter wet mix percentage" value="0.0" required>
+                        </div>
+                    </div>
+
+                <!-- Cement, GGBS, Sand, Jelly Inputs -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="cement" class="form-label">Cement (kg)</label>
+                            <input type="number" class="form-control" id="wall_cement" placeholder="Enter cement weight" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sand" class="form-label">Sand (kg)</label>
+                            <input type="number" class="form-control" id="wall_sand" placeholder="Enter sand weight" required>
+                        </div>
+                    </div>
+
+                <!-- Calculation Results -->
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <h5>Cement</h5>
+                            <p><span id="wall_cementBags">0.00</span> Bags</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h5>Sand</h5>
+                            <p><span id="wall_sandM3">0.00</span> m³</p>
+                        </div>
+                    </div>
+
+
+                    <h4 class="text-center">Materials Input Ratio</h4>
+                    <div class="row mb-3">
+                        <div class="col-md-6 text-center">
+                            <h5>Cement</h5>
+                            <p><span id="cement_ratio">0.00</span></p>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <h5>Sand</h5>
+                            <p><span id="sand_ratio">0.00</span></p>
+                        </div>
+                    </div>
+
+                    <h4 class="text-center">Manpower Productivity</h4>
+                    <div class="row mb-3">
+                        <div class="col-md-3 text-center">
+                            <h5>Interior</h5>
+                            <p><span id="interior_ratio">0.00</span></p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h5>Mason</h5>
+                            <p><span id="mason_interior">0.00</span> HEAD</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h5>Labor-M</h5>
+                            <p><span id="labor_m_interior">0.00</span> HEAD</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h5>Labor-FM</h5>
+                            <p><span id="labor_fm_interior">0.00</span> HEAD</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-3 text-center">
+                            <h5>Exterior</h5>
+                            <p><span id="exterior_ratio">0.00</span></p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h5>Mason</h5>
+                            <p><span id="mason_exterior">0.00</span> HEAD</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h5>Labor-M</h5>
+                            <p><span id="labor_m_exterior">0.00</span> HEAD</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h5>Labor-FM</h5>
+                            <p><span id="labor_fm_exterior">0.00</span> HEAD</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+            document.querySelectorAll('#length, #width, #height, #cement, #ggbs, #sand, #jelly, #wetMix, #wastage').forEach(input => {
+                input.addEventListener('input', calculateResults);
+            });
+            document.querySelectorAll('#wall_length, #wall_thikness, #wall_height, #wall_cement, #wall_sand,#wall_filling, #wall_wetMix, #wall_wastage').forEach(input => {
+                input.addEventListener('input', calculateWallResults);
+            });
+            let quantity  = 0.00
+            let wall_quantity  = 0.00
+            let total_thikness  = 0.00
+            function calculateResults() {
+                length = parseFloat(document.getElementById('length').value) || 0;
+                width = parseFloat(document.getElementById('width').value) || 0;
+                height = parseFloat(document.getElementById('height').value) || 0;
+                const cement = parseFloat(document.getElementById('cement').value) || 0;
+                const ggbs = parseFloat(document.getElementById('ggbs').value) || 0;
+                const sand = parseFloat(document.getElementById('sand').value) || 0;
+                const jelly = parseFloat(document.getElementById('jelly').value) || 0;
+                const wetMix = parseFloat(document.getElementById('wetMix').value) || 0;
+                const wastage = parseFloat(document.getElementById('wastage').value) || 0;
+
+            // Calculate Quantity
+                quantity = length * width * height;
+
+            // Calculate Total considering Wet Mix and Wastage
+                const total = (wetMix * quantity / 100) + (wastage *  quantity / 100);
+
+            // Material calculations
+                let cementBags = (cement / (cement + ggbs + sand + jelly)) * (( quantity + total )/ 0.035);
+                let ggbsBags = (ggbs / (cement + ggbs + sand + jelly)) * (( quantity + total ) / 0.035);
+                let sandM3 = (sand / (cement + ggbs + sand + jelly)) * (( quantity + total ));
+                let jellyM3 = (jelly / (cement + ggbs + sand + jelly)) * (( quantity + total ));
+
+            // Check for NaN and replace with 0 if needed
+                cementBags = isNaN(cementBags) ? 0 : cementBags;
+                ggbsBags = isNaN(ggbsBags) ? 0 : ggbsBags;
+                sandM3 = isNaN(sandM3) ? 0 : sandM3;
+                jellyM3 = isNaN(jellyM3) ? 0 : jellyM3;
+
+            // Update the DOM with the results
+                document.getElementById('quantity').textContent = quantity.toFixed(2);
+                document.getElementById('cementBags').textContent = cementBags.toFixed(2);
+                document.getElementById('ggbsBags').textContent = ggbsBags.toFixed(2);
+                document.getElementById('sandM3').textContent = sandM3.toFixed(2);
+                document.getElementById('jellyM3').textContent = jellyM3.toFixed(2);
+            }
+            function calculateWallResults() {
+                const length = parseFloat(document.getElementById('wall_length').value) || 0;
+                const thickness = parseFloat(document.getElementById('wall_thikness').value) || 0;
+                const height = parseFloat(document.getElementById('wall_height').value) || 0;
+                const wall_cement = parseFloat(document.getElementById('wall_cement').value) || 0;
+                const wall_sand = parseFloat(document.getElementById('wall_sand').value) || 0;
+                const wall_wetMix = parseFloat(document.getElementById('wall_wetMix').value) || 0;
+                const wall_wastage = parseFloat(document.getElementById('wall_wastage').value) || 0;
+                const wall_filling = parseFloat(document.getElementById('wall_filling').value) || 0;
+
+            // Calculate Quantity
+                const wall_quantity = length * height;
+                const total_thickness = (wall_quantity * thickness) / 1000;
+
+            // Calculate Total considering Wet Mix and Wastage
+                const total_wetmix = (wall_wetMix * total_thickness / 100);
+                const total_filling = (wall_filling * total_thickness / 100);
+                const total_wastage = (wall_wastage * total_thickness / 100);
+
+            // Material calculations
+                const total_volume = total_thickness + total_wetmix + total_filling + total_wastage;
+                let wall_cementBags = (wall_cement / (wall_cement + wall_sand)) * (total_volume / 0.035);
+                let wall_sandM3 = (wall_sand / (wall_cement + wall_sand)) * (total_volume );
+
+            // Check for NaN and replace with 0 if needed
+                wall_cementBags = isNaN(wall_cementBags) ? 0 : wall_cementBags;
+                wall_sandM3 = isNaN(wall_sandM3) ? 0 : wall_sandM3;
+
+            // Update the DOM with the results
+                document.getElementById('wall_quantity').textContent = wall_quantity.toFixed(3);
+                document.getElementById('total_thikness').textContent = total_thickness.toFixed(3);
+                document.getElementById('wall_cementBags').textContent = wall_cementBags.toFixed(3);
+                document.getElementById('wall_sandM3').textContent = wall_sandM3.toFixed(3);
+            }
+
+            document.querySelectorAll('#torOption, #meter, #nos').forEach(input => {
+                input.addEventListener('input', calculateTorWeight);
+            });
+
+            function calculateTorWeight() {
+                const torOption = parseFloat(document.getElementById('torOption').value) || 0;
+                const meter = parseFloat(document.getElementById('meter').value) || 0;
+                const nos = parseFloat(document.getElementById('nos').value) || 0;
+
+                const hiddenValue = 162.28; // Given value
+                const torWeight = ((torOption * torOption) / hiddenValue) * meter * nos;
+
+            // Update the DOM with the result
+                document.getElementById('torWeight').textContent = torWeight.toFixed(3);
+            }
+
+            function showCalculator(type) {
+            // Hide all calculators
+                const calculators = document.querySelectorAll('.calculator-section');
+                calculators.forEach(calculator => calculator.style.display = 'none');
+
+            // Show the selected calculator
+                document.getElementById(type).style.display = 'block';
+
+            // Hide the card container and show the back button
+                document.getElementById('cardContainer').style.display = 'none';
+                document.getElementById('backButton').style.display = 'block';
+
+                const calculatorTitle = document.getElementById('calculatorTitle');
+                const calculator = document.getElementById('calculator');
+                const cardContainer = document.getElementById('cardContainer');
+                const backButton = document.getElementById('backButton');
+
+            // Set title based on type
+                switch (type) {
+                    case 'concrete':
+                        calculatorTitle.textContent = 'Concrete Site Mix Calculator';
+                        break;
+                    case 'blocks':
+                        calculatorTitle.textContent = 'Blocks Calculator';
+                        break;
+                    case 'bricks':
+                        calculatorTitle.textContent = 'Bricks Calculator';
+                        break;
+                    default:
+                        calculatorTitle.textContent = 'Calculator';
+                }
+
+            }
+
+            function hideCalculator() {
+                const calculator = document.getElementById('calculator');
+                const cardContainer = document.getElementById('cardContainer');
+                const backButton = document.getElementById('backButton');
+                const calculators = document.querySelectorAll('.calculator-section');
+                calculators.forEach(calculator => calculator.style.display = 'none');
+
+            // Show the card container and hide the back button
+                document.getElementById('cardContainer').style.display = 'flex';
+                document.getElementById('backButton').style.display = 'none';
+
+            // Remove event listeners to prevent unnecessary calculations
+            }
+        </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock body %}
