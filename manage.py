@@ -2,7 +2,7 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-#fghgfjfhjhjfeeeecccccc
+#fghgfj
 #deddbcdbjsm
 def main():
     """Run administrative tasks."""
