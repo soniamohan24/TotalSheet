@@ -3,7 +3,7 @@
 import os
 import sysnn
 #fghgfj
-#deddbcdbjsmddddwww
+#deddbcdbjsmddddwwwddd
 def main():
     """Run administrative tasks."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "totalseats.settings")
